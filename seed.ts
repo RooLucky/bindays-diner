@@ -4,8 +4,18 @@ import { randomBytes } from "node:crypto";
 
 import { LOYALTY_STAMP_PIN_KEY } from "@/lib/admin-settings";
 import { getDb } from "@/lib/db";
-import { adminAccounts, adminSettings } from "@/lib/db/schema";
+import {
+  adminAccounts,
+  adminSettings,
+  managementCategories,
+  managementItems,
+} from "@/lib/db/schema";
 import { getServerEnv } from "@/lib/env";
+import {
+  MANAGEMENT_CATEGORIES,
+  getStaticManagementCategory,
+  getStaticManagementItems,
+} from "@/lib/management";
 import { hashSecret } from "@/lib/secrets";
 
 const DEFAULT_ADMIN_EMAIL = "admin@bindays.local";
@@ -107,6 +117,54 @@ async function seed() {
   if (generatedPin) {
     console.log(`Generated local loyalty stamp PIN: ${generatedPin}`);
   }
+
+  for (const slug of MANAGEMENT_CATEGORIES) {
+    const category = getStaticManagementCategory(slug);
+
+    await getDb()
+      .insert(managementCategories)
+      .values({
+        ...category,
+        heroImageUrl: category.heroImageUrl,
+      })
+      .onConflictDoUpdate({
+        target: managementCategories.slug,
+        set: {
+          eyebrow: category.eyebrow,
+          title: category.title,
+          description: category.description,
+          ctaLabel: category.ctaLabel,
+          ctaHref: category.ctaHref,
+          heroImageKey: category.heroImageKey,
+          heroImageUrl: category.heroImageUrl,
+          heroAlt: category.heroAlt,
+          badge: category.badge,
+          updatedAt: new Date(),
+        },
+      });
+
+    for (const item of getStaticManagementItems(slug)) {
+      await getDb()
+        .insert(managementItems)
+        .values(item)
+        .onConflictDoUpdate({
+          target: [managementItems.categorySlug, managementItems.name],
+          set: {
+            description: item.description,
+            price: item.price,
+            tag: item.tag,
+            imageKey: item.imageKey,
+            imageUrl: item.imageUrl,
+            imageAlt: item.imageAlt,
+            sortOrder: item.sortOrder,
+            isActive: item.isActive,
+            updatedAt: new Date(),
+          },
+        });
+    }
+  }
+
+  console.log("Seeded management categories and items.");
 }
 
 seed().catch((error) => {

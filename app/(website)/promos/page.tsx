@@ -1,7 +1,10 @@
 import { CampaignPage } from "@/components/page-component/CampaignPage";
-import { campaigns } from "@/lib/menu-campaigns";
+import { getPublicCampaign } from "@/lib/management";
 
-export default function PromosPage() {
-  return <CampaignPage campaign={campaigns.promos} />;
+export const dynamic = "force-dynamic";
+
+export default async function PromosPage() {
+  const campaign = await getPublicCampaign("promo");
+
+  return <CampaignPage campaign={campaign} />;
 }
-

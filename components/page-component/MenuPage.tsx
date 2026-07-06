@@ -2,12 +2,12 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
-import { menuDishes } from "@/lib/menu-campaigns";
+import { menuDishes, type Dish } from "@/lib/menu-campaigns";
 import { cn } from "@/lib/utils";
 
 import { MenuCard } from "./MenuCard";
 
-export function MenuPage() {
+export function MenuPage({ dishes = menuDishes }: { dishes?: Dish[] }) {
   return (
     <section className="bg-background py-16 lg:py-20">
       <div className="mx-auto grid max-w-[98dvw] gap-10 px-4 md:max-w-[95dvw] xl:max-w-[85dvw] xl:grid-cols-[0.82fr_2fr] xl:px-0">
@@ -35,7 +35,7 @@ export function MenuPage() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {menuDishes.map((dish) => (
+          {dishes.map((dish) => (
             <MenuCard key={dish.name} dish={dish} />
           ))}
         </div>

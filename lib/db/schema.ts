@@ -1,4 +1,5 @@
 import {
+  boolean,
   integer,
   pgEnum,
   pgTable,
@@ -49,6 +50,65 @@ export const adminSettings = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [uniqueIndex("admin_settings_key_idx").on(table.key)],
+);
+
+export const adminSessions = pgTable(
+  "admin_sessions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    adminAccountId: uuid("admin_account_id")
+      .notNull()
+      .references(() => adminAccounts.id, { onDelete: "cascade" }),
+    tokenHash: text("token_hash").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [uniqueIndex("admin_sessions_token_hash_idx").on(table.tokenHash)],
+);
+
+export const managementCategories = pgTable(
+  "management_categories",
+  {
+    slug: varchar("slug", { length: 80 }).primaryKey(),
+    eyebrow: varchar("eyebrow", { length: 120 }).notNull(),
+    title: varchar("title", { length: 220 }).notNull(),
+    description: text("description").notNull(),
+    ctaLabel: varchar("cta_label", { length: 120 }).notNull(),
+    ctaHref: varchar("cta_href", { length: 220 }).notNull(),
+    heroImageKey: text("hero_image_key"),
+    heroImageUrl: text("hero_image_url").notNull(),
+    heroAlt: varchar("hero_alt", { length: 220 }).notNull(),
+    badge: varchar("badge", { length: 80 }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+);
+
+export const managementItems = pgTable(
+  "management_items",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    categorySlug: varchar("category_slug", { length: 80 })
+      .notNull()
+      .references(() => managementCategories.slug, { onDelete: "cascade" }),
+    name: varchar("name", { length: 160 }).notNull(),
+    description: text("description").notNull(),
+    price: varchar("price", { length: 40 }).notNull(),
+    tag: varchar("tag", { length: 80 }),
+    imageKey: text("image_key"),
+    imageUrl: text("image_url").notNull(),
+    imageAlt: varchar("image_alt", { length: 220 }).notNull(),
+    sortOrder: integer("sort_order").default(0).notNull(),
+    isActive: boolean("is_active").default(true).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("management_items_category_name_idx").on(
+      table.categorySlug,
+      table.name,
+    ),
+  ],
 );
 
 export const loyaltyMembers = pgTable(

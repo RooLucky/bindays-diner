@@ -7,6 +7,7 @@ const serverEnvSchema = z.object({
   R2_SECRET_ACCESS_KEY: z.string().min(1, "R2_SECRET_ACCESS_KEY is required"),
   R2_BUCKET_NAME: z.string().min(1, "R2_BUCKET_NAME is required"),
   R2_ENDPOINT: z.string().url().optional(),
+  R2_PUBLIC_URL: z.string().url().optional(),
   S3_ENDPOINT: z.string().url().optional(),
   LOYALTY_STAMP_PIN: z.string().min(4).optional(),
   ADMIN_EMAIL: z.string().email().optional(),

@@ -1,7 +1,10 @@
 import { CampaignPage } from "@/components/page-component/CampaignPage";
-import { campaigns } from "@/lib/menu-campaigns";
+import { getPublicCampaign } from "@/lib/management";
 
-export default function MealOfTheDayPage() {
-  return <CampaignPage campaign={campaigns["meal-of-the-day"]} />;
+export const dynamic = "force-dynamic";
+
+export default async function MealOfTheDayPage() {
+  const campaign = await getPublicCampaign("meal-of-the-day");
+
+  return <CampaignPage campaign={campaign} />;
 }
-
