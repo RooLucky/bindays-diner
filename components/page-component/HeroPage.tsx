@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 export function HeroPage() {
   return (
     <section className="overflow-hidden bg-background text-foreground">
-      <div className="mx-auto grid min-h-[calc(100dvh-84px)] w-full max-w-[98dvw] items-center gap-8 px-4 pb-12 pt-6 md:max-w-[95dvw] md:pb-14 lg:grid-cols-[0.84fr_1.16fr] lg:pb-8 lg:pt-10 xl:max-w-[85dvw] xl:min-h-[590px] xl:px-0">
+      <div className="mx-auto grid min-h-[calc(100dvh-84px)] w-full max-w-[98dvw] items-center gap-8 px-4 md:max-w-[95dvw] lg:grid-cols-[0.84fr_1.16fr] xl:max-w-[85dvw] xl:min-h-dvh xl:px-0">
         <div className="relative z-10 mx-auto max-w-[560px] text-center sm:text-left lg:mx-0">
           <p className="font-serif text-2xl italic text-brand-script sm:text-3xl">
             Benvenuto!
@@ -45,12 +45,12 @@ export function HeroPage() {
           <div className="absolute bottom-12 left-36 hidden h-56 w-32 rotate-[-28deg] rounded-sm bg-brand-highlight/55 lg:block" />
 
           <Image
-            src="/images/hero-pasta.png"
+            src="/images/friedrice.png"
             alt="A plate of fresh Italian pasta with basil and tomatoes"
-            width={876}
-            height={487}
+            width={360}
+            height={360}
             priority
-            className="relative z-10 w-full max-w-[620px] object-contain drop-shadow-[var(--shadow-hero-image)] lg:max-w-[820px]"
+            className="relative animate-[spin_245s_linear_infinite] z-10 w-full max-w-[520px] object-contain drop-shadow-[var(--shadow-hero-image)] lg:max-w-[560px]"
           />
         </div>
       </div>

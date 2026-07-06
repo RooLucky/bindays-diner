@@ -8,6 +8,10 @@ const serverEnvSchema = z.object({
   R2_BUCKET_NAME: z.string().min(1, "R2_BUCKET_NAME is required"),
   R2_ENDPOINT: z.string().url().optional(),
   S3_ENDPOINT: z.string().url().optional(),
+  LOYALTY_STAMP_PIN: z.string().min(4).optional(),
+  ADMIN_EMAIL: z.string().email().optional(),
+  ADMIN_PASSWORD: z.string().min(8).optional(),
+  ADMIN_NAME: z.string().min(1).optional(),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema> & {
