@@ -279,16 +279,16 @@ export function ChatbotWidget() {
             <header className="flex shrink-0 items-center justify-between gap-3 bg-secondary px-4 py-3 text-secondary-foreground">
               <div className="flex min-w-0 items-center gap-3">
                 <span className="grid size-9 shrink-0 place-items-center rounded-full bg-secondary-foreground/15">
-                  <Bot className="size-5" />
+                  <Bot className="size-5 text-chart-1" />
                 </span>
-                <div className="min-w-0">
+                <div className="min-w-0 text-chart-1">
                   <p className="truncate font-serif text-lg">Ask Bindays</p>
                   <p className="truncate text-[11px] font-semibold uppercase opacity-80">
                     Approved answers only
                   </p>
                 </div>
               </div>
-              <div className="flex shrink-0 gap-1">
+              <div className="flex shrink-0 gap-1 ">
                 <button
                   type="button"
                   onClick={clearConversation}
@@ -296,7 +296,7 @@ export function ChatbotWidget() {
                   title="Clear conversation"
                   aria-label="Clear conversation"
                 >
-                  <RotateCcw className="size-4" />
+                  <RotateCcw className="size-4 text-chart-1" />
                 </button>
                 <button
                   type="button"
@@ -305,7 +305,7 @@ export function ChatbotWidget() {
                   title="Close chatbot"
                   aria-label="Close chatbot"
                 >
-                  <X className="size-4" />
+                  <X className="size-4 text-chart-1" />
                 </button>
               </div>
             </header>
@@ -322,7 +322,7 @@ export function ChatbotWidget() {
                   animate={{ opacity: 1, y: 0 }}
                   className={
                     item.role === "user"
-                      ? "ml-auto max-w-[84%] rounded-lg bg-secondary px-3 py-2.5 text-sm leading-6 text-secondary-foreground"
+                      ? "ml-auto max-w-[84%] text-chart-1 rounded-lg bg-secondary px-3 py-2.5 text-sm leading-6"
                       : "mr-auto max-w-[88%] rounded-lg border border-border bg-card px-3 py-2.5 text-sm leading-6 text-card-foreground shadow-[var(--shadow-card)]"
                   }
                 >
@@ -422,9 +422,9 @@ export function ChatbotWidget() {
               className="grid place-items-center"
             >
               {open ? (
-                <X className="size-5" />
+                <X className="size-5 text-chart-1" />
               ) : (
-                <MessageCircle className="size-5" />
+                <MessageCircle className="size-5 text-chart-1" />
               )}
             </motion.span>
           </AnimatePresence>

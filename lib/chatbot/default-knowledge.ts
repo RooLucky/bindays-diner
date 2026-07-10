@@ -1,9 +1,9 @@
 export const DEFAULT_CHATBOT_KNOWLEDGE = [
   {
-    question: "How do I reserve a table?",
+    question: "How do I reserve meals for dine-in?",
     answer:
-      "Open the Reservations page, choose Dine In, then enter your date, time, number of guests, contact details, and any food or table notes.",
-    keywords: "book booking reservation dine in table guests persons schedule",
+      "Add dishes to your cart, select Reserve These Items, then choose Dine In. Enter your visit schedule, party size, contact details, and any food or table notes.",
+    keywords: "food meal order reservation dine in table guests persons schedule cart",
     category: "Reservations",
     isFeatured: true,
   },

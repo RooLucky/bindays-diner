@@ -1,10 +1,5 @@
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-
-import { buttonVariants } from "@/components/ui/button";
 import { menuDishes, type Dish } from "@/lib/menu-campaigns";
 import { isAblyRealtimeEnabled } from "@/lib/realtime";
-import { cn } from "@/lib/utils";
 
 import { MenuCard } from "./MenuCard";
 import { Reveal, StaggerContainer, StaggerItem } from "./MotionEffects";
@@ -31,16 +26,6 @@ export function MenuPage({ dishes = menuDishes }: { dishes?: Dish[] }) {
               A selection of our most loved dishes, crafted to bring you an
               unforgettable taste of Italy.
             </p>
-            <Link
-              href="/reservations"
-              className={cn(
-                buttonVariants({ variant: "link" }),
-                "mt-8 h-auto rounded-none p-0 text-sm font-bold uppercase tracking-[0.08em] text-primary underline decoration-primary/30 underline-offset-8 hover:text-primary/80",
-              )}
-            >
-              Reserve Favorites
-              <ArrowRight className="size-4" />
-            </Link>
           </div>
         </Reveal>
 

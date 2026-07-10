@@ -102,16 +102,6 @@ export function Header() {
       </nav>
 
       <div className="flex items-center gap-3">
-        <Link
-          href="/reservations"
-          className={cn(
-            buttonVariants(),
-            "hidden h-11 rounded-sm px-6 text-xs uppercase tracking-[0.08em] shadow-[var(--shadow-header-button)] xl:inline-flex",
-          )}
-        >
-          Book a Table
-        </Link>
-
         <Drawer open={cartOpen} onOpenChange={setCartOpen} swipeDirection="down">
           <DrawerTrigger
             className="relative inline-flex size-11 items-center justify-center rounded-sm border border-border bg-card text-foreground shadow-[var(--shadow-soft-icon)]"
@@ -239,7 +229,7 @@ export function Header() {
                                     How will you receive it?
                                   </AlertDialogTitle>
                                   <AlertDialogDescription className="mt-2 text-sm leading-6 text-muted-foreground">
-                                    Choose dine-in for table reservation or delivery for home order details.
+                                    Choose dine-in or delivery for the meals in your cart.
                                   </AlertDialogDescription>
                                 </div>
                                 <AlertDialogClose
@@ -266,7 +256,7 @@ export function Header() {
                                     Dine In
                                   </span>
                                   <span className="mt-2 block text-sm leading-6 text-muted-foreground">
-                                    Reserve a table and prepare these items for your visit.
+                                    Reserve these meals and a table for your visit.
                                   </span>
                                 </Link>
                                 <Link
@@ -362,16 +352,6 @@ export function Header() {
                   ))}
                 </nav>
 
-                <Link
-                  href="/reservations"
-                  onClick={() => setMenuOpen(false)}
-                  className={cn(
-                    buttonVariants(),
-                    "mt-6 h-12 w-full rounded-sm text-xs font-semibold uppercase tracking-[0.08em] shadow-[var(--shadow-header-button)]",
-                  )}
-                >
-                  Book a Table
-                </Link>
               </DrawerPopup>
             </DrawerViewport>
           </DrawerPortal>

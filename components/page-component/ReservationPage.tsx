@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, Mail, MapPin, Phone, Users } from "lucide-react";
+import { CalendarDays, Mail, MapPin, Phone, ShoppingCart, Users } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import { cn } from "@/lib/utils";
 
@@ -55,6 +56,37 @@ export function ReservationPage() {
     }
   }, [cartSummary, notesEdited]);
 
+  if (items.length === 0) {
+    return (
+      <section className="bg-background px-4 py-16 sm:py-24">
+        <div className="mx-auto flex min-h-[55dvh] max-w-2xl flex-col items-center justify-center rounded-sm border border-border bg-card px-6 py-12 text-center shadow-[var(--shadow-card)]">
+          <span className="grid size-16 place-items-center rounded-full bg-brand-gold-soft text-secondary">
+            <ShoppingCart className="size-7" />
+          </span>
+          <p className="mt-6 text-sm font-bold uppercase tracking-[0.08em] text-primary">
+            Food selection required
+          </p>
+          <h1 className="mt-3 font-serif text-4xl text-foreground sm:text-5xl">
+            Add meals before reserving
+          </h1>
+          <p className="mt-4 max-w-lg text-sm leading-7 text-muted-foreground sm:text-base">
+            Dine-in and delivery requests are created from your cart. Choose the
+            food you want first, then continue from the cart.
+          </p>
+          <Link
+            href="/menu"
+            className={cn(
+              buttonVariants(),
+              "mt-7 h-12 rounded-sm px-7 text-xs font-semibold uppercase tracking-[0.08em]",
+            )}
+          >
+            Browse the Menu
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="bg-background py-8 sm:py-10 lg:py-16">
       <div className="mx-auto grid max-w-[98dvw] gap-8 px-3 sm:px-4 md:max-w-[95dvw] md:gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:items-start xl:max-w-[85dvw] xl:px-0">
@@ -63,17 +95,17 @@ export function ReservationPage() {
             <p className="font-serif text-xl italic text-brand-script sm:text-2xl md:text-3xl">
               {fulfillmentMode === "delivery"
                 ? "Deliver To Your Home"
-                : "Reserve Your Table"}
+                : "Dine In With Your Order"}
             </p>
             <h1 className="mt-3 font-serif text-[clamp(2.55rem,12vw,4rem)] leading-[0.98] text-foreground md:text-[clamp(3.6rem,8vw,5rem)] lg:text-[clamp(4rem,5.6vw,5.6rem)]">
               {fulfillmentMode === "delivery"
                 ? "Get Your Favorites Delivered Fresh"
-                : "Book a Table for a Great Dining Experience"}
+                : "Reserve Your Meals and Table"}
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8 lg:mx-0 lg:max-w-md">
               {fulfillmentMode === "delivery"
                 ? "Send your delivery details and selected meals so our team can confirm your order and schedule."
-                : "Whether it is a family gathering, student celebration, or food pickup request, send your preferred details and our team can confirm availability."}
+                : "Confirm your selected meals, visit schedule, and party size so our team can prepare your food and table together."}
             </p>
           </Reveal>
 
@@ -113,7 +145,7 @@ export function ReservationPage() {
           <h2 className="font-serif text-2xl text-foreground sm:text-3xl">
             {fulfillmentMode === "delivery"
               ? "Delivery Details"
-              : "Make a Reservation"}
+              : "Dine-In Meal Reservation"}
           </h2>
           <div className="mt-4 grid grid-cols-2 gap-1 rounded-sm border border-border bg-background p-1 sm:gap-2">
             <button
@@ -282,7 +314,7 @@ export function ReservationPage() {
           <Button className="mt-6 min-h-12 w-full whitespace-normal rounded-sm px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em]">
             {fulfillmentMode === "delivery"
               ? "Send Delivery Request"
-              : "Send Reservation Request"}
+              : "Send Dine-In Request"}
           </Button>
         </form>
         </Reveal>

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Campaign } from "@/lib/menu-campaigns";
 import { isAblyRealtimeEnabled } from "@/lib/realtime";
@@ -13,6 +13,10 @@ import { PublicMenuRealtimeRefresh } from "./PublicMenuRealtimeRefresh";
 
 export function CampaignPage({ campaign }: { campaign: Campaign }) {
   const realtimeEnabled = isAblyRealtimeEnabled();
+  const primaryHref =
+    campaign.ctaHref === "/reservations" ? "#campaign-dishes" : campaign.ctaHref;
+  const primaryLabel =
+    campaign.ctaHref === "/reservations" ? "Choose Your Meals" : campaign.ctaLabel;
 
   return (
     <div className="bg-background ">
@@ -35,21 +39,24 @@ export function CampaignPage({ campaign }: { campaign: Campaign }) {
           <Reveal delay={0.12}>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start">
               <Link
-                href={campaign.ctaHref}
+                href={primaryHref}
                 className={cn(
                   buttonVariants(),
                   "h-12 w-full rounded-sm px-8 text-xs font-semibold uppercase tracking-[0.08em] shadow-[var(--shadow-primary-button)] sm:w-auto",
                 )}
               >
-                {campaign.ctaLabel}
+                {primaryLabel}
                 <ArrowRight className="size-4" />
               </Link>
-              <Button
-                variant="outline"
-                className="h-12 w-full rounded-sm border-border bg-transparent px-7 text-xs font-semibold uppercase tracking-[0.08em] text-foreground hover:bg-muted sm:w-auto"
+              <Link
+                href="#campaign-dishes"
+                className={cn(
+                  buttonVariants({ variant: "outline" }),
+                  "h-12 w-full rounded-sm border-border bg-transparent px-7 text-xs font-semibold uppercase tracking-[0.08em] text-foreground hover:bg-muted sm:w-auto",
+                )}
               >
                 View Offers
-              </Button>
+              </Link>
             </div>
           </Reveal>
         </div>
@@ -75,7 +82,10 @@ export function CampaignPage({ campaign }: { campaign: Campaign }) {
         </div>
       </section>
 
-      <section className="mx-auto max-w-[98dvw] px-4 py-8 md:max-w-[95dvw] xl:max-w-[85dvw] xl:px-0">
+      <section
+        id="campaign-dishes"
+        className="mx-auto max-w-[98dvw] scroll-mt-28 px-4 py-8 md:max-w-[95dvw] xl:max-w-[85dvw] xl:px-0"
+      >
         <StaggerContainer className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
           {campaign.dishes.map((dish) => (
             <StaggerItem key={dish.name}>
@@ -97,18 +107,18 @@ export function CampaignPage({ campaign }: { campaign: Campaign }) {
                 Make it easy
               </p>
               <h2 className="mt-2 font-serif text-3xl text-foreground">
-                Reserve ahead or join the loyalty list.
+                Add your favorites, then choose dine-in or delivery.
               </h2>
             </div>
             <div className="flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row lg:justify-start">
               <Link
-                href="/reservations"
+                href="#campaign-dishes"
                 className={cn(
                   buttonVariants(),
                   "h-11 rounded-sm px-6 text-xs font-semibold uppercase tracking-[0.08em]",
                 )}
               >
-                Book a Table
+                Choose Meals
               </Link>
               <Link
                 href="/loyalty"
