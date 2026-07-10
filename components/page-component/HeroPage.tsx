@@ -57,12 +57,9 @@ export function HeroPage() {
           <div className="absolute bottom-12 left-36 hidden h-56 w-32 rotate-[-28deg] rounded-sm bg-brand-highlight/55 lg:block" />
 
           <ParallaxLayer distance={72}>
-            <Image
+            <img
               src="/images/friedrice.png"
               alt="A plate of fresh Italian pasta with basil and tomatoes"
-              width={360}
-              height={360}
-              priority
               className="relative animate-[spin_245s_linear_infinite] z-10 w-full max-w-[520px] object-contain drop-shadow-[var(--shadow-hero-image)] lg:max-w-[560px]"
             />
           </ParallaxLayer>

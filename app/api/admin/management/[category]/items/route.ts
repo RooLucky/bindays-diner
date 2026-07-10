@@ -8,6 +8,7 @@ import {
   requireManagementCategorySlug,
   toManagementItemResponse,
 } from "@/lib/management";
+import { notifyPublicMenuContentUpdated } from "@/lib/realtime";
 import {
   getOptionalBoolean,
   getOptionalInteger,
@@ -71,6 +72,8 @@ export async function POST(
         isActive: getOptionalBoolean(formData, "isActive") ?? true,
       })
       .returning();
+
+    await notifyPublicMenuContentUpdated(categorySlug);
 
     return Response.json({ item: toManagementItemResponse(item) }, { status: 201 });
   } catch (error) {

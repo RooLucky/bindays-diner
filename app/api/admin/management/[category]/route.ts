@@ -9,6 +9,7 @@ import {
   requireManagementCategorySlug,
   toManagementCategoryResponse,
 } from "@/lib/management";
+import { notifyPublicMenuContentUpdated } from "@/lib/realtime";
 import {
   getRequiredString,
   getSingleImageFile,
@@ -108,6 +109,8 @@ export async function PATCH(
         set: values,
       })
       .returning();
+
+    await notifyPublicMenuContentUpdated(slug);
 
     return Response.json({ category: toManagementCategoryResponse(category) });
   } catch (error) {

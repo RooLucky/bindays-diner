@@ -7,6 +7,7 @@ import {
   requireManagementCategorySlug,
   toManagementItemResponse,
 } from "@/lib/management";
+import { notifyPublicMenuContentUpdated } from "@/lib/realtime";
 import { deleteR2Object } from "@/lib/r2";
 import {
   getOptionalBoolean,
@@ -84,6 +85,8 @@ export async function PATCH(
       .where(and(eq(managementItems.categorySlug, categorySlug), eq(managementItems.id, id)))
       .returning();
 
+    await notifyPublicMenuContentUpdated(categorySlug);
+
     return Response.json({ item: toManagementItemResponse(item) });
   } catch (error) {
     return Response.json(
@@ -115,6 +118,8 @@ export async function DELETE(
     await getDb()
       .delete(managementItems)
       .where(and(eq(managementItems.categorySlug, categorySlug), eq(managementItems.id, id)));
+
+    await notifyPublicMenuContentUpdated(categorySlug);
 
     return Response.json({ ok: true });
   } catch (error) {

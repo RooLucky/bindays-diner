@@ -4,14 +4,21 @@ import { ArrowRight } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Campaign } from "@/lib/menu-campaigns";
+import { isAblyRealtimeEnabled } from "@/lib/realtime";
 
 import { CampaignFeatureStrip } from "./CampaignFeatureStrip";
 import { MenuCard } from "./MenuCard";
 import { ParallaxLayer, Reveal, StaggerContainer, StaggerItem } from "./MotionEffects";
+import { PublicMenuRealtimeRefresh } from "./PublicMenuRealtimeRefresh";
 
 export function CampaignPage({ campaign }: { campaign: Campaign }) {
+  const realtimeEnabled = isAblyRealtimeEnabled();
+
   return (
     <div className="bg-background ">
+      {realtimeEnabled ? (
+        <PublicMenuRealtimeRefresh categories={[campaign.slug]} />
+      ) : null}
       <section className="mx-auto grid max-w-[98dvw] min-h-dvh gap-10 px-4 md:max-w-[95dvw] lg:grid-cols-[0.78fr_1.22fr] lg:items-center xl:max-w-[75dvw] xl:px-0">
         <div className="mx-auto max-w-xl text-center lg:mx-0 lg:text-left">
           <Reveal>

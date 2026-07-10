@@ -113,7 +113,10 @@ export function ChatbotWidget() {
       return;
     }
 
-    window.sessionStorage.setItem(MESSAGE_STORAGE_KEY, JSON.stringify(messages));
+    window.sessionStorage.setItem(
+      MESSAGE_STORAGE_KEY,
+      JSON.stringify(messages),
+    );
   }, [hydrated, messages]);
 
   useEffect(() => {
@@ -201,7 +204,9 @@ export function ChatbotWidget() {
           setRemaining(0);
         }
 
-        throw new Error(data.error ?? "The chatbot could not answer right now.");
+        throw new Error(
+          data.error ?? "The chatbot could not answer right now.",
+        );
       }
 
       setMessages((current) => [
@@ -271,9 +276,9 @@ export function ChatbotWidget() {
             transition={{ type: "spring", stiffness: 330, damping: 28 }}
             className="fixed inset-x-3 bottom-20 flex h-[min(72dvh,39rem)] flex-col overflow-hidden rounded-lg border border-border bg-background shadow-[var(--shadow-hero-image)] sm:inset-x-auto sm:bottom-24 sm:right-6 sm:w-[25rem]"
           >
-            <header className="flex shrink-0 items-center justify-between gap-3 bg-primary px-4 py-3 text-primary-foreground">
+            <header className="flex shrink-0 items-center justify-between gap-3 bg-secondary px-4 py-3 text-secondary-foreground">
               <div className="flex min-w-0 items-center gap-3">
-                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary-foreground/15">
+                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-secondary-foreground/15">
                   <Bot className="size-5" />
                 </span>
                 <div className="min-w-0">
@@ -287,7 +292,7 @@ export function ChatbotWidget() {
                 <button
                   type="button"
                   onClick={clearConversation}
-                  className="grid size-8 place-items-center rounded-full transition hover:bg-primary-foreground/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/70"
+                  className="grid size-8 place-items-center rounded-full transition hover:bg-secondary-foreground/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary-foreground/70"
                   title="Clear conversation"
                   aria-label="Clear conversation"
                 >
@@ -296,7 +301,7 @@ export function ChatbotWidget() {
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="grid size-8 place-items-center rounded-full transition hover:bg-primary-foreground/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/70"
+                  className="grid size-8 place-items-center rounded-full transition hover:bg-secondary-foreground/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary-foreground/70"
                   title="Close chatbot"
                   aria-label="Close chatbot"
                 >
@@ -317,7 +322,7 @@ export function ChatbotWidget() {
                   animate={{ opacity: 1, y: 0 }}
                   className={
                     item.role === "user"
-                      ? "ml-auto max-w-[84%] rounded-lg bg-primary px-3 py-2.5 text-sm leading-6 text-primary-foreground"
+                      ? "ml-auto max-w-[84%] rounded-lg bg-secondary px-3 py-2.5 text-sm leading-6 text-secondary-foreground"
                       : "mr-auto max-w-[88%] rounded-lg border border-border bg-card px-3 py-2.5 text-sm leading-6 text-card-foreground shadow-[var(--shadow-card)]"
                   }
                 >
@@ -338,7 +343,7 @@ export function ChatbotWidget() {
                         type="button"
                         onClick={() => void sendMessage(suggestion.question)}
                         disabled={pending || outOfMessages}
-                        className="rounded-lg border border-border bg-background px-3 py-2 text-left text-xs font-medium leading-5 text-foreground transition hover:border-primary/50 hover:bg-primary/5 disabled:pointer-events-none disabled:opacity-50"
+                        className="rounded-lg border border-border bg-background px-3 py-2 text-left text-xs font-medium leading-5 text-foreground transition hover:border-secondary/50 hover:bg-secondary/5 disabled:pointer-events-none disabled:opacity-50"
                       >
                         {suggestion.question}
                       </button>
@@ -349,13 +354,16 @@ export function ChatbotWidget() {
 
               {pending ? (
                 <div className="mr-auto flex max-w-[88%] items-center gap-2 rounded-lg border border-border bg-card px-3 py-2.5 text-sm text-muted-foreground">
-                  <RefreshCw className="size-4 animate-spin text-primary" />
+                  <RefreshCw className="size-4 animate-spin text-secondary" />
                   Checking approved answers...
                 </div>
               ) : null}
             </div>
 
-            <form className="shrink-0 border-t border-border bg-card p-3" onSubmit={submitMessage}>
+            <form
+              className="shrink-0 border-t border-border bg-card p-3"
+              onSubmit={submitMessage}
+            >
               <div className="flex items-end gap-2">
                 <textarea
                   ref={inputRef}
@@ -365,15 +373,19 @@ export function ChatbotWidget() {
                   onChange={(event) => setMessage(event.target.value)}
                   onKeyDown={handleInputKeyDown}
                   disabled={pending || outOfMessages}
-                  placeholder={outOfMessages ? "Chat limit reached" : "Ask a question"}
+                  placeholder={
+                    outOfMessages ? "Chat limit reached" : "Ask a question"
+                  }
                   aria-label="Chatbot question"
-                  className="max-h-24 min-h-10 flex-1 resize-none rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:opacity-60"
+                  className="max-h-24 min-h-10 flex-1 resize-none rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-secondary focus:ring-2 focus:ring-secondary/15 disabled:opacity-60"
                 />
                 <Button
                   type="submit"
                   size="icon-lg"
-                  className="rounded-lg"
-                  disabled={!message.trim() || pending || outOfMessages || !sessionId}
+                  className="rounded-lg text-background bg-secondary"
+                  disabled={
+                    !message.trim() || pending || outOfMessages || !sessionId
+                  }
                   title="Send question"
                   aria-label="Send question"
                 >
@@ -381,7 +393,9 @@ export function ChatbotWidget() {
                 </Button>
               </div>
               <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
-                <span>{message.length}/{CHATBOT_MESSAGE_MAX_LENGTH}</span>
+                <span>
+                  {message.length}/{CHATBOT_MESSAGE_MAX_LENGTH}
+                </span>
                 <span>{remaining} questions remaining</span>
               </div>
             </form>
@@ -393,7 +407,7 @@ export function ChatbotWidget() {
         <Button
           type="button"
           size="icon-lg"
-          className="size-14 rounded-full border border-primary-foreground/20 shadow-[var(--shadow-primary-button)]"
+          className="size-14 rounded-full border border-secondary-foreground/20 bg-secondary text-secondary-foreground shadow-[var(--shadow-secondary-button)] hover:bg-secondary/80"
           onClick={() => setOpen((current) => !current)}
           aria-expanded={open}
           aria-label={open ? "Close chatbot" : "Open chatbot"}
@@ -407,7 +421,11 @@ export function ChatbotWidget() {
               exit={{ opacity: 0, rotate: 30, scale: 0.7 }}
               className="grid place-items-center"
             >
-              {open ? <X className="size-5" /> : <MessageCircle className="size-5" />}
+              {open ? (
+                <X className="size-5" />
+              ) : (
+                <MessageCircle className="size-5" />
+              )}
             </motion.span>
           </AnimatePresence>
         </Button>

@@ -3,14 +3,21 @@ import { ArrowRight } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
 import { menuDishes, type Dish } from "@/lib/menu-campaigns";
+import { isAblyRealtimeEnabled } from "@/lib/realtime";
 import { cn } from "@/lib/utils";
 
 import { MenuCard } from "./MenuCard";
 import { Reveal, StaggerContainer, StaggerItem } from "./MotionEffects";
+import { PublicMenuRealtimeRefresh } from "./PublicMenuRealtimeRefresh";
 
 export function MenuPage({ dishes = menuDishes }: { dishes?: Dish[] }) {
+  const realtimeEnabled = isAblyRealtimeEnabled();
+
   return (
     <section className="bg-background py-16 lg:py-20">
+      {realtimeEnabled ? (
+        <PublicMenuRealtimeRefresh categories={["main-dish"]} />
+      ) : null}
       <div className="mx-auto grid max-w-[98dvw] gap-10 px-4 md:max-w-[95dvw] xl:max-w-[85dvw] xl:grid-cols-[0.82fr_2fr] xl:px-0">
         <Reveal className="mx-auto max-w-md text-center xl:mx-0 xl:text-left">
           <div>
