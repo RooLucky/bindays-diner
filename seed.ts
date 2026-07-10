@@ -3,10 +3,12 @@ import "dotenv/config";
 import { randomBytes } from "node:crypto";
 
 import { LOYALTY_STAMP_PIN_KEY } from "@/lib/admin-settings";
+import { DEFAULT_CHATBOT_KNOWLEDGE } from "@/lib/chatbot/default-knowledge";
 import { getDb } from "@/lib/db";
 import {
   adminAccounts,
   adminSettings,
+  chatbotKnowledgeEntries,
   managementCategories,
   managementItems,
 } from "@/lib/db/schema";
@@ -165,6 +167,18 @@ async function seed() {
   }
 
   console.log("Seeded management categories and items.");
+
+  await getDb()
+    .insert(chatbotKnowledgeEntries)
+    .values(
+      DEFAULT_CHATBOT_KNOWLEDGE.map((entry) => ({
+        ...entry,
+        isActive: true,
+      })),
+    )
+    .onConflictDoNothing({ target: chatbotKnowledgeEntries.question });
+
+  console.log("Seeded chatbot knowledge entries.");
 }
 
 seed().catch((error) => {

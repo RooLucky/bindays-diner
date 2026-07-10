@@ -1,5 +1,6 @@
 import {
   boolean,
+  index,
   integer,
   pgEnum,
   pgTable,
@@ -163,4 +164,32 @@ export const loyaltyRedemptions = pgTable("loyalty_redemptions", {
   source: loyaltyRedemptionSource("source").default("admin").notNull(),
   note: text("note"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const chatbotKnowledgeEntries = pgTable(
+  "chatbot_knowledge_entries",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    question: varchar("question", { length: 240 }).notNull(),
+    answer: text("answer").notNull(),
+    keywords: text("keywords").default("").notNull(),
+    category: varchar("category", { length: 80 }).default("General").notNull(),
+    isActive: boolean("is_active").default(true).notNull(),
+    isFeatured: boolean("is_featured").default(false).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("chatbot_knowledge_question_idx").on(table.question),
+    index("chatbot_knowledge_active_idx").on(table.isActive),
+  ],
+);
+
+export const chatbotRateLimits = pgTable("chatbot_rate_limits", {
+  keyHash: varchar("key_hash", { length: 64 }).primaryKey(),
+  requestCount: integer("request_count").default(0).notNull(),
+  windowStartedAt: timestamp("window_started_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });

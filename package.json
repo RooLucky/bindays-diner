@@ -11,6 +11,7 @@
     "db:push": "drizzle-kit push",
     "db:reset": "tsx scripts/reset-db.ts",
     "db:seed": "tsx seed.ts",
+    "db:seed-chatbot": "tsx scripts/seed-chatbot.ts",
     "db:fresh": "tsx scripts/reset-db.ts && drizzle-kit push --force && pnpm db:generate && pnpm db:seed",
     "db:studio": "drizzle-kit studio"
   },
@@ -26,6 +27,7 @@
     "lucide-react": "^1.23.0",
     "motion": "^12.42.2",
     "next": "16.2.10",
+    "openai": "^6.46.0",
     "qr-code-styling": "1.7.1",
     "react": "19.2.4",
     "react-day-picker": "^10.0.1",

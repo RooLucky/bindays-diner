@@ -59,3 +59,15 @@ export function getDb() {
 - Use the AWS SDK v3 S3-compatible client for R2.
 - Keep R2 client setup in `lib/r2/index.ts`.
 - Access R2 only from server code, route handlers, or server utilities.
+
+### Knowledge-based chatbot
+
+- Keep chatbot provider calls server-only under `app/api/chatbot/**` and `lib/chatbot/**`.
+- Use `OPENAI_API_KEY` with `OPENAI_CHATBOT_MODEL` as the primary provider.
+- Use `OLLAMA_BASE_URL`, `OLLAMA_API_KEY`, and the `OLLAMA_CHATBOT_*` model variables only as sequential fallbacks.
+- `OLLAMA_CHATBOT_MAX_ATTEMPTS` limits how many configured Ollama models may be tried for one question. It defaults to `4` and may be set up to `16`.
+- Never send provider keys, provider errors, or model configuration to client components.
+- Public chatbot answers must come from active rows in `chatbot_knowledge_entries`.
+- Models may select approved knowledge IDs, but model-generated prose must not be returned as restaurant facts.
+- Keep the public request limits in `lib/chatbot-contracts.ts` and durable rate-limit windows in `chatbot_rate_limits`.
+- Set `CHATBOT_RATE_LIMIT_SALT` to a private random value in production when possible. It must never use a `NEXT_PUBLIC_` prefix.

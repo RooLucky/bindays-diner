@@ -4,6 +4,7 @@ import { AdminLogoutButton } from "@/components/page-component/AdminLogoutButton
 import { requireAdminSession } from "@/lib/admin-auth";
 
 const navItems = [
+  { label: "Chatbot Knowledge", href: "/management/chatbot-knowledge" },
   { label: "Meal of the Day", href: "/management/meal-of-the-day" },
   { label: "Best Seller", href: "/management/best-seller" },
   { label: "Promo", href: "/management/promo" },
