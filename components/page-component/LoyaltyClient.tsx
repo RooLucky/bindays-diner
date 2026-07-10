@@ -5,6 +5,7 @@ import { HeartHandshake } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 import type { LoyaltyCardResponse } from "@/lib/loyalty-contracts";
 
 import { LoyaltyQrCode } from "./LoyaltyQrCode";
@@ -24,6 +25,9 @@ const emptyForm = {
   phone: "",
 };
 
+const birthdayStartMonth = new Date(1920, 0);
+const birthdayEndMonth = new Date();
+
 export function LoyaltyClient() {
   const [mode, setMode] = useState<Mode>("join");
   const [form, setForm] = useState(emptyForm);
@@ -32,6 +36,12 @@ export function LoyaltyClient() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (!form.fullName.trim() || !form.birthday) {
+      toast.error("Name and birthday are required.");
+      return;
+    }
+
     setIsSubmitting(true);
     const toastId = toast.loading(
       mode === "join" ? "Creating loyalty card..." : "Searching loyalty account...",
@@ -162,12 +172,16 @@ export function LoyaltyClient() {
           </label>
           <label className="grid gap-2 text-sm font-medium text-foreground">
             Birthday
-            <input
-              required
-              type="date"
+            <DatePicker
               value={form.birthday}
-              onChange={(event) => setForm((value) => ({ ...value, birthday: event.target.value }))}
-              className="h-11 rounded-sm border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
+              onChange={(birthday) =>
+                setForm((value) => ({ ...value, birthday }))
+              }
+              placeholder="Select birthday"
+              captionLayout="dropdown"
+              startMonth={birthdayStartMonth}
+              endMonth={birthdayEndMonth}
+              disabledDates={{ after: birthdayEndMonth }}
             />
           </label>
           <label className="grid gap-2 text-sm font-medium text-foreground">

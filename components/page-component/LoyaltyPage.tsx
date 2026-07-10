@@ -1,6 +1,7 @@
 import { Gift, TicketPercent, Trophy } from "lucide-react";
 
 import { LoyaltyClient } from "./LoyaltyClient";
+import { Reveal, StaggerContainer, StaggerItem } from "./MotionEffects";
 
 const loyaltyPerks = [
   {
@@ -24,32 +25,39 @@ export function LoyaltyPage() {
   return (
     <section className="bg-background py-12 lg:py-20">
       <div className="mx-auto grid max-w-[98dvw] gap-10 px-4 md:max-w-[95dvw] lg:grid-cols-[0.82fr_1.18fr] lg:items-center xl:max-w-[85dvw] xl:px-0">
-        <div>
-          <p className="font-serif text-2xl italic text-brand-script sm:text-3xl">
-            Join Our Family
-          </p>
-          <h1 className="mt-4 font-serif text-[clamp(3rem,10vw,5.6rem)] leading-[0.98] text-foreground">
-            Loyalty Card Eat More, Earn More
-          </h1>
-          <p className="mt-6 max-w-md text-base leading-8 text-muted-foreground">
-            Save customer names and birthdays so the diner can send birthday
-            rewards, promo updates, and future member perks.
-          </p>
-        </div>
+        <Reveal className="mx-auto max-w-2xl text-center lg:mx-0 lg:text-left">
+          <div>
+            <p className="font-serif text-2xl italic text-brand-script sm:text-3xl">
+              Join Our Family
+            </p>
+            <h1 className="mt-4 font-serif text-[clamp(3rem,10vw,5.6rem)] leading-[0.98] text-foreground">
+              Loyalty Card Eat More, Earn More
+            </h1>
+            <p className="mx-auto mt-6 max-w-md text-base leading-8 text-muted-foreground lg:mx-0">
+              Save customer names and birthdays so the diner can send birthday
+              rewards, promo updates, and future member perks.
+            </p>
+          </div>
+        </Reveal>
 
-        <LoyaltyClient />
+        <Reveal delay={0.12} y={34}>
+          <LoyaltyClient />
+        </Reveal>
       </div>
 
-      <div className="mx-auto mt-12 grid max-w-[98dvw] grid-cols-1 border-y border-border px-4 md:max-w-[95dvw] md:grid-cols-3 xl:max-w-[85dvw] xl:px-0">
+      <StaggerContainer className="mx-auto mt-12 grid max-w-[98dvw] grid-cols-1 border-y border-border px-4 md:max-w-[95dvw] md:grid-cols-3 xl:max-w-[85dvw] xl:px-0">
         {loyaltyPerks.map((perk) => {
           const Icon = perk.icon;
 
           return (
-            <div key={perk.title} className="flex gap-4 py-6 md:px-5">
+            <StaggerItem key={perk.title}>
+            <div
+              className="flex flex-col items-center gap-4 py-6 text-center transition-transform duration-500 hover:-translate-y-1 md:px-5 xl:flex-row xl:text-left"
+            >
               <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-brand-gold-soft text-secondary">
                 <Icon className="size-6" />
               </span>
-              <div>
+              <div className="min-w-0">
                 <h2 className="text-sm font-bold uppercase tracking-[0.08em] text-foreground">
                   {perk.title}
                 </h2>
@@ -58,9 +66,10 @@ export function LoyaltyPage() {
                 </p>
               </div>
             </div>
+            </StaggerItem>
           );
         })}
-      </div>
+      </StaggerContainer>
     </section>
   );
 }

@@ -1,4 +1,7 @@
 import { Header } from "@/components/page-component/Header";
+import { CartProvider } from "@/components/page-component/CartProvider";
+import { WebsiteMotionShell } from "@/components/page-component/WebsiteMotionShell";
+import { WebsiteScrollProgress } from "@/components/page-component/WebsiteScrollProgress";
 
 export default function WebsiteLayout({
   children,
@@ -7,8 +10,11 @@ export default function WebsiteLayout({
 }>) {
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-      <main>{children}</main>
+      <CartProvider>
+        <WebsiteScrollProgress />
+        <Header />
+        <WebsiteMotionShell>{children}</WebsiteMotionShell>
+      </CartProvider>
     </div>
   );
 }

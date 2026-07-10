@@ -14,6 +14,7 @@ import {
   type CampaignFeature,
   type Dish,
 } from "@/lib/menu-campaigns";
+import { getR2PublicUrl } from "@/lib/r2";
 
 export const MANAGEMENT_CATEGORIES = [
   "meal-of-the-day",
@@ -170,7 +171,7 @@ export function toManagementCategoryResponse(
     ctaLabel: category.ctaLabel,
     ctaHref: category.ctaHref,
     heroImageKey: category.heroImageKey,
-    heroImageUrl: category.heroImageUrl,
+    heroImageUrl: resolveImageUrl(category.heroImageKey, category.heroImageUrl),
     heroAlt: category.heroAlt,
     badge: category.badge,
     createdAt: category.createdAt.toISOString(),
@@ -189,13 +190,25 @@ export function toManagementItemResponse(
     price: item.price,
     tag: item.tag,
     imageKey: item.imageKey,
-    imageUrl: item.imageUrl,
+    imageUrl: resolveImageUrl(item.imageKey, item.imageUrl),
     imageAlt: item.imageAlt,
     sortOrder: item.sortOrder,
     isActive: item.isActive,
     createdAt: item.createdAt.toISOString(),
     updatedAt: item.updatedAt.toISOString(),
   };
+}
+
+function resolveImageUrl(key: string | null, storedUrl: string) {
+  if (!key) {
+    return storedUrl;
+  }
+
+  try {
+    return getR2PublicUrl(key);
+  } catch {
+    return storedUrl;
+  }
 }
 
 export async function getManagementPayload(slug: ManagementCategorySlug) {
