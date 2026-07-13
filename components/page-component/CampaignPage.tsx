@@ -8,15 +8,24 @@ import { isAblyRealtimeEnabled } from "@/lib/realtime";
 
 import { CampaignFeatureStrip } from "./CampaignFeatureStrip";
 import { MenuCard } from "./MenuCard";
-import { ParallaxLayer, Reveal, StaggerContainer, StaggerItem } from "./MotionEffects";
+import {
+  ParallaxLayer,
+  Reveal,
+  StaggerContainer,
+  StaggerItem,
+} from "./MotionEffects";
 import { PublicMenuRealtimeRefresh } from "./PublicMenuRealtimeRefresh";
 
 export function CampaignPage({ campaign }: { campaign: Campaign }) {
   const realtimeEnabled = isAblyRealtimeEnabled();
   const primaryHref =
-    campaign.ctaHref === "/reservations" ? "#campaign-dishes" : campaign.ctaHref;
+    campaign.ctaHref === "/reservations"
+      ? "#campaign-dishes"
+      : campaign.ctaHref;
   const primaryLabel =
-    campaign.ctaHref === "/reservations" ? "Choose Your Meals" : campaign.ctaLabel;
+    campaign.ctaHref === "/reservations"
+      ? "Choose Your Meals"
+      : campaign.ctaLabel;
 
   return (
     <div className="bg-background ">
@@ -75,7 +84,7 @@ export function CampaignPage({ campaign }: { campaign: Campaign }) {
               <img
                 src={campaign.heroImage}
                 alt={campaign.heroAlt}
-                className="lg:h-full lg:w-auto"
+                className="h-full w-full bg-cover"
               />
             </ParallaxLayer>
           </div>
