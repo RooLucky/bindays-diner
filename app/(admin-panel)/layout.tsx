@@ -5,6 +5,7 @@ import { requireAdminSession } from "@/lib/admin-auth";
 
 const navItems = [
   { label: "Chatbot Knowledge", href: "/management/chatbot-knowledge" },
+  { label: "Drinks", href: "/management/drinks" },
   { label: "Meal of the Day", href: "/management/meal-of-the-day" },
   { label: "Best Seller", href: "/management/best-seller" },
   { label: "Promo", href: "/management/promo" },
@@ -25,7 +26,7 @@ export default async function AdminPanelLayout({
         <div className="mx-auto flex max-w-[92rem] flex-col gap-4 px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="font-serif text-2xl italic text-brand-script">
-              Bindays Diner
+              Binday's Diner
             </p>
             <p className="text-sm text-muted-foreground">
               Signed in as {user.fullName}

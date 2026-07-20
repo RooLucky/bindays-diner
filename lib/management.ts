@@ -17,6 +17,7 @@ import {
 import { getR2PublicUrl } from "@/lib/r2";
 
 export const MANAGEMENT_CATEGORIES = [
+  "drinks",
   "meal-of-the-day",
   "best-seller",
   "promo",
@@ -92,16 +93,16 @@ export function requireManagementCategorySlug(value: string) {
 }
 
 function staticCampaignForSlug(slug: ManagementCategorySlug) {
+  if (slug === "drinks") {
+    return campaigns.drinks;
+  }
+
   if (slug === "promo") {
     return campaigns.promos;
   }
 
   if (slug === "student-meal") {
     return campaigns["student-meals"];
-  }
-
-  if (slug === "main-dish") {
-    return null;
   }
 
   return campaigns[slug];

@@ -1,0 +1,176 @@
+import "server-only";
+
+import { and, asc, eq } from "drizzle-orm";
+
+import { getDb } from "@/lib/db";
+import {
+  chatbotKnowledgeEntries,
+  managementItems,
+} from "@/lib/db/schema";
+import type { ManagementCategorySlug } from "@/lib/management";
+
+const MENU_KNOWLEDGE_LIMIT = 10;
+
+const menuKnowledgeConfig: Record<
+  ManagementCategorySlug,
+  {
+    question: string;
+    label: string;
+    category: string;
+    keywords: string;
+    queryTerms: string[];
+  }
+> = {
+  drinks: {
+    question: "What drinks are currently available?",
+    label: "drinks",
+    category: "Live Menu - Drinks",
+    keywords: "drink drinks beverage beverages refreshment refreshments coffee tea shake juice cold hot",
+    queryTerms: ["drink", "drinks", "beverage", "coffee", "tea", "shake", "refreshment"],
+  },
+  "best-seller": {
+    question: "What are Binday Diner's current best sellers?",
+    label: "best sellers",
+    category: "Live Menu - Best Seller",
+    keywords: "best seller bestseller popular top selling recommended favorite favorites",
+    queryTerms: ["best seller", "bestseller", "popular", "top selling", "recommended"],
+  },
+  "student-meal": {
+    question: "What student meals are currently available?",
+    label: "student meals",
+    category: "Live Menu - Student Meals",
+    keywords: "student meal student meals budget affordable school college discount",
+    queryTerms: ["student", "budget meal", "affordable meal"],
+  },
+  promo: {
+    question: "What promos are currently available?",
+    label: "promos",
+    category: "Live Menu - Promos",
+    keywords: "promo promos promotion promotions offer offers deal deals discount bundle",
+    queryTerms: ["promo", "promotion", "offer", "deal", "discount", "bundle"],
+  },
+  "meal-of-the-day": {
+    question: "What is the current meal of the day?",
+    label: "meals of the day",
+    category: "Live Menu - Meal of the Day",
+    keywords: "meal of the day daily meal today special today's special featured meal",
+    queryTerms: ["meal of the day", "daily meal", "today special", "today's special"],
+  },
+  "main-dish": {
+    question: "What main dishes are currently available?",
+    label: "main dishes",
+    category: "Live Menu - Main Dishes",
+    keywords: "menu main dish main dishes food available dishes meals pasta pizza dessert",
+    queryTerms: ["menu", "main dish", "food available", "dishes available"],
+  },
+};
+
+const categorySlugs = Object.keys(menuKnowledgeConfig) as ManagementCategorySlug[];
+
+function compact(value: string, maxLength = 180) {
+  const normalized = value.replace(/\s+/g, " ").trim();
+
+  return normalized.length <= maxLength
+    ? normalized
+    : `${normalized.slice(0, maxLength - 3).trimEnd()}...`;
+}
+
+function buildAnswer(
+  label: string,
+  items: Array<{
+    name: string;
+    price: string;
+    tag: string | null;
+  }>,
+) {
+  if (items.length === 0) {
+    return `There are no active ${label} currently listed. Please check the website again later for updates.`;
+  }
+
+  const lines = items.map((item, index) => {
+    const tag = item.tag ? ` [${compact(item.tag, 15)}]` : "";
+
+    return `${index + 1}. ${compact(item.name, 55)} - ${compact(item.price, 15)}${tag}`;
+  });
+
+  return `Current ${label}, based on the active website menu:\n${lines.join("\n")}`;
+}
+
+export async function syncChatbotMenuKnowledgeForCategory(
+  slug: ManagementCategorySlug,
+) {
+  const config = menuKnowledgeConfig[slug];
+  const db = getDb();
+  const items = await db
+    .select({
+      name: managementItems.name,
+      price: managementItems.price,
+      tag: managementItems.tag,
+    })
+    .from(managementItems)
+    .where(
+      and(
+        eq(managementItems.categorySlug, slug),
+        eq(managementItems.isActive, true),
+      ),
+    )
+    .orderBy(asc(managementItems.sortOrder), asc(managementItems.createdAt))
+    .limit(MENU_KNOWLEDGE_LIMIT);
+  const answer = buildAnswer(config.label, items);
+  const itemKeywords = items
+    .flatMap((item) => [item.name, item.tag ?? ""])
+    .join(" ");
+  const keywords = compact(`${config.keywords} ${itemKeywords}`, 600);
+  const now = new Date();
+  const [entry] = await db
+    .insert(chatbotKnowledgeEntries)
+    .values({
+      question: config.question,
+      answer,
+      keywords,
+      category: config.category,
+      isActive: true,
+      isFeatured: false,
+    })
+    .onConflictDoUpdate({
+      target: chatbotKnowledgeEntries.question,
+      set: {
+        answer,
+        keywords,
+        category: config.category,
+        updatedAt: now,
+      },
+    })
+    .returning();
+
+  return entry;
+}
+
+export async function syncAllChatbotMenuKnowledge() {
+  return Promise.all(categorySlugs.map(syncChatbotMenuKnowledgeForCategory));
+}
+
+export async function syncChatbotMenuKnowledgeForQuery(query: string) {
+  const normalized = query.toLowerCase().replace(/\s+/g, " ");
+  const matchingSlugs = categorySlugs.filter((slug) =>
+    menuKnowledgeConfig[slug].queryTerms.some((term) => normalized.includes(term)),
+  );
+
+  if (matchingSlugs.length === 0) {
+    return [];
+  }
+
+  return Promise.all(matchingSlugs.map(syncChatbotMenuKnowledgeForCategory));
+}
+
+export async function trySyncChatbotMenuKnowledgeForCategory(
+  slug: ManagementCategorySlug,
+) {
+  try {
+    await syncChatbotMenuKnowledgeForCategory(slug);
+    return true;
+  } catch (error) {
+    console.warn(`Unable to refresh chatbot menu knowledge for ${slug}.`, error);
+    return false;
+  }
+}

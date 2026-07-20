@@ -4,7 +4,10 @@ import {
   CalendarHeart,
   ChefHat,
   Clock,
+  Coffee,
+  CupSoda,
   Gift,
+  GlassWater,
   Heart,
   Leaf,
   MapPin,
@@ -12,6 +15,7 @@ import {
   PackageCheck,
   Sparkles,
   Star,
+  Snowflake,
   Trophy,
   Users,
   WalletCards,
@@ -98,6 +102,105 @@ export const menuDishes: Dish[] = [
 ];
 
 export const campaigns: Record<string, Campaign> = {
+  "main-dish": {
+    slug: "main-dish",
+    eyebrow: "Our Favorites",
+    title: "Featured Dishes",
+    description:
+      "A selection of our most loved dishes, crafted to bring you an unforgettable taste of Italy.",
+    ctaLabel: "Choose Your Meals",
+    ctaHref: "#menu-dishes",
+    heroImage: images.hero,
+    heroAlt: "Featured pasta dish from the Bindays Diner menu",
+    badge: "House Menu",
+    dishes: menuDishes,
+    features: [
+      {
+        icon: Leaf,
+        title: "Fresh Ingredients",
+        description: "Quality ingredients selected for every plate.",
+      },
+      {
+        icon: ChefHat,
+        title: "Kitchen Crafted",
+        description: "Prepared with care by the Bindays Diner team.",
+      },
+      {
+        icon: Heart,
+        title: "Made for Sharing",
+        description: "Comforting favorites for friends and family.",
+      },
+      {
+        icon: Clock,
+        title: "Cooked to Order",
+        description: "Your dishes are prepared when you order.",
+      },
+    ],
+  },
+  drinks: {
+    slug: "drinks",
+    eyebrow: "Cool and Comforting",
+    title: "Drinks for Every Craving",
+    description:
+      "Refreshing local favorites, tropical coolers, and warm cups made to complete every meal.",
+    ctaLabel: "Choose Your Drinks",
+    ctaHref: "#drinks",
+    heroImage: "/images/drink-calamansi-tea.png",
+    heroAlt: "Calamansi iced tea with fresh citrus and mint",
+    badge: "Starts at P39",
+    dishes: [
+      {
+        name: "Calamansi Iced Tea",
+        description: "Fresh calamansi, brewed tea, mint, and plenty of ice.",
+        price: "P39",
+        image: "/images/drink-calamansi-tea.png",
+        tag: "Cold Drink",
+      },
+      {
+        name: "Sago at Gulaman",
+        description: "A classic local cooler with sago pearls and soft gulaman.",
+        price: "P49",
+        image: "/images/drink-sago-gulaman.png",
+        tag: "Local Favorite",
+      },
+      {
+        name: "Mango Shake",
+        description: "Creamy ripe mango blended smooth and served ice-cold.",
+        price: "P69",
+        image: "/images/drink-mango-shake.png",
+        tag: "Fruit Shake",
+      },
+      {
+        name: "Native Coffee",
+        description: "Freshly brewed local coffee with a rich, comforting finish.",
+        price: "P45",
+        image: "/images/drink-native-coffee.png",
+        tag: "Hot Drink",
+      },
+    ],
+    features: [
+      {
+        icon: CupSoda,
+        title: "Made to Order",
+        description: "Prepared fresh when you place your food order.",
+      },
+      {
+        icon: Snowflake,
+        title: "Served Refreshing",
+        description: "Cold favorites poured and blended for every visit.",
+      },
+      {
+        icon: Coffee,
+        title: "Warm Choices",
+        description: "Comforting hot drinks for slow meals and conversations.",
+      },
+      {
+        icon: GlassWater,
+        title: "Meal Pairings",
+        description: "Easy drink choices to complete any dish or bundle.",
+      },
+    ],
+  },
   "student-meals": {
     slug: "student-meals",
     eyebrow: "Budget Friendly",
@@ -336,4 +439,3 @@ export const campaigns: Record<string, Campaign> = {
 };
 
 export const allCampaigns = Object.values(campaigns);
-

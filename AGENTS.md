@@ -77,4 +77,4 @@ export function getDb() {
 - Use Ably for live public menu and campaign content. Do not host Socket.IO or a custom WebSocket server in Vercel Functions.
 - Keep `ABLY_API_KEY` server-only. Browser clients must receive short-lived, subscribe-only tokens from `app/api/realtime/token/route.ts`.
 - Publish `menu-content.updated` only after successful admin management mutations. The public client only uses the event to call `router.refresh()` and must never access Neon directly.
-- Scope realtime subscriptions to `/home`, `/menu`, and campaign pages. Do not mount them in the shared website layout or use them for cart, loyalty, reservations, or chatbot flows.
+- Scope realtime subscriptions to `/home`, `/menu`, `/drinks`, and campaign pages. Do not mount them in the shared website layout or use them for cart, loyalty, reservations, or chatbot flows.

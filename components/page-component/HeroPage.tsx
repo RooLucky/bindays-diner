@@ -5,6 +5,13 @@ import { Button } from "@/components/ui/button";
 
 import { ParallaxLayer, Reveal } from "./MotionEffects";
 
+const decorativeLeaves = [
+  "-left-[8%] top-[8%] w-[22%] rotate-[-38deg]",
+  "-right-[9%] top-[24%] w-[18%] rotate-[68deg]",
+  "bottom-[4%] -right-[2%] w-[16%] rotate-[142deg]",
+  "bottom-[12%] -left-[5%] w-[13%] rotate-[-112deg]",
+] as const;
+
 export function HeroPage() {
   return (
     <section className="overflow-hidden bg-background text-foreground">
@@ -56,12 +63,42 @@ export function HeroPage() {
           <div className="absolute right-2 top-0 hidden size-28 rounded-full bg-popover/70 shadow-[var(--shadow-hero-orb)] lg:block" />
           <div className="absolute bottom-12 left-36 hidden h-56 w-32 rotate-[-28deg] rounded-sm bg-brand-highlight/55 lg:block" />
 
-          <ParallaxLayer distance={72}>
-            <img
-              src="/images/friedrice.png"
-              alt="A plate of fresh Italian pasta with basil and tomatoes"
-              className="relative animate-[spin_245s_linear_infinite] z-10 w-full max-w-[520px] object-contain drop-shadow-[var(--shadow-hero-image)] lg:max-w-[560px]"
-            />
+          <ParallaxLayer
+            className="w-full max-w-[520px] lg:max-w-[560px]"
+            distance={72}
+          >
+            <div className="relative isolate aspect-square w-full animate-[spin_120s_linear_infinite] motion-reduce:animate-none">
+              {decorativeLeaves.map((className) => (
+                <Image
+                  key={className}
+                  src="/images/decorative-leaf.png"
+                  alt=""
+                  aria-hidden="true"
+                  width={1254}
+                  height={1254}
+                  sizes="(max-width: 1023px) 18vw, 130px"
+                  className={`pointer-events-none absolute z-0 h-auto select-none object-contain rotate-90 ${className}`}
+                />
+              ))}
+              <Image
+                src="/images/decorative-single-leaf.png"
+                alt=""
+                aria-hidden="true"
+                width={1254}
+                height={1254}
+                sizes="(max-width: 1023px) 10vw, 64px"
+                className="pointer-events-none absolute -right-[12%] top-[7%] z-0 h-auto w-[11%] rotate-[52deg] select-none object-contain"
+              />
+              <Image
+                src="/images/friedrice.png"
+                alt="A bowl of chicken biryani rice garnished with herbs and lemon"
+                width={728}
+                height={728}
+                priority
+                sizes="(max-width: 1023px) 92vw, 560px"
+                className="relative z-10 h-auto w-full object-contain drop-shadow-[var(--shadow-hero-image)]"
+              />
+            </div>
           </ParallaxLayer>
         </div>
       </div>

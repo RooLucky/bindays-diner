@@ -3,11 +3,12 @@ import "server-only";
 import { and, desc, eq } from "drizzle-orm";
 
 import type { ChatbotHistoryMessage } from "@/lib/chatbot-contracts";
+import { syncChatbotMenuKnowledgeForQuery } from "@/lib/chatbot/menu-knowledge";
 import { getDb } from "@/lib/db";
 import { chatbotKnowledgeEntries } from "@/lib/db/schema";
 
 export const CHATBOT_NO_KNOWLEDGE_REPLY =
-  "I do not have that information in Bindays Diner's approved knowledge yet. Please ask about the menu, reservations, delivery, promos, or loyalty program, or contact the restaurant directly.";
+  "I do not have that information in Binday Diner's approved knowledge yet. Please ask about the menu, reservations, delivery, promos, or loyalty program, or contact the restaurant directly.";
 
 export type ChatbotKnowledgeEntry =
   typeof chatbotKnowledgeEntries.$inferSelect;
@@ -101,10 +102,6 @@ export async function getRankedChatbotKnowledge(
   history: ChatbotHistoryMessage[],
   limit = 6,
 ) {
-  const entries = await getDb()
-    .select()
-    .from(chatbotKnowledgeEntries)
-    .where(eq(chatbotKnowledgeEntries.isActive, true));
   const currentTokens = tokenize(message);
   const previousUserMessage = [...history]
     .reverse()
@@ -113,6 +110,11 @@ export async function getRankedChatbotKnowledge(
     currentTokens.length <= 1 && previousUserMessage
       ? `${previousUserMessage} ${message}`
       : message;
+  await syncChatbotMenuKnowledgeForQuery(retrievalQuery);
+  const entries = await getDb()
+    .select()
+    .from(chatbotKnowledgeEntries)
+    .where(eq(chatbotKnowledgeEntries.isActive, true));
 
   return entries
     .map((entry) => ({ entry, score: rankEntry(entry, retrievalQuery) }))

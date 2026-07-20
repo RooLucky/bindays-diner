@@ -70,8 +70,8 @@ export function ReservationPage() {
             Add meals before reserving
           </h1>
           <p className="mt-4 max-w-lg text-sm leading-7 text-muted-foreground sm:text-base">
-            Dine-in and delivery requests are created from your cart. Choose the
-            food you want first, then continue from the cart.
+            Dine-in and delivery requests begin with a food order. Choose your
+            meals first, then continue from your order.
           </p>
           <Link
             href="/menu"
@@ -269,7 +269,7 @@ export function ReservationPage() {
               {items.length > 0 ? (
                 <div className="rounded-sm border border-border bg-background p-3 sm:p-4">
                   <p className="text-xs font-bold uppercase tracking-[0.08em] text-primary">
-                    Selected cart items
+                    Selected meals
                   </p>
                   <div className="mt-3 space-y-2">
                     {items.map((item) => (

@@ -44,7 +44,9 @@ export function LoyaltyClient() {
 
     setIsSubmitting(true);
     const toastId = toast.loading(
-      mode === "join" ? "Creating loyalty card..." : "Searching loyalty account...",
+      mode === "join"
+        ? "Creating loyalty card..."
+        : "Searching loyalty account...",
     );
 
     try {
@@ -80,7 +82,8 @@ export function LoyaltyClient() {
       setCard(null);
       toast.error("Loyalty request failed.", {
         id: toastId,
-        description: error instanceof Error ? error.message : "Something went wrong.",
+        description:
+          error instanceof Error ? error.message : "Something went wrong.",
       });
     } finally {
       setIsSubmitting(false);
@@ -93,7 +96,9 @@ export function LoyaltyClient() {
         <button
           type="button"
           className={`h-10 rounded-sm text-xs font-semibold uppercase tracking-[0.08em] transition-colors ${
-            mode === "join" ? "bg-primary text-primary-foreground" : "text-foreground"
+            mode === "join"
+              ? "bg-primary text-primary-foreground"
+              : "text-foreground"
           }`}
           onClick={() => {
             setMode("join");
@@ -105,7 +110,9 @@ export function LoyaltyClient() {
         <button
           type="button"
           className={`h-10 rounded-sm text-xs font-semibold uppercase tracking-[0.08em] transition-colors ${
-            mode === "search" ? "bg-primary text-primary-foreground" : "text-foreground"
+            mode === "search"
+              ? "bg-primary text-primary-foreground"
+              : "text-foreground"
           }`}
           onClick={() => {
             setMode("search");
@@ -119,7 +126,7 @@ export function LoyaltyClient() {
       <div className="mt-6 rounded-sm border border-primary/25 bg-background p-6 text-center">
         <HeartHandshake className="mx-auto size-10 text-secondary" />
         <p className="mt-3 text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-          Bindays Diner
+          Binday's Diner
         </p>
         <h2 className="mt-2 font-serif text-4xl text-primary">Loyalty Card</h2>
         <div className="mt-6 grid grid-cols-5 gap-3">
@@ -146,17 +153,28 @@ export function LoyaltyClient() {
       {card ? (
         <div className="mt-6 grid gap-5">
           <div className="rounded-sm border border-border bg-background p-4 text-sm leading-7">
-            <p className="font-semibold text-foreground">{card.member.fullName}</p>
-            <p className="text-muted-foreground">Birthday: {card.member.birthday}</p>
-            <p className="text-muted-foreground">Member: {card.member.memberCode}</p>
+            <p className="font-semibold text-foreground">
+              {card.member.fullName}
+            </p>
+            <p className="text-muted-foreground">
+              Birthday: {card.member.birthday}
+            </p>
+            <p className="text-muted-foreground">
+              Member: {card.member.memberCode}
+            </p>
             <p className="text-muted-foreground">
               Stamps: {card.stampCount}/{card.rewardThreshold}
             </p>
             {card.rewardReady ? (
-              <p className="mt-2 font-semibold text-primary">Reward ready for redemption.</p>
+              <p className="mt-2 font-semibold text-primary">
+                Reward ready for redemption.
+              </p>
             ) : null}
           </div>
-          <LoyaltyQrCode data={card.qrUrl} memberCode={card.member.memberCode} />
+          <LoyaltyQrCode
+            data={card.qrUrl}
+            memberCode={card.member.memberCode}
+          />
         </div>
       ) : (
         <form className="mt-6 grid gap-4" onSubmit={handleSubmit}>
@@ -165,7 +183,9 @@ export function LoyaltyClient() {
             <input
               required
               value={form.fullName}
-              onChange={(event) => setForm((value) => ({ ...value, fullName: event.target.value }))}
+              onChange={(event) =>
+                setForm((value) => ({ ...value, fullName: event.target.value }))
+              }
               className="h-11 rounded-sm border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
               placeholder="Enter customer name"
             />
@@ -185,10 +205,15 @@ export function LoyaltyClient() {
             />
           </label>
           <label className="grid gap-2 text-sm font-medium text-foreground">
-            Phone <span className="font-normal text-muted-foreground">(optional)</span>
+            Phone{" "}
+            <span className="font-normal text-muted-foreground">
+              (optional)
+            </span>
             <input
               value={form.phone}
-              onChange={(event) => setForm((value) => ({ ...value, phone: event.target.value }))}
+              onChange={(event) =>
+                setForm((value) => ({ ...value, phone: event.target.value }))
+              }
               className="h-11 rounded-sm border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
               placeholder="Enter phone number"
             />

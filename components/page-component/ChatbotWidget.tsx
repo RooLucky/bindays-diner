@@ -47,7 +47,7 @@ function createWelcomeMessage(): ChatMessage {
     id: "welcome",
     role: "assistant",
     content:
-      "Hi. Ask me about Bindays Diner's menu, reservations, delivery, promos, or loyalty program.",
+      "Hi. Ask me about Binday Diner's menu, reservations, delivery, promos, or loyalty program.",
     localOnly: true,
   };
 }
@@ -269,7 +269,7 @@ export function ChatbotWidget() {
           <motion.section
             key="chatbot-panel"
             role="dialog"
-            aria-label="Bindays Diner chatbot"
+            aria-label="Binday's Diner chatbot"
             initial={{ opacity: 0, y: 24, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 18, scale: 0.97 }}
@@ -282,7 +282,7 @@ export function ChatbotWidget() {
                   <Bot className="size-5 text-chart-1" />
                 </span>
                 <div className="min-w-0 text-chart-1">
-                  <p className="truncate font-serif text-lg">Ask Bindays</p>
+                  <p className="truncate font-serif text-lg">Binday's Diner</p>
                   <p className="truncate text-[11px] font-semibold uppercase opacity-80">
                     Approved answers only
                   </p>
@@ -411,7 +411,7 @@ export function ChatbotWidget() {
           onClick={() => setOpen((current) => !current)}
           aria-expanded={open}
           aria-label={open ? "Close chatbot" : "Open chatbot"}
-          title={open ? "Close chatbot" : "Ask Bindays"}
+          title={open ? "Close chatbot" : "Binday's Dinerys"}
         >
           <AnimatePresence mode="wait" initial={false}>
             <motion.span

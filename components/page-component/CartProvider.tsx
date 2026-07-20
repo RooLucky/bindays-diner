@@ -216,7 +216,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       (item) => `${item.quantity}x ${item.name} (${item.price})`,
     );
 
-    return `Pre-order cart:\n${lines.join("\n")}\nEstimated subtotal: P${subtotal.toLocaleString("en-PH")}`;
+    return `Selected meals:\n${lines.join("\n")}\nOrder subtotal: P${subtotal.toLocaleString("en-PH")}`;
   }, [items, subtotal]);
 
   const value = useMemo(

@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 
 import { requireAdminApiSession } from "@/lib/admin-auth";
+import { trySyncChatbotMenuKnowledgeForCategory } from "@/lib/chatbot/menu-knowledge";
 import { getDb } from "@/lib/db";
 import { managementItems } from "@/lib/db/schema";
 import {
@@ -86,6 +87,7 @@ export async function PATCH(
       .returning();
 
     await notifyPublicMenuContentUpdated(categorySlug);
+    await trySyncChatbotMenuKnowledgeForCategory(categorySlug);
 
     return Response.json({ item: toManagementItemResponse(item) });
   } catch (error) {
@@ -120,6 +122,7 @@ export async function DELETE(
       .where(and(eq(managementItems.categorySlug, categorySlug), eq(managementItems.id, id)));
 
     await notifyPublicMenuContentUpdated(categorySlug);
+    await trySyncChatbotMenuKnowledgeForCategory(categorySlug);
 
     return Response.json({ ok: true });
   } catch (error) {

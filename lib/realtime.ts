@@ -16,6 +16,7 @@ import {
 const TOKEN_TTL_MS = 60 * 60 * 1_000;
 
 const publicPathsByCategory: Record<ManagementCategorySlug, string[]> = {
+  drinks: ["/drinks"],
   "main-dish": ["/home", "/menu"],
   "student-meal": ["/student-meals"],
   promo: ["/promos"],

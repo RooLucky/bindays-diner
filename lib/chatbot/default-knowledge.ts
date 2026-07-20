@@ -42,7 +42,7 @@ export const DEFAULT_CHATBOT_KNOWLEDGE = [
   {
     question: "Where can I see current promos?",
     answer:
-      "Visit the Promos page for the offers currently published by Bindays Diner. Only active offers shown on that page should be considered available.",
+      "Visit the Promos page for the offers currently published by Binday's Diner. Only active offers shown on that page should be considered available.",
     keywords: "promo promotion discount deal offer bundle current",
     category: "Promos",
     isFeatured: false,

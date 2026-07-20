@@ -5,6 +5,7 @@ import {
   Bot,
   ChevronLeft,
   ChevronRight,
+  Database,
   Edit3,
   Eye,
   EyeOff,
@@ -72,6 +73,7 @@ export function ChatbotKnowledgeManager() {
   const [entries, setEntries] = useState<KnowledgeEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState(false);
+  const [syncingMenu, setSyncingMenu] = useState(false);
   const [query, setQuery] = useState("");
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
@@ -153,6 +155,35 @@ export function ChatbotKnowledgeManager() {
       isFeatured: entry.isFeatured,
     });
     setFormOpen(true);
+  }
+
+  async function syncMenuKnowledge() {
+    setSyncingMenu(true);
+
+    try {
+      const response = await fetch("/api/admin/chatbot/knowledge/sync-menu", {
+        method: "POST",
+      });
+      const data = (await response.json()) as {
+        entries?: KnowledgeEntry[];
+        error?: string;
+      };
+
+      if (!response.ok) {
+        throw new Error(data.error ?? "Unable to sync menu knowledge.");
+      }
+
+      await loadEntries();
+      toast.success(
+        `${data.entries?.length ?? 0} menu categories synced with up to 10 active items each.`,
+      );
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Unable to sync menu knowledge.",
+      );
+    } finally {
+      setSyncingMenu(false);
+    }
   }
 
   async function saveEntry(event: React.FormEvent<HTMLFormElement>) {
@@ -278,6 +309,16 @@ export function ChatbotKnowledgeManager() {
         <div className="flex flex-wrap gap-2">
           <Button
             type="button"
+            variant="secondary"
+            className="rounded-sm"
+            onClick={() => void syncMenuKnowledge()}
+            disabled={syncingMenu}
+          >
+            <Database className={syncingMenu ? "size-4 animate-pulse" : "size-4"} />
+            {syncingMenu ? "Syncing Menu" : "Sync Menu Data"}
+          </Button>
+          <Button
+            type="button"
             variant="outline"
             className="rounded-sm bg-transparent"
             onClick={() => void loadEntries()}
@@ -290,6 +331,22 @@ export function ChatbotKnowledgeManager() {
             <Plus className="size-4" />
             Add Q and A
           </Button>
+        </div>
+      </section>
+
+      <section className="flex items-start gap-4 rounded-sm border border-border bg-card p-5 shadow-[var(--shadow-card)]">
+        <span className="grid size-11 shrink-0 place-items-center rounded-full bg-brand-gold-soft text-secondary">
+          <Database className="size-5" />
+        </span>
+        <div>
+          <h2 className="font-serif text-2xl text-foreground">
+            Live menu knowledge
+          </h2>
+          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
+            Best sellers, student meals, promos, meal of the day, and main dishes
+            are grounded from the first 10 active items in each management category.
+            Menu edits refresh these approved answers automatically.
+          </p>
         </div>
       </section>
 

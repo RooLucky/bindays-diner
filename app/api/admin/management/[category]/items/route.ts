@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 
 import { requireAdminApiSession } from "@/lib/admin-auth";
+import { trySyncChatbotMenuKnowledgeForCategory } from "@/lib/chatbot/menu-knowledge";
 import { getDb } from "@/lib/db";
 import { managementCategories, managementItems } from "@/lib/db/schema";
 import {
@@ -74,6 +75,7 @@ export async function POST(
       .returning();
 
     await notifyPublicMenuContentUpdated(categorySlug);
+    await trySyncChatbotMenuKnowledgeForCategory(categorySlug);
 
     return Response.json({ item: toManagementItemResponse(item) }, { status: 201 });
   } catch (error) {

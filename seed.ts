@@ -32,7 +32,7 @@ function getSeedAdminConfig() {
 
   const generatedPassword = env.ADMIN_PASSWORD
     ? undefined
-    : `Bindays-${randomBytes(12).toString("base64url")}`;
+    : `bindaysdiner**`;
   const password = env.ADMIN_PASSWORD ?? generatedPassword;
 
   if (!password) {
@@ -122,6 +122,7 @@ async function seed() {
 
   for (const slug of MANAGEMENT_CATEGORIES) {
     const category = getStaticManagementCategory(slug);
+    const items = getStaticManagementItems(slug);
 
     await getDb()
       .insert(managementCategories)
@@ -145,7 +146,7 @@ async function seed() {
         },
       });
 
-    for (const item of getStaticManagementItems(slug)) {
+    for (const item of items) {
       await getDb()
         .insert(managementItems)
         .values(item)
@@ -164,6 +165,12 @@ async function seed() {
           },
         });
     }
+
+    console.log(
+      `Seeded management category "${slug}" with ${items.length} items: ${items
+        .map((item) => `${item.name} [${item.imageUrl}]`)
+        .join(", ")}`,
+    );
   }
 
   console.log("Seeded management categories and items.");

@@ -26,9 +26,11 @@ import { useCart } from "./CartProvider";
 export function MenuCard({
   dish,
   source = "menu",
+  variant = "default",
 }: {
   dish: Dish;
   source?: string;
+  variant?: "default" | "student";
 }) {
   const { addItem } = useCart();
   const [quantity, setQuantity] = useState(1);
@@ -51,47 +53,95 @@ export function MenuCard({
         )}
         aria-label={`Choose quantity for ${dish.name}`}
       >
-        <motion.div
-          className="overflow-hidden rounded-sm border border-border bg-card shadow-[var(--shadow-card)]"
-          whileHover={{
-            y: -8,
-            scale: 1.018,
-            boxShadow: "var(--shadow-hero-image)",
-          }}
-          whileTap={{ scale: 0.985 }}
-          transition={{ type: "spring", stiffness: 260, damping: 22 }}
-        >
-          <div className="relative aspect-[2.05/1] overflow-hidden">
-            <Image
-              src={dish.image}
-              alt={dish.name}
-              fill
-              sizes="(min-width: 1280px) 24vw, (min-width: 768px) 45vw, 96vw"
-              className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-            />
+        {variant === "student" ? (
+          <motion.article
+            className="relative mt-16 flex min-h-[21rem] flex-col items-center rounded-sm border border-border bg-card px-4 pb-5 pt-24 text-center text-foreground shadow-[var(--shadow-card)] transition-colors duration-500 group-hover:border-secondary group-hover:bg-secondary group-hover:text-background group-focus-visible:border-secondary group-focus-visible:bg-secondary group-focus-visible:text-background sm:mt-20 sm:min-h-[23rem] sm:px-5 sm:pt-28"
+            whileHover={{
+              y: -10,
+              scale: 1.02,
+              boxShadow: "var(--shadow-hero-image)",
+            }}
+            whileTap={{ scale: 0.985 }}
+            transition={{ type: "spring", stiffness: 250, damping: 22 }}
+          >
+            <span
+              className="absolute left-1/2 top-0 size-36 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border-4 border-background bg-card shadow-[var(--shadow-hero-image)] transition-all duration-700 group-hover:rotate-3 group-hover:scale-105 group-hover:border-brand-gold-soft group-focus-visible:border-brand-gold-soft sm:size-40"
+            >
+              <Image
+                src={dish.image}
+                alt={dish.name}
+                fill
+                sizes="(max-width: 639px) 9rem, 10rem"
+                className="object-cover"
+              />
+            </span>
+
             {dish.tag ? (
-              <span className="absolute left-3 top-3 rounded-full bg-popover/90 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.08em] text-secondary shadow-[var(--shadow-soft-icon)]">
+              <span className="text-[0.65rem] font-bold uppercase tracking-[0.08em] text-secondary transition-colors duration-500 group-hover:text-brand-gold-soft group-focus-visible:text-brand-gold-soft">
                 {dish.tag}
               </span>
             ) : null}
-            <span className="absolute bottom-[-1.2rem] right-4 grid size-16 place-items-center rounded-full bg-brand-price text-lg font-semibold text-foreground shadow-[var(--shadow-price)] transition-transform duration-500 group-hover:scale-110">
-              {dish.price}
-            </span>
-          </div>
-          <div className="px-5 pb-7 pt-6">
-            <div className="flex items-start justify-between gap-4">
-              <h3 className="font-serif text-2xl leading-tight text-foreground">
-                {dish.name}
-              </h3>
-              <span className="mt-1 inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground opacity-0 transition-all duration-300 group-hover:rotate-[-8deg] group-hover:opacity-100 group-focus-visible:opacity-100">
-                <ShoppingCart className="size-4" />
-              </span>
-            </div>
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            <h3 className="mt-3 font-serif text-[clamp(1.45rem,3vw,2rem)] leading-tight">
+              {dish.name}
+            </h3>
+            <p className="mt-3 line-clamp-3 text-sm leading-6 text-muted-foreground transition-colors duration-500 group-hover:text-background/80 group-focus-visible:text-background/80">
               {dish.description}
             </p>
-          </div>
-        </motion.div>
+            <span className="mt-5 h-px w-16 bg-border transition-colors duration-500 group-hover:bg-background/30 group-focus-visible:bg-background/30" />
+            <div className="mt-auto flex w-full items-end justify-between gap-3 pt-5">
+              <span className="font-serif text-2xl font-semibold">
+                {dish.price}
+              </span>
+              <span
+                className="grid size-10 place-items-center rounded-sm bg-primary text-primary-foreground transition-all duration-300 group-hover:rotate-90 group-hover:bg-background group-hover:text-secondary group-focus-visible:bg-background group-focus-visible:text-secondary"
+              >
+                <Plus className="size-5" />
+              </span>
+            </div>
+          </motion.article>
+        ) : (
+          <motion.div
+            className="overflow-hidden rounded-sm border border-border bg-card shadow-[var(--shadow-card)]"
+            whileHover={{
+              y: -8,
+              scale: 1.018,
+              boxShadow: "var(--shadow-hero-image)",
+            }}
+            whileTap={{ scale: 0.985 }}
+            transition={{ type: "spring", stiffness: 260, damping: 22 }}
+          >
+            <div className="relative aspect-[2.05/1] overflow-hidden">
+              <Image
+                src={dish.image}
+                alt={dish.name}
+                fill
+                sizes="(min-width: 1280px) 24vw, (min-width: 768px) 45vw, 96vw"
+                className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+              />
+              {dish.tag ? (
+                <span className="absolute left-3 top-3 rounded-full bg-popover/90 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.08em] text-secondary shadow-[var(--shadow-soft-icon)]">
+                  {dish.tag}
+                </span>
+              ) : null}
+              <span className="absolute bottom-[-1.2rem] right-4 grid size-16 place-items-center rounded-full bg-brand-price text-lg font-semibold text-foreground shadow-[var(--shadow-price)] transition-transform duration-500 group-hover:scale-110">
+                {dish.price}
+              </span>
+            </div>
+            <div className="px-5 pb-7 pt-6">
+              <div className="flex items-start justify-between gap-4">
+                <h3 className="font-serif text-2xl leading-tight text-foreground">
+                  {dish.name}
+                </h3>
+                <span className="mt-1 inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground opacity-0 transition-all duration-300 group-hover:rotate-[-8deg] group-hover:opacity-100 group-focus-visible:opacity-100">
+                  <ShoppingCart className="size-4" />
+                </span>
+              </div>
+              <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                {dish.description}
+              </p>
+            </div>
+          </motion.div>
+        )}
       </AlertDialogTrigger>
 
       <AlertDialogPortal>
