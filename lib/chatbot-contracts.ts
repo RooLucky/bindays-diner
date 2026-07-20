@@ -4,6 +4,17 @@ export const CHATBOT_MESSAGE_MAX_LENGTH = 400;
 export const CHATBOT_HISTORY_MAX_MESSAGES = 6;
 export const CHATBOT_SESSION_LIMIT = 12;
 
+export type ChatbotMenuItem = {
+  id: string;
+  name: string;
+  description: string;
+  price: string;
+  imageUrl: string;
+  imageAlt: string;
+  categorySlug: string;
+  href: string;
+};
+
 export const chatbotHistoryMessageSchema = z.object({
   role: z.enum(["user", "assistant"]),
   content: z.string().trim().min(1).max(1_200),

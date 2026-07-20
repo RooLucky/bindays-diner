@@ -84,7 +84,7 @@ export function Header() {
               alt="Binday's Diner logo"
               width={1254}
               height={1254}
-              className="h-16 w-16 object-contain sm:h-10 sm:w-10"
+              className="w-full h-full object-contain"
             />
           </span>
           <span className="leading-none">

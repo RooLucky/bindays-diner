@@ -2,12 +2,16 @@ import "server-only";
 
 import { and, asc, eq } from "drizzle-orm";
 
+import type { ChatbotMenuItem } from "@/lib/chatbot-contracts";
 import { getDb } from "@/lib/db";
 import {
   chatbotKnowledgeEntries,
   managementItems,
 } from "@/lib/db/schema";
-import type { ManagementCategorySlug } from "@/lib/management";
+import {
+  getManagementPayload,
+  type ManagementCategorySlug,
+} from "@/lib/management";
 
 const MENU_KNOWLEDGE_LIMIT = 10;
 
@@ -66,6 +70,15 @@ const menuKnowledgeConfig: Record<
 };
 
 const categorySlugs = Object.keys(menuKnowledgeConfig) as ManagementCategorySlug[];
+
+const menuCategoryHrefs: Record<ManagementCategorySlug, string> = {
+  drinks: "/drinks",
+  "meal-of-the-day": "/meal-of-the-day",
+  "best-seller": "/best-seller",
+  promo: "/promos",
+  "student-meal": "/student-meals",
+  "main-dish": "/menu",
+};
 
 function compact(value: string, maxLength = 180) {
   const normalized = value.replace(/\s+/g, " ").trim();
@@ -161,6 +174,71 @@ export async function syncChatbotMenuKnowledgeForQuery(query: string) {
   }
 
   return Promise.all(matchingSlugs.map(syncChatbotMenuKnowledgeForCategory));
+}
+
+function getKnowledgeCategorySlug(category: string) {
+  return categorySlugs.find(
+    (slug) => menuKnowledgeConfig[slug].category === category,
+  );
+}
+
+function getItemMatchScore(
+  query: string,
+  item: { name: string; description: string; tag: string | null },
+) {
+  const queryTokens = query
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((token) => token.length > 2);
+  const searchable = `${item.name} ${item.description} ${item.tag ?? ""}`.toLowerCase();
+
+  return queryTokens.reduce(
+    (score, token) => score + (searchable.includes(token) ? 1 : 0),
+    0,
+  );
+}
+
+export async function getChatbotMenuItemsForKnowledge(
+  message: string,
+  entries: Array<{ category: string }>,
+  limit = 4,
+): Promise<ChatbotMenuItem[]> {
+  const slugs = Array.from(
+    new Set(
+      entries
+        .map((entry) => getKnowledgeCategorySlug(entry.category))
+        .filter((slug): slug is ManagementCategorySlug => Boolean(slug)),
+    ),
+  );
+
+  if (slugs.length === 0) {
+    return [];
+  }
+
+  const payloads = await Promise.all(slugs.map(getManagementPayload));
+
+  return payloads
+    .flatMap((payload) =>
+      payload.items
+        .filter((item) => item.isActive)
+        .map((item) => ({
+          item,
+          score: getItemMatchScore(message, item),
+          href: menuCategoryHrefs[payload.category.slug],
+        })),
+    )
+    .sort((left, right) => right.score - left.score)
+    .slice(0, limit)
+    .map(({ item, href }) => ({
+      id: item.id,
+      name: item.name,
+      description: item.description,
+      price: item.price,
+      imageUrl: item.imageUrl,
+      imageAlt: item.imageAlt,
+      categorySlug: item.categorySlug,
+      href,
+    }));
 }
 
 export async function trySyncChatbotMenuKnowledgeForCategory(

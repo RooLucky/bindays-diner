@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
 import {
   useEffect,
   useMemo,
@@ -10,6 +12,7 @@ import {
 } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
+  ArrowUpRight,
   Bot,
   MessageCircle,
   RefreshCw,
@@ -25,12 +28,15 @@ import {
   CHATBOT_HISTORY_MAX_MESSAGES,
   CHATBOT_MESSAGE_MAX_LENGTH,
   CHATBOT_SESSION_LIMIT,
+  type ChatbotMenuItem,
 } from "@/lib/chatbot-contracts";
 
 type ChatMessage = {
   id: string;
   role: "user" | "assistant";
   content: string;
+  menuItems?: ChatbotMenuItem[];
+  sources?: string[];
   localOnly?: boolean;
 };
 
@@ -58,10 +64,27 @@ function isStoredMessage(value: unknown): value is ChatMessage {
   }
 
   const message = value as Partial<ChatMessage>;
+  const validMenuItems =
+    message.menuItems === undefined ||
+    (Array.isArray(message.menuItems) &&
+      message.menuItems.every(
+        (item) =>
+          typeof item?.id === "string" &&
+          typeof item.name === "string" &&
+          typeof item.imageUrl === "string" &&
+          typeof item.href === "string",
+      ));
+  const validSources =
+    message.sources === undefined ||
+    (Array.isArray(message.sources) &&
+      message.sources.every((source) => typeof source === "string"));
+
   return (
     typeof message.id === "string" &&
     (message.role === "user" || message.role === "assistant") &&
-    typeof message.content === "string"
+    typeof message.content === "string" &&
+    validMenuItems &&
+    validSources
   );
 }
 
@@ -195,6 +218,8 @@ export function ChatbotWidget() {
       });
       const data = (await response.json()) as {
         answer?: string;
+        menuItems?: ChatbotMenuItem[];
+        sources?: string[];
         error?: string;
         remaining?: number;
       };
@@ -215,6 +240,8 @@ export function ChatbotWidget() {
           id: crypto.randomUUID(),
           role: "assistant",
           content: data.answer ?? "",
+          menuItems: data.menuItems ?? [],
+          sources: data.sources ?? [],
         },
       ]);
       setRemaining(
@@ -326,7 +353,56 @@ export function ChatbotWidget() {
                       : "mr-auto max-w-[88%] rounded-lg border border-border bg-card px-3 py-2.5 text-sm leading-6 text-card-foreground shadow-[var(--shadow-card)]"
                   }
                 >
-                  {item.content}
+                  <p className="whitespace-pre-line">{item.content}</p>
+                  {item.role === "assistant" && item.menuItems?.length ? (
+                    <div className="-mx-1 mt-3 flex snap-x gap-2 overflow-x-auto px-1 pb-1">
+                      {item.menuItems.map((menuItem) => (
+                        <Link
+                          key={menuItem.id}
+                          href={menuItem.href}
+                          className="group min-w-[10.5rem] max-w-[10.5rem] snap-start overflow-hidden rounded-md border border-border bg-background transition hover:border-secondary/45 hover:shadow-[var(--shadow-card)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/30"
+                        >
+                          <Image
+                            src={menuItem.imageUrl}
+                            alt={menuItem.imageAlt}
+                            width={320}
+                            height={200}
+                            sizes="168px"
+                            className="aspect-[8/5] w-full object-cover transition duration-500 group-hover:scale-105"
+                          />
+                          <span className="block p-2.5">
+                            <span className="flex items-start justify-between gap-2">
+                              <span className="line-clamp-2 font-serif text-base leading-tight text-foreground">
+                                {menuItem.name}
+                              </span>
+                              <ArrowUpRight className="mt-0.5 size-3.5 shrink-0 text-secondary" />
+                            </span>
+                            <span className="mt-1 block text-xs font-bold text-secondary">
+                              {menuItem.price}
+                            </span>
+                          </span>
+                        </Link>
+                      ))}
+                    </div>
+                  ) : null}
+                  {item.role === "assistant" && item.sources?.length ? (
+                    <div className="mt-2 border-t border-border pt-2 text-[10px] leading-4 text-muted-foreground">
+                      <span className="font-bold uppercase">Nutrition sources</span>
+                      <span className="mt-1 flex flex-wrap gap-x-2 gap-y-1">
+                        {item.sources.map((source, index) => (
+                          <a
+                            key={source}
+                            href={source}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="underline decoration-secondary/40 underline-offset-2 hover:text-secondary"
+                          >
+                            Source {index + 1}
+                          </a>
+                        ))}
+                      </span>
+                    </div>
+                  ) : null}
                 </motion.div>
               ))}
 

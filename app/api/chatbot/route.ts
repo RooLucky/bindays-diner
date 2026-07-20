@@ -6,9 +6,12 @@ import {
   formatKnowledgeAnswer,
   getRankedChatbotKnowledge,
 } from "@/lib/chatbot/knowledge";
+import { getChatbotMenuItemsForKnowledge } from "@/lib/chatbot/menu-knowledge";
 import {
+  isMenuHealthComparisonQuestion,
   resolveSelectedEntries,
   selectGroundedKnowledge,
+  selectGroundedMenuHealthItems,
 } from "@/lib/chatbot/providers";
 import {
   consumeChatbotRateLimit,
@@ -57,12 +60,54 @@ export async function POST(request: Request) {
       rankedEntries,
     );
     const selectedEntries = resolveSelectedEntries(selection.ids, rankedEntries);
-    const answer =
+    let answer =
       selectedEntries.length > 0
         ? formatKnowledgeAnswer(selectedEntries)
         : CHATBOT_NO_KNOWLEDGE_REPLY;
+    let menuItems =
+      selectedEntries.length > 0
+        ? await getChatbotMenuItemsForKnowledge(
+            input.message,
+            selectedEntries,
+            isMenuHealthComparisonQuestion(input.message) ? 10 : 4,
+          )
+        : [];
+    const healthDecision = await selectGroundedMenuHealthItems(
+      input.message,
+      menuItems,
+    );
+    const sources = healthDecision?.sources ?? [];
 
-    return Response.json({ answer, remaining: rateLimit.remaining });
+    if (healthDecision) {
+      const selectedIds = new Set(healthDecision.ids);
+      const selectedItems = menuItems.filter((item) => selectedIds.has(item.id));
+
+      if (selectedItems.length > 0) {
+        menuItems = selectedItems;
+        const names = selectedItems.map((item) => item.name);
+        const subject =
+          names.length === 1
+            ? names[0]
+            : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
+        const grounding =
+          healthDecision.provider === "openai-web"
+            ? "current general nutrition guidance"
+            : "the ingredients and preparation described on our menu";
+
+        answer = `Based on ${grounding}, ${subject} ${names.length === 1 ? "appears" : "appear"} to be the better match for your question among the currently listed dishes. Exact nutrition depends on portions and preparation, so please treat this as a general comparison rather than medical advice.`;
+      } else {
+        menuItems = menuItems.slice(0, 4);
+        answer =
+          "I can show the current options, but their descriptions do not include enough nutrition detail to responsibly decide which is healthiest. Please ask the restaurant about ingredients, portions, and preparation.";
+      }
+    }
+
+    return Response.json({
+      answer,
+      menuItems,
+      sources,
+      remaining: rateLimit.remaining,
+    });
   } catch (error) {
     if (error instanceof ZodError) {
       return Response.json(
