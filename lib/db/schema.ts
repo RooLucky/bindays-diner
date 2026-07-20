@@ -129,6 +129,10 @@ export const loyaltyMembers = pgTable(
   (table) => [
     uniqueIndex("loyalty_members_member_code_idx").on(table.memberCode),
     uniqueIndex("loyalty_members_qr_token_idx").on(table.qrToken),
+    uniqueIndex("loyalty_members_name_birthday_idx").on(
+      table.normalizedName,
+      table.birthday,
+    ),
     uniqueIndex("loyalty_members_phone_idx").on(table.normalizedPhone),
   ],
 );

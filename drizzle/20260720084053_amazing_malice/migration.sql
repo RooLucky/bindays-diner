@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "loyalty_members_name_birthday_idx" ON "loyalty_members" ("normalized_name","birthday");

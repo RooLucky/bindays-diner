@@ -3,6 +3,7 @@ import { CartProvider } from "@/components/page-component/CartProvider";
 import { WebsiteMotionShell } from "@/components/page-component/WebsiteMotionShell";
 import { WebsiteScrollProgress } from "@/components/page-component/WebsiteScrollProgress";
 import { ChatbotWidget } from "@/components/page-component/ChatbotWidget";
+import { Footer } from "@/components/page-component/Footer";
 
 export default function WebsiteLayout({
   children,
@@ -15,6 +16,7 @@ export default function WebsiteLayout({
         <WebsiteScrollProgress />
         <Header />
         <WebsiteMotionShell>{children}</WebsiteMotionShell>
+        <Footer />
         <ChatbotWidget />
       </CartProvider>
     </div>

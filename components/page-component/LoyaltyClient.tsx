@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { HeartHandshake } from "lucide-react";
 import { toast } from "sonner";
 
@@ -25,39 +25,71 @@ const emptyForm = {
   phone: "",
 };
 
+const loyaltyStorageKey = "bindays-loyalty-member";
 const birthdayStartMonth = new Date(1920, 0);
 const birthdayEndMonth = new Date();
+
+type StoredLoyaltyMember = typeof emptyForm;
+
+function getStoredLoyaltyMember() {
+  try {
+    const stored = window.localStorage.getItem(loyaltyStorageKey);
+
+    if (!stored) {
+      return null;
+    }
+
+    const parsed = JSON.parse(stored) as Partial<StoredLoyaltyMember>;
+
+    if (!parsed.fullName || !parsed.birthday) {
+      return null;
+    }
+
+    return {
+      fullName: parsed.fullName,
+      birthday: parsed.birthday,
+      phone: parsed.phone ?? "",
+    };
+  } catch {
+    return null;
+  }
+}
+
+function saveStoredLoyaltyMember(member: StoredLoyaltyMember) {
+  window.localStorage.setItem(
+    loyaltyStorageKey,
+    JSON.stringify({
+      fullName: member.fullName.trim(),
+      birthday: member.birthday,
+      phone: member.phone.trim(),
+    }),
+  );
+}
 
 export function LoyaltyClient() {
   const [mode, setMode] = useState<Mode>("join");
   const [form, setForm] = useState(emptyForm);
   const [card, setCard] = useState<LoyaltyCardResponse | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const hasLoadedStoredMember = useRef(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    if (!form.fullName.trim() || !form.birthday) {
-      toast.error("Name and birthday are required.");
-      return;
-    }
-
+  async function loadLoyaltyCard(input: StoredLoyaltyMember, requestMode: Mode) {
     setIsSubmitting(true);
     const toastId = toast.loading(
-      mode === "join"
+      requestMode === "join"
         ? "Creating loyalty card..."
         : "Searching loyalty account...",
     );
 
     try {
       const response = await fetch(
-        mode === "join" ? "/api/loyalty/register" : "/api/loyalty/search",
+        requestMode === "join" ? "/api/loyalty/register" : "/api/loyalty/search",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(form),
+          body: JSON.stringify(input),
         },
       );
       const data = (await response.json()) as LoyaltyApiResponse;
@@ -67,10 +99,12 @@ export function LoyaltyClient() {
       }
 
       setCard(data.card);
+      setForm(input);
+      saveStoredLoyaltyMember(input);
       toast.success(
         data.status === "existing"
           ? "Existing loyalty account found."
-          : mode === "join"
+          : requestMode === "join"
             ? "Loyalty card created."
             : "Loyalty account found.",
         {
@@ -88,6 +122,40 @@ export function LoyaltyClient() {
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  useEffect(() => {
+    if (hasLoadedStoredMember.current) {
+      return;
+    }
+
+    hasLoadedStoredMember.current = true;
+    const storedMember = getStoredLoyaltyMember();
+
+    if (!storedMember) {
+      return;
+    }
+
+    setMode("search");
+    setForm(storedMember);
+    void loadLoyaltyCard(storedMember, "search");
+  }, []);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const input = {
+      fullName: form.fullName.trim(),
+      birthday: form.birthday,
+      phone: form.phone.trim(),
+    };
+
+    if (!input.fullName || !input.birthday) {
+      toast.error("Name and birthday are required.");
+      return;
+    }
+
+    await loadLoyaltyCard(input, mode);
   }
 
   return (

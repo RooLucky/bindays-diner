@@ -46,7 +46,30 @@ export async function POST(request: Request) {
         phone: input.phone?.trim() || null,
         normalizedPhone: normalizePhone(input.phone),
       })
+      .onConflictDoNothing()
       .returning();
+
+    if (!member) {
+      const existingAfterConflict = await findExistingMember(input);
+
+      if (existingAfterConflict) {
+        const card = await getLoyaltyCard(existingAfterConflict.memberCode);
+
+        return Response.json({
+          ok: true,
+          status: "existing",
+          card,
+        });
+      }
+
+      return Response.json(
+        {
+          ok: false,
+          error: "Unable to create loyalty member.",
+        },
+        { status: 409 },
+      );
+    }
 
     const card = await getLoyaltyCard(member.memberCode);
 
@@ -65,4 +88,3 @@ export async function POST(request: Request) {
     );
   }
 }
-

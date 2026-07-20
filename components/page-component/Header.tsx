@@ -2,14 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Menu,
-  Minus,
-  Plus,
-  ShoppingCart,
-  Trash2,
-  X,
-} from "lucide-react";
+import { Menu, Minus, Plus, ShoppingCart, Trash2, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 
@@ -77,7 +70,7 @@ export function Header() {
               Binday's Diner
             </span>
             <span className="block pt-1 text-[0.58rem] font-semibold uppercase tracking-[0.3em] text-muted-foreground sm:text-[0.65rem] sm:tracking-[0.38em]">
-              Legazpi City, Philippines
+              Legazpi City
             </span>
           </span>
         </Link>
