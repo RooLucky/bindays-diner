@@ -95,6 +95,124 @@
   }
 }
 
+@keyframes menu-hologram-scan {
+  0% {
+    opacity: 0;
+    transform: translate3d(-190%, 0, 0) skewX(-18deg);
+  }
+  14% {
+    opacity: 0.75;
+  }
+  84% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(390%, 0, 0) skewX(-18deg);
+  }
+}
+
+@keyframes menu-hologram-pulse {
+  0%,
+  100% {
+    filter: saturate(0.9) brightness(0.95);
+    opacity: var(--hologram-opacity-low, 0.24);
+  }
+  50% {
+    filter: saturate(1.45) brightness(1.12);
+    opacity: var(--hologram-opacity-high, 0.48);
+  }
+}
+
+@keyframes menu-hologram-lines {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 42px;
+  }
+}
+
+.menu-hologram-card {
+  isolation: isolate;
+  transform-style: preserve-3d;
+  cursor: pointer;
+  transition:
+    border-color 260ms ease,
+    box-shadow 320ms ease,
+    background-color 320ms ease;
+  will-change: transform;
+}
+
+.group:hover .menu-hologram-card,
+.group:focus-visible .menu-hologram-card {
+  box-shadow: var(--shadow-hologram-card);
+}
+
+.menu-hologram-effect {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  border-radius: inherit;
+  pointer-events: none;
+  --hologram-opacity-high: 0.48;
+  --hologram-opacity-low: 0.24;
+  background: radial-gradient(
+    circle at var(--hologram-x, 50%) var(--hologram-y, 50%),
+    color-mix(in oklab, var(--brand-gold-soft) 38%, transparent),
+    transparent 42%
+  );
+  animation: menu-hologram-pulse 3.4s ease-in-out infinite;
+  opacity: 0.32;
+  overflow: hidden;
+  transition: opacity 300ms ease;
+}
+
+.menu-hologram-effect::before {
+  position: absolute;
+  inset-block: -15%;
+  left: 0;
+  width: 42%;
+  background: linear-gradient(
+    112deg,
+    transparent 4%,
+    color-mix(in oklab, var(--brand-gold) 38%, transparent) 34%,
+    color-mix(in oklab, var(--brand-olive) 30%, transparent) 52%,
+    color-mix(in oklab, var(--brand-red) 24%, transparent) 68%,
+    transparent 96%
+  );
+  content: "";
+  animation: menu-hologram-scan 5.2s linear infinite;
+  will-change: opacity, transform;
+}
+
+.menu-hologram-effect::after {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0,
+    transparent 5px,
+    color-mix(in oklab, var(--brand-olive) 8%, transparent) 6px
+  );
+  content: "";
+  animation: menu-hologram-lines 2.4s linear infinite;
+  opacity: 0.65;
+}
+
+.group:hover .menu-hologram-effect,
+.group:focus-visible .menu-hologram-effect {
+  --hologram-opacity-high: 0.78;
+  --hologram-opacity-low: 0.42;
+  animation: menu-hologram-pulse 2.4s ease-in-out infinite;
+}
+
+.group:hover .menu-hologram-effect::before,
+.group:focus-visible .menu-hologram-effect::before {
+  animation-duration: 3.2s;
+}
+
 .hero-bowl-rotation {
   animation: hero-bowl-rotation 135s linear infinite;
   will-change: transform;
@@ -129,8 +247,15 @@
 @media (prefers-reduced-motion: reduce) {
   .hero-bowl-rotation,
   .hero-leaf-orbit,
-  .hero-steam-wisp {
+  .hero-steam-wisp,
+  .menu-hologram-effect,
+  .menu-hologram-effect::before,
+  .menu-hologram-effect::after {
     animation: none;
+  }
+
+  .menu-hologram-effect {
+    opacity: 0;
   }
 }
 
@@ -151,6 +276,10 @@
   --shadow-price: 0 10px 18px rgb(120 92 30 / 16%);
   --shadow-hero-image: 0 22px 45px rgb(61 45 24 / 16%);
   --shadow-hero-orb: 18px 22px 36px rgb(91 68 34 / 14%);
+  --shadow-hologram-card:
+    0 34px 72px color-mix(in oklab, var(--brand-olive) 28%, transparent),
+    0 12px 30px color-mix(in oklab, var(--brand-gold) 24%, transparent),
+    0 0 0 2px color-mix(in oklab, var(--brand-gold-soft) 70%, transparent);
   --background: var(--brand-cream);
   --foreground: oklch(0.145 0 0);
   --card: var(--brand-linen);

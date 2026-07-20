@@ -305,8 +305,14 @@ export function ChatbotWidget() {
           >
             <header className="flex shrink-0 items-center justify-between gap-3 bg-secondary px-4 py-3 text-secondary-foreground">
               <div className="flex min-w-0 items-center gap-3">
-                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-secondary-foreground/15">
-                  <Bot className="size-5 text-chart-1" />
+                <span className="grid size-12 shrink-0 place-items-center bg-secondary-foreground/15">
+                  <Image
+                    src="/images/web-logo.png"
+                    alt="Binday's Diner logo"
+                    width={1254}
+                    height={1254}
+                    className="h-full w-full  object-contain"
+                  />
                 </span>
                 <div className="min-w-0 text-chart-1">
                   <p className="truncate font-serif text-lg">Binday's Diner</p>
@@ -387,7 +393,9 @@ export function ChatbotWidget() {
                   ) : null}
                   {item.role === "assistant" && item.sources?.length ? (
                     <div className="mt-2 border-t border-border pt-2 text-[10px] leading-4 text-muted-foreground">
-                      <span className="font-bold uppercase">Nutrition sources</span>
+                      <span className="font-bold uppercase">
+                        Nutrition sources
+                      </span>
                       <span className="mt-1 flex flex-wrap gap-x-2 gap-y-1">
                         {item.sources.map((source, index) => (
                           <a

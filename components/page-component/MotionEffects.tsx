@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, type ReactNode } from "react";
-import { motion, useScroll, useTransform } from "motion/react";
+import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 
 import { cn } from "@/lib/utils";
 
@@ -43,7 +43,7 @@ export function StaggerContainer({
       className={className}
       initial="hidden"
       whileInView="show"
-      viewport={{ once: true, amount: 0.16 }}
+      viewport={{ once: false, amount: 0.12 }}
       variants={{
         hidden: {},
         show: {
@@ -70,10 +70,23 @@ export function StaggerItem({
     <motion.div
       className={className}
       variants={{
-        hidden: { opacity: 0, y: 26, scale: 0.96, filter: "blur(8px)" },
-        show: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" },
+        hidden: {
+          opacity: 0,
+          y: 76,
+          scale: 0.88,
+          rotateX: -14,
+          filter: "blur(14px)",
+        },
+        show: {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          rotateX: 0,
+          filter: "blur(0px)",
+        },
       }}
-      transition={{ duration: 0.62, ease: smoothEase }}
+      style={{ transformPerspective: 900 }}
+      transition={{ duration: 0.85, ease: smoothEase }}
     >
       {children}
     </motion.div>
@@ -92,25 +105,42 @@ export function ParallaxLayer({
   reverse?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const reduceMotion = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"],
   });
+  const travel = distance * 1.9;
   const y = useTransform(
     scrollYProgress,
     [0, 1],
-    reverse ? [-distance, distance] : [distance, -distance],
+    reduceMotion
+      ? [0, 0]
+      : reverse
+        ? [-travel, travel]
+        : [travel, -travel],
+  );
+  const opacity = useTransform(
+    scrollYProgress,
+    [0, 0.2, 0.8, 1],
+    reduceMotion ? [1, 1, 1, 1] : [0, 1, 1, 0],
+  );
+  const scale = useTransform(
+    scrollYProgress,
+    [0, 0.22, 0.78, 1],
+    reduceMotion ? [1, 1, 1, 1] : [0.58, 1.08, 1.08, 0.58],
+  );
+  const rotate = useTransform(
+    scrollYProgress,
+    [0, 0.5, 1],
+    reduceMotion ? [0, 0, 0] : reverse ? [-14, 0, 14] : [14, 0, -14],
   );
 
   return (
     <motion.div
       ref={ref}
       className={cn("will-change-transform", className)}
-      style={{ y }}
-      initial={{ opacity: 0, scale: 0.94 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      viewport={{ once: true, amount: 0.22 }}
-      transition={{ duration: 0.85, ease: smoothEase }}
+      style={{ y, opacity, scale, rotate }}
     >
       {children}
     </motion.div>

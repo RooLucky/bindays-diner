@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import { Minus, Plus, ShoppingCart, X } from "lucide-react";
-import { useState } from "react";
-import { motion } from "motion/react";
+import { useState, type PointerEvent } from "react";
+import { motion, useReducedMotion, useSpring } from "motion/react";
 import { toast } from "sonner";
 
 import {
@@ -35,6 +35,31 @@ export function MenuCard({
   const { addItem } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [open, setOpen] = useState(false);
+  const reduceMotion = useReducedMotion();
+  const rotateX = useSpring(0, { stiffness: 220, damping: 24, mass: 0.7 });
+  const rotateY = useSpring(0, { stiffness: 220, damping: 24, mass: 0.7 });
+
+  function handlePointerMove(event: PointerEvent<HTMLButtonElement>) {
+    if (reduceMotion || event.pointerType === "touch") {
+      return;
+    }
+
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const x = (event.clientX - bounds.left) / bounds.width;
+    const y = (event.clientY - bounds.top) / bounds.height;
+
+    rotateX.set((0.5 - y) * 14);
+    rotateY.set((x - 0.5) * 18);
+    event.currentTarget.style.setProperty("--hologram-x", `${x * 100}%`);
+    event.currentTarget.style.setProperty("--hologram-y", `${y * 100}%`);
+  }
+
+  function resetHologram(event: PointerEvent<HTMLButtonElement>) {
+    rotateX.set(0);
+    rotateY.set(0);
+    event.currentTarget.style.setProperty("--hologram-x", "50%");
+    event.currentTarget.style.setProperty("--hologram-y", "50%");
+  }
 
   function handleAddToCart() {
     addItem(dish, source, quantity);
@@ -49,21 +74,25 @@ export function MenuCard({
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger
         className={cn(
-          "group w-full rounded-sm text-left focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/30",
+          "group w-full cursor-pointer rounded-sm text-left focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/30",
         )}
         aria-label={`Choose quantity for ${dish.name}`}
+        onPointerMove={handlePointerMove}
+        onPointerLeave={resetHologram}
       >
         {variant === "student" ? (
           <motion.article
-            className="relative mt-16 flex min-h-[21rem] flex-col items-center rounded-sm border border-border bg-card px-4 pb-5 pt-24 text-center text-foreground shadow-[var(--shadow-card)] transition-colors duration-500 group-hover:border-secondary group-hover:bg-secondary group-hover:text-background group-focus-visible:border-secondary group-focus-visible:bg-secondary group-focus-visible:text-background sm:mt-20 sm:min-h-[23rem] sm:px-5 sm:pt-28"
+            className="menu-hologram-card relative mt-16 flex min-h-[21rem] flex-col items-center rounded-sm border border-border bg-card px-4 pb-5 pt-24 text-center text-foreground shadow-[var(--shadow-card)] transition-colors duration-500 group-hover:border-secondary group-hover:bg-secondary group-hover:text-background group-focus-visible:border-secondary group-focus-visible:bg-secondary group-focus-visible:text-background sm:mt-20 sm:min-h-[23rem] sm:px-5 sm:pt-28"
+            style={{ rotateX, rotateY, transformPerspective: 950 }}
             whileHover={{
-              y: -10,
-              scale: 1.02,
-              boxShadow: "var(--shadow-hero-image)",
+              y: -15,
+              scale: 1.045,
+              boxShadow: "var(--shadow-hologram-card)",
             }}
             whileTap={{ scale: 0.985 }}
             transition={{ type: "spring", stiffness: 250, damping: 22 }}
           >
+            <span className="menu-hologram-effect" aria-hidden="true" />
             <span
               className="absolute left-1/2 top-0 size-36 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border-4 border-background bg-card shadow-[var(--shadow-hero-image)] transition-all duration-700 group-hover:rotate-3 group-hover:scale-105 group-hover:border-brand-gold-soft group-focus-visible:border-brand-gold-soft sm:size-40"
             >
@@ -101,15 +130,17 @@ export function MenuCard({
           </motion.article>
         ) : (
           <motion.div
-            className="overflow-hidden rounded-sm border border-border bg-card shadow-[var(--shadow-card)]"
+            className="menu-hologram-card relative overflow-hidden rounded-sm border border-border bg-card shadow-[var(--shadow-card)]"
+            style={{ rotateX, rotateY, transformPerspective: 950 }}
             whileHover={{
-              y: -8,
-              scale: 1.018,
-              boxShadow: "var(--shadow-hero-image)",
+              y: -14,
+              scale: 1.04,
+              boxShadow: "var(--shadow-hologram-card)",
             }}
             whileTap={{ scale: 0.985 }}
             transition={{ type: "spring", stiffness: 260, damping: 22 }}
           >
+            <span className="menu-hologram-effect" aria-hidden="true" />
             <div className="relative aspect-[2.05/1] overflow-hidden">
               <Image
                 src={dish.image}

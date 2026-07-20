@@ -6,7 +6,10 @@ import {
   formatKnowledgeAnswer,
   getRankedChatbotKnowledge,
 } from "@/lib/chatbot/knowledge";
-import { getChatbotMenuItemsForKnowledge } from "@/lib/chatbot/menu-knowledge";
+import {
+  getChatbotMenuItemsForKnowledge,
+  resolveChatbotMenuRecommendation,
+} from "@/lib/chatbot/menu-knowledge";
 import {
   isMenuHealthComparisonQuestion,
   resolveSelectedEntries,
@@ -20,6 +23,16 @@ import {
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+const SUBJECTIVE_NEGATIVE_FOOD_PATTERN =
+  /\b(disgusting|disgusted|gross|nasty|awful|terrible|worst|inedible|revolting|yuck|hate(?:d)?|bad food)\b/i;
+const FOUL_LANGUAGE_PATTERN =
+  /(?:\bsh[i1]t(?:ty)?\b|\bf+[\W_]*u+[\W_]*c+[\W_]*k+(?:ing|ed)?\b|\bb[i1]tch\b|\bbullsh[i1]t\b|\basshole\b|\bbastard\b|\bcunt\b|\bd[i1]ck\b|\bputa(?:ng)?\b|\btangina\b|\bgago\b|\bulol\b)/i;
+
+const SUBJECTIVE_NEGATIVE_FOOD_REPLY =
+  "Taste is personal, so I would not label any Binday's Diner dish as disgusting. Tell me which ingredients, flavors, textures, or preparation styles you dislike, and I can help you find a better match from the current menu.";
+const FOUL_LANGUAGE_REPLY =
+  "I can help with the menu, ingredients, promos, reservations, delivery, and loyalty questions. Please rephrase your question without offensive language.";
 
 export async function POST(request: Request) {
   try {
@@ -40,6 +53,36 @@ export async function POST(request: Request) {
           headers: { "Retry-After": String(rateLimit.retryAfter) },
         },
       );
+    }
+
+    if (FOUL_LANGUAGE_PATTERN.test(input.message)) {
+      return Response.json({
+        answer: FOUL_LANGUAGE_REPLY,
+        menuItems: [],
+        sources: [],
+        remaining: rateLimit.remaining,
+      });
+    }
+
+    if (SUBJECTIVE_NEGATIVE_FOOD_PATTERN.test(input.message)) {
+      return Response.json({
+        answer: SUBJECTIVE_NEGATIVE_FOOD_REPLY,
+        menuItems: [],
+        sources: [],
+        remaining: rateLimit.remaining,
+      });
+    }
+
+    const menuRecommendation = isMenuHealthComparisonQuestion(input.message)
+      ? null
+      : await resolveChatbotMenuRecommendation(input.message);
+
+    if (menuRecommendation) {
+      return Response.json({
+        ...menuRecommendation,
+        sources: [],
+        remaining: rateLimit.remaining,
+      });
     }
 
     const rankedEntries = await getRankedChatbotKnowledge(
