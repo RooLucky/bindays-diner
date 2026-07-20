@@ -1,7 +1,9 @@
 import Image from "next/image";
-import { ArrowRight, CirclePlay } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Sparkles } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 import { ParallaxLayer, Reveal } from "./MotionEffects";
 
@@ -43,31 +45,40 @@ export function HeroPage() {
         <div className="relative z-10 mx-auto max-w-[560px] text-center lg:mx-0 lg:text-left">
           <Reveal>
             <p className="font-serif text-2xl italic text-brand-script sm:text-3xl">
-              Benvenuto!
+              Mabuhay!
             </p>
             <h1 className="mt-4 font-serif text-[clamp(2.85rem,14vw,6rem)] leading-[0.98] tracking-normal text-foreground sm:mt-5 sm:text-[clamp(4.2rem,8vw,6rem)] lg:text-[clamp(4.2rem,6.2vw,6rem)]">
-              <span className="whitespace-nowrap">Good Food,</span>
-              <span className="block text-primary">Good Mood.</span>
+              <span className="whitespace-nowrap">Lutong Pinoy,</span>
+              <span className="block text-primary">Pusong Busog.</span>
             </h1>
             <p className="mx-auto mt-6 max-w-md text-sm leading-7 text-muted-foreground sm:mt-7 sm:text-base lg:mx-0">
-              Authentic Italian flavors made with the freshest ingredients. A
-              dining experience that feels like home.
+              Comforting Filipino favorites cooked fresh, served generously,
+              and made for sharing with family and friends.
             </p>
           </Reveal>
 
           <Reveal delay={0.14}>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4 lg:justify-start">
-              <Button className="h-12 w-full rounded-sm px-8 text-xs font-semibold uppercase tracking-[0.08em] shadow-[var(--shadow-primary-button)] sm:w-auto">
-                View Our Menu
-                <ArrowRight className="size-4" />
-              </Button>
-              <Button
-                variant="outline"
-                className="h-12 w-full rounded-sm border-border bg-transparent px-7 text-xs font-semibold uppercase tracking-[0.08em] text-foreground hover:bg-muted sm:w-auto"
+              <Link
+                href="/menu"
+                className={cn(
+                  buttonVariants(),
+                  "h-12 w-full rounded-sm px-8 text-xs font-semibold uppercase tracking-[0.08em] shadow-[var(--shadow-primary-button)] sm:w-auto",
+                )}
               >
-                <CirclePlay className="size-5 text-secondary" />
-                Our Story
-              </Button>
+                Explore the Menu
+                <ArrowRight className="size-4" />
+              </Link>
+              <Link
+                href="/meal-of-the-day"
+                className={cn(
+                  buttonVariants({ variant: "outline" }),
+                  "h-12 w-full rounded-sm border-border bg-transparent px-7 text-xs font-semibold uppercase tracking-[0.08em] text-foreground hover:bg-muted sm:w-auto",
+                )}
+              >
+                <Sparkles className="size-5 text-secondary" />
+                Today&apos;s Special
+              </Link>
             </div>
           </Reveal>
         </div>
@@ -80,7 +91,7 @@ export function HeroPage() {
           >
             <div className="grid size-full place-items-center">
               <div className="grid size-24 place-items-center rounded-full border border-primary/25 text-center text-[0.58rem] font-semibold uppercase tracking-[0.22em]">
-                Made With Love
+                Lutong Bahay
               </div>
             </div>
           </ParallaxLayer>
@@ -110,7 +121,7 @@ export function HeroPage() {
               <div className="hero-bowl-rotation absolute inset-0 z-10">
                 <Image
                   src="/images/friedrice.png"
-                  alt="A bowl of chicken biryani rice garnished with herbs and lemon"
+                  alt="A bowl of Filipino fried rice garnished with herbs and lemon"
                   width={728}
                   height={728}
                   priority

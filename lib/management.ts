@@ -130,16 +130,16 @@ export function getStaticManagementCategory(
 
   return {
     slug,
-    eyebrow: "- Our Favorites -",
-    title: "Featured Dishes",
+    eyebrow: "Paboritong Pinoy",
+    title: "Mga Paborito sa Hapag",
     description:
-      "A selection of our most loved dishes, crafted to bring you an unforgettable taste of Italy.",
+      "Familiar Filipino flavors, generous servings, and comforting dishes made for everyday cravings and salu-salo moments.",
     ctaLabel: "Reserve Favorites",
     ctaHref: "/reservations",
     heroImageKey: null,
     heroImageUrl: "/images/hero-pasta.png",
     heroAlt: "Featured pasta dish",
-    badge: "Main Dish",
+    badge: "Lutong Bahay",
   };
 }
 

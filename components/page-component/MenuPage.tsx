@@ -9,29 +9,30 @@ export function MenuPage({ dishes = menuDishes }: { dishes?: Dish[] }) {
   const realtimeEnabled = isAblyRealtimeEnabled();
 
   return (
-    <section className="bg-background py-16 lg:py-20">
+    <section id="favorites" className="bg-background py-16 lg:py-24">
       {realtimeEnabled ? (
         <PublicMenuRealtimeRefresh categories={["main-dish"]} />
       ) : null}
-      <div className="mx-auto grid max-w-[98dvw] gap-10 px-4 md:max-w-[95dvw] xl:max-w-[85dvw] xl:grid-cols-[0.82fr_2fr] xl:px-0">
-        <Reveal className="mx-auto max-w-md text-center xl:mx-0 xl:text-left">
+      <div className="mx-auto max-w-[98dvw] px-4 md:max-w-[95dvw] xl:max-w-[85dvw] xl:px-0">
+        <Reveal className="mx-auto max-w-3xl text-center">
           <div>
             <p className="font-serif text-2xl italic text-brand-olive sm:text-3xl">
-              - Our Favorites -
+              - Paboritong Pinoy -
             </p>
             <h2 className="mt-3 font-serif text-4xl leading-tight text-foreground sm:text-5xl md:text-6xl">
-              Featured Dishes
+              Mga Paborito sa Hapag
             </h2>
-            <p className="mx-auto mt-5 max-w-xs text-base leading-8 text-muted-foreground xl:mx-0">
-              A selection of our most loved dishes, crafted to bring you an
-              unforgettable taste of Italy.
+            <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-muted-foreground">
+              Familiar Filipino flavors, generous servings, and comforting
+              dishes made for everyday cravings and salu-salo moments.
             </p>
+            <span className="mx-auto mt-6 block h-px w-24 bg-secondary/45" />
           </div>
         </Reveal>
 
-        <StaggerContainer className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <StaggerContainer className="mt-12 grid gap-7 md:grid-cols-3 xl:mt-14 xl:grid-cols-4">
           {dishes.map((dish) => (
-            <StaggerItem key={dish.name}>
+            <StaggerItem key={dish.name} className="h-full">
               <MenuCard dish={dish} source="menu" />
             </StaggerItem>
           ))}

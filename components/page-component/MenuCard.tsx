@@ -74,7 +74,7 @@ export function MenuCard({
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger
         className={cn(
-          "group w-full cursor-pointer rounded-sm text-left focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/30",
+          "group h-full w-full cursor-pointer rounded-sm text-left focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/30",
         )}
         aria-label={`Choose quantity for ${dish.name}`}
         onPointerMove={handlePointerMove}
@@ -93,9 +93,7 @@ export function MenuCard({
             transition={{ type: "spring", stiffness: 250, damping: 22 }}
           >
             <span className="menu-hologram-effect" aria-hidden="true" />
-            <span
-              className="absolute left-1/2 top-0 size-36 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border-4 border-background bg-card shadow-[var(--shadow-hero-image)] transition-all duration-700 group-hover:rotate-3 group-hover:scale-105 group-hover:border-brand-gold-soft group-focus-visible:border-brand-gold-soft sm:size-40"
-            >
+            <span className="absolute left-1/2 top-0 size-36 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border-4 border-background bg-card shadow-[var(--shadow-hero-image)] transition-all duration-700 group-hover:rotate-3 group-hover:scale-105 group-hover:border-brand-gold-soft group-focus-visible:border-brand-gold-soft sm:size-40">
               <Image
                 src={dish.image}
                 alt={dish.name}
@@ -121,16 +119,14 @@ export function MenuCard({
               <span className="font-serif text-2xl font-semibold">
                 {dish.price}
               </span>
-              <span
-                className="grid size-10 place-items-center rounded-sm bg-primary text-primary-foreground transition-all duration-300 group-hover:rotate-90 group-hover:bg-background group-hover:text-secondary group-focus-visible:bg-background group-focus-visible:text-secondary"
-              >
+              <span className="grid size-10 place-items-center rounded-sm bg-primary text-primary-foreground transition-all duration-300 group-hover:rotate-90 group-hover:bg-background group-hover:text-secondary group-focus-visible:bg-background group-focus-visible:text-secondary">
                 <Plus className="size-5" />
               </span>
             </div>
           </motion.article>
         ) : (
           <motion.div
-            className="menu-hologram-card relative overflow-hidden rounded-sm border border-border bg-card shadow-[var(--shadow-card)]"
+            className="menu-hologram-card relative flex h-full min-h-[29rem] flex-col overflow-hidden rounded-sm border border-border bg-card shadow-[var(--shadow-card)]"
             style={{ rotateX, rotateY, transformPerspective: 950 }}
             whileHover={{
               y: -14,
@@ -140,8 +136,7 @@ export function MenuCard({
             whileTap={{ scale: 0.985 }}
             transition={{ type: "spring", stiffness: 260, damping: 22 }}
           >
-            <span className="menu-hologram-effect" aria-hidden="true" />
-            <div className="relative aspect-[2.05/1] overflow-hidden">
+            <div className="relative aspect-[4/3] overflow-hidden border-b border-border">
               <Image
                 src={dish.image}
                 alt={dish.name}
@@ -150,26 +145,32 @@ export function MenuCard({
                 className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
               />
               {dish.tag ? (
-                <span className="absolute left-3 top-3 rounded-full bg-popover/90 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.08em] text-secondary shadow-[var(--shadow-soft-icon)]">
+                <span className="absolute left-4 top-4 rounded-sm border border-border/70 bg-popover/90 px-3 py-1.5 text-[0.65rem] font-bold uppercase tracking-[0.08em] text-secondary shadow-[var(--shadow-soft-icon)] backdrop-blur-sm">
                   {dish.tag}
                 </span>
               ) : null}
-              <span className="absolute bottom-[-1.2rem] right-4 grid size-16 place-items-center rounded-full bg-brand-price text-lg font-semibold text-foreground shadow-[var(--shadow-price)] transition-transform duration-500 group-hover:scale-110">
-                {dish.price}
-              </span>
             </div>
-            <div className="px-5 pb-7 pt-6">
-              <div className="flex items-start justify-between gap-4">
-                <h3 className="font-serif text-2xl leading-tight text-foreground">
+            <div className="flex flex-1 flex-col px-5 pb-5 pt-6 sm:px-6">
+              <div className="flex items-baseline gap-3">
+                <h3 className="shrink-0 font-serif text-2xl leading-tight text-foreground">
                   {dish.name}
                 </h3>
-                <span className="mt-1 inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground opacity-0 transition-all duration-300 group-hover:rotate-[-8deg] group-hover:opacity-100 group-focus-visible:opacity-100">
+                <span className="min-w-4 flex-1 border-b border-dotted border-secondary/50" />
+                <span className="shrink-0 font-serif text-xl font-semibold text-primary">
+                  {dish.price}
+                </span>
+              </div>
+              <p className="mt-4 line-clamp-3 text-sm leading-6 text-muted-foreground">
+                {dish.description}
+              </p>
+              <div className="mt-auto flex items-center justify-between border-t border-border pt-5">
+                <span className="text-xs font-bold uppercase tracking-[0.08em] text-secondary">
+                  Add to Order
+                </span>
+                <span className="grid size-10 place-items-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-primary-button)] transition-all duration-300 group-hover:rotate-90 group-hover:scale-110 group-focus-visible:rotate-90">
                   <ShoppingCart className="size-4" />
                 </span>
               </div>
-              <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                {dish.description}
-              </p>
             </div>
           </motion.div>
         )}
@@ -223,7 +224,9 @@ export function MenuCard({
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setQuantity((current) => Math.max(1, current - 1))}
+                  onClick={() =>
+                    setQuantity((current) => Math.max(1, current - 1))
+                  }
                   className="inline-flex size-10 items-center justify-center rounded-sm border border-border bg-card text-foreground hover:bg-muted"
                   aria-label={`Decrease ${dish.name} quantity`}
                 >

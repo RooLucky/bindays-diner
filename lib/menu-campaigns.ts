@@ -104,15 +104,15 @@ export const menuDishes: Dish[] = [
 export const campaigns: Record<string, Campaign> = {
   "main-dish": {
     slug: "main-dish",
-    eyebrow: "Our Favorites",
-    title: "Featured Dishes",
+    eyebrow: "Paboritong Pinoy",
+    title: "Mga Paborito sa Hapag",
     description:
-      "A selection of our most loved dishes, crafted to bring you an unforgettable taste of Italy.",
+      "Familiar Filipino flavors, generous servings, and comforting dishes made for everyday cravings and salu-salo moments.",
     ctaLabel: "Choose Your Meals",
     ctaHref: "#menu-dishes",
     heroImage: images.hero,
     heroAlt: "Featured pasta dish from the Bindays Diner menu",
-    badge: "House Menu",
+    badge: "Lutong Bahay",
     dishes: menuDishes,
     features: [
       {

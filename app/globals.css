@@ -10,6 +10,7 @@
   --color-brand-red: var(--brand-red);
   --color-brand-cream: var(--brand-cream);
   --color-brand-linen: var(--brand-linen);
+  --color-brand-white: var(--brand-white);
   --color-brand-olive: var(--brand-olive);
   --color-brand-gold: var(--brand-gold);
   --color-brand-gold-soft: var(--brand-gold-soft);
@@ -159,11 +160,11 @@
   --hologram-opacity-low: 0.24;
   background: radial-gradient(
     circle at var(--hologram-x, 50%) var(--hologram-y, 50%),
-    color-mix(in oklab, var(--brand-gold-soft) 38%, transparent),
+    color-mix(in oklab, var(--brand-gold-soft) 22%, transparent),
     transparent 42%
   );
-  animation: menu-hologram-pulse 3.4s ease-in-out infinite;
-  opacity: 0.32;
+  animation: none;
+  opacity: 0;
   overflow: hidden;
   transition: opacity 300ms ease;
 }
@@ -176,13 +177,14 @@
   background: linear-gradient(
     112deg,
     transparent 4%,
-    color-mix(in oklab, var(--brand-gold) 38%, transparent) 34%,
-    color-mix(in oklab, var(--brand-olive) 30%, transparent) 52%,
-    color-mix(in oklab, var(--brand-red) 24%, transparent) 68%,
+    color-mix(in oklab, var(--brand-gold) 20%, transparent) 34%,
+    color-mix(in oklab, var(--brand-olive) 16%, transparent) 52%,
+    color-mix(in oklab, var(--brand-red) 10%, transparent) 68%,
     transparent 96%
   );
+  animation: none;
   content: "";
-  animation: menu-hologram-scan 5.2s linear infinite;
+  opacity: 0;
   will-change: opacity, transform;
 }
 
@@ -196,21 +198,26 @@
     transparent 5px,
     color-mix(in oklab, var(--brand-olive) 8%, transparent) 6px
   );
+  animation: none;
   content: "";
-  animation: menu-hologram-lines 2.4s linear infinite;
-  opacity: 0.65;
+  opacity: 0;
 }
 
-.group:hover .menu-hologram-effect,
-.group:focus-visible .menu-hologram-effect {
-  --hologram-opacity-high: 0.78;
-  --hologram-opacity-low: 0.42;
-  animation: menu-hologram-pulse 2.4s ease-in-out infinite;
-}
+@media (hover: hover) and (pointer: fine) {
+  .group:hover .menu-hologram-effect {
+    --hologram-opacity-high: 0.35;
+    --hologram-opacity-low: 0.16;
+    animation: menu-hologram-pulse 2.4s ease-in-out infinite;
+  }
 
-.group:hover .menu-hologram-effect::before,
-.group:focus-visible .menu-hologram-effect::before {
-  animation-duration: 3.2s;
+  .group:hover .menu-hologram-effect::before {
+    animation: menu-hologram-scan 3.2s linear infinite;
+  }
+
+  .group:hover .menu-hologram-effect::after {
+    animation: menu-hologram-lines 2.4s linear infinite;
+    opacity: 0.32;
+  }
 }
 
 .hero-bowl-rotation {
@@ -260,6 +267,7 @@
 }
 
 :root {
+  --brand-white: oklch(1 0 0);
   --brand-red: oklch(52.645% 0.20289 28.875);
   --brand-cream: oklch(97.937% 0.01289 71.172);
   --brand-linen: oklch(96.739% 0.01683 76.023);
@@ -312,6 +320,10 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+}
+
+.website-theme {
+  --background: var(--brand-white);
 }
 
 .dark {

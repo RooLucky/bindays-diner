@@ -5,23 +5,23 @@ import { StaggerContainer, StaggerItem } from "./MotionEffects";
 const tickerItems = [
   {
     icon: Leaf,
-    title: "Fresh Ingredients",
-    description: "We source only the freshest and highest quality ingredients.",
+    title: "Fresh Every Day",
+    description: "Fresh ingredients prepared daily for every satisfying meal.",
   },
   {
     icon: ChefHat,
-    title: "Expert Chefs",
-    description: "Our chefs bring years of experience to every dish.",
+    title: "Lutong Bahay",
+    description: "Familiar Filipino flavors cooked with the care of home.",
   },
   {
     icon: Heart,
-    title: "Made With Love",
-    description: "Every dish is made with passion and dedication.",
+    title: "Made for Sharing",
+    description: "Generous dishes for family meals, barkada, and celebrations.",
   },
   {
     icon: MapPin,
-    title: "Cozy Ambience",
-    description: "A warm and welcoming place for family and friends.",
+    title: "Warm Welcome",
+    description: "Relaxed Filipino hospitality in the heart of Legazpi City.",
   },
 ];
 
