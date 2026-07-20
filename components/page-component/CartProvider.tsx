@@ -13,9 +13,6 @@ import {
 import type { Dish } from "@/lib/menu-campaigns";
 
 export const CART_STORAGE_KEY = "bindays-diner-cart";
-export const FULFILLMENT_MODE_STORAGE_KEY = "bindays-diner-fulfillment-mode";
-
-export type FulfillmentMode = "dine-in" | "delivery";
 
 export type CartItem = {
   id: string;
@@ -30,11 +27,9 @@ export type CartItem = {
 
 type CartContextValue = {
   items: CartItem[];
-  fulfillmentMode: FulfillmentMode;
   totalQuantity: number;
   subtotal: number;
   addItem: (dish: Dish, source: string, quantity?: number) => void;
-  setFulfillmentMode: (mode: FulfillmentMode) => void;
   incrementItem: (id: string) => void;
   decrementItem: (id: string) => void;
   removeItem: (id: string) => void;
@@ -75,25 +70,12 @@ function readStoredCart() {
   }
 }
 
-function readStoredFulfillmentMode(): FulfillmentMode {
-  if (typeof window === "undefined") {
-    return "dine-in";
-  }
-
-  const storedMode = window.localStorage.getItem(FULFILLMENT_MODE_STORAGE_KEY);
-
-  return storedMode === "delivery" ? "delivery" : "dine-in";
-}
-
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
-  const [fulfillmentMode, setFulfillmentModeState] =
-    useState<FulfillmentMode>("dine-in");
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     setItems(readStoredCart());
-    setFulfillmentModeState(readStoredFulfillmentMode());
     setHydrated(true);
   }, []);
 
@@ -106,21 +88,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [hydrated, items]);
 
   useEffect(() => {
-    if (!hydrated) {
-      return;
-    }
-
-    window.localStorage.setItem(FULFILLMENT_MODE_STORAGE_KEY, fulfillmentMode);
-  }, [fulfillmentMode, hydrated]);
-
-  useEffect(() => {
     function handleStorage(event: StorageEvent) {
       if (event.key === CART_STORAGE_KEY) {
         setItems(readStoredCart());
-      }
-
-      if (event.key === FULFILLMENT_MODE_STORAGE_KEY) {
-        setFulfillmentModeState(readStoredFulfillmentMode());
       }
     }
 
@@ -189,10 +159,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems([]);
   }, []);
 
-  const setFulfillmentMode = useCallback((mode: FulfillmentMode) => {
-    setFulfillmentModeState(mode);
-  }, []);
-
   const totalQuantity = useMemo(
     () => items.reduce((total, item) => total + item.quantity, 0),
     [items],
@@ -222,11 +188,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       items,
-      fulfillmentMode,
       totalQuantity,
       subtotal,
       addItem,
-      setFulfillmentMode,
       incrementItem,
       decrementItem,
       removeItem,
@@ -237,12 +201,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       addItem,
       clearCart,
       decrementItem,
-      fulfillmentMode,
       getSummary,
       incrementItem,
       items,
       removeItem,
-      setFulfillmentMode,
       subtotal,
       totalQuantity,
     ],

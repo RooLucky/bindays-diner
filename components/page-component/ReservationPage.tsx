@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, Mail, MapPin, Phone, ShoppingCart, Users } from "lucide-react";
+import { CalendarDays, Mail, MapPin, Phone, ShoppingCart } from "lucide-react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -11,37 +11,29 @@ import { cn } from "@/lib/utils";
 import { useCart } from "./CartProvider";
 import { Reveal, StaggerContainer, StaggerItem } from "./MotionEffects";
 
-const bookingBenefits = [
+const deliveryBenefits = [
   {
     icon: CalendarDays,
-    title: "Easy Booking",
-    description: "Pick a preferred date and time for your visit.",
+    title: "Scheduled Delivery",
+    description: "Choose your preferred delivery date and time.",
   },
   {
-    icon: Users,
-    title: "Table Planning",
-    description: "Tell us how many guests we should prepare for.",
+    icon: MapPin,
+    title: "Clear Delivery Details",
+    description: "Share your address, landmark, and rider instructions.",
   },
   {
     icon: Phone,
-    title: "Staff Follow-up",
-    description: "Reservations stay pending until the team confirms.",
+    title: "Order Confirmation",
+    description: "Your request stays pending until our team confirms it.",
   },
 ];
 
 export function ReservationPage() {
-  const {
-    fulfillmentMode,
-    getSummary,
-    items,
-    setFulfillmentMode,
-    subtotal,
-    totalQuantity,
-  } = useCart();
+  const { getSummary, items, subtotal, totalQuantity } = useCart();
   const cartSummary = useMemo(() => getSummary(), [getSummary]);
   const [notes, setNotes] = useState("");
   const [notesEdited, setNotesEdited] = useState(false);
-  const [reservationDate, setReservationDate] = useState("");
   const [deliveryDate, setDeliveryDate] = useState("");
   const today = useMemo(() => {
     const date = new Date();
@@ -67,11 +59,11 @@ export function ReservationPage() {
             Food selection required
           </p>
           <h1 className="mt-3 font-serif text-4xl text-foreground sm:text-5xl">
-            Add meals before reserving
+            Add meals before delivery
           </h1>
           <p className="mt-4 max-w-lg text-sm leading-7 text-muted-foreground sm:text-base">
-            Dine-in and delivery requests begin with a food order. Choose your
-            meals first, then continue from your order.
+            Delivery requests begin with a food order. Choose your meals first,
+            then continue from your order.
           </p>
           <Link
             href="/menu"
@@ -93,19 +85,14 @@ export function ReservationPage() {
         <div className="mx-auto max-w-2xl text-center lg:mx-0 lg:max-w-xl lg:text-left">
           <Reveal>
             <p className="font-serif text-xl italic text-brand-script sm:text-2xl md:text-3xl">
-              {fulfillmentMode === "delivery"
-                ? "Deliver To Your Home"
-                : "Dine In With Your Order"}
+              Deliver To Your Home
             </p>
             <h1 className="mt-3 font-serif text-[clamp(2.55rem,12vw,4rem)] leading-[0.98] text-foreground md:text-[clamp(3.6rem,8vw,5rem)] lg:text-[clamp(4rem,5.6vw,5.6rem)]">
-              {fulfillmentMode === "delivery"
-                ? "Get Your Favorites Delivered Fresh"
-                : "Reserve Your Meals and Table"}
+              Get Your Favorites Delivered Fresh
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8 lg:mx-0 lg:max-w-md">
-              {fulfillmentMode === "delivery"
-                ? "Send your delivery details and selected meals so our team can confirm your order and schedule."
-                : "Confirm your selected meals, visit schedule, and party size so our team can prepare your food and table together."}
+              Send your delivery details and selected meals so our team can
+              confirm your order and schedule.
             </p>
           </Reveal>
 
@@ -133,7 +120,7 @@ export function ReservationPage() {
               <MapPin className="mt-1 size-4 shrink-0 text-primary" />
               <span>
                 <strong className="block text-foreground">Address</strong>
-                123 Italian Street, Food City
+                Legazpi City, Albay
               </span>
             </p>
             </StaggerItem>
@@ -143,42 +130,8 @@ export function ReservationPage() {
         <Reveal className="mx-auto w-full max-w-2xl lg:max-w-none" y={34}>
         <form className="rounded-sm border border-border bg-card p-4 shadow-[var(--shadow-card)] sm:p-5 md:p-6 xl:p-8">
           <h2 className="font-serif text-2xl text-foreground sm:text-3xl">
-            {fulfillmentMode === "delivery"
-              ? "Delivery Details"
-              : "Dine-In Meal Reservation"}
+            Delivery Details
           </h2>
-          <div className="mt-4 grid grid-cols-2 gap-1 rounded-sm border border-border bg-background p-1 sm:gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setFulfillmentMode("dine-in");
-                setNotesEdited(false);
-              }}
-              className={cn(
-                "min-h-10 rounded-sm px-2 text-[0.7rem] font-semibold uppercase tracking-[0.08em] transition-colors sm:text-xs",
-                fulfillmentMode === "dine-in"
-                  ? "bg-primary text-primary-foreground"
-                  : "text-foreground hover:bg-muted",
-              )}
-            >
-              Dine In
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setFulfillmentMode("delivery");
-                setNotesEdited(false);
-              }}
-              className={cn(
-                "min-h-10 rounded-sm px-2 text-[0.7rem] font-semibold uppercase tracking-[0.08em] transition-colors sm:text-xs",
-                fulfillmentMode === "delivery"
-                  ? "bg-primary text-primary-foreground"
-                  : "text-foreground hover:bg-muted",
-              )}
-            >
-              Delivery
-            </button>
-          </div>
           <div className="mt-5 grid gap-4 sm:mt-6">
             <label className="grid gap-2 text-sm font-medium text-foreground">
               Full Name
@@ -194,78 +147,41 @@ export function ReservationPage() {
                 placeholder="Enter your phone number"
               />
             </label>
-            {fulfillmentMode === "delivery" ? (
-              <>
-                <label className="grid gap-2 text-sm font-medium text-foreground">
-                  Delivery Address
-                  <input
-                    className="h-11 w-full rounded-sm border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
-                    placeholder="House number, street, barangay, city"
-                  />
-                </label>
-                <label className="grid gap-2 text-sm font-medium text-foreground">
-                  Landmark or Delivery Notes
-                  <input
-                    className="h-11 w-full rounded-sm border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
-                    placeholder="Nearby landmark, gate color, or rider instructions"
-                  />
-                </label>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <label className="grid gap-2 text-sm font-medium text-foreground">
-                    Delivery Date
-                    <DatePicker
-                      value={deliveryDate}
-                      onChange={setDeliveryDate}
-                      placeholder="Select delivery date"
-                      disabledDates={{ before: today }}
-                      startMonth={today}
-                    />
-                  </label>
-                  <label className="grid gap-2 text-sm font-medium text-foreground">
-                    Preferred Time
-                    <input
-                      type="time"
-                      className="h-11 w-full rounded-sm border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
-                    />
-                  </label>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <label className="grid gap-2 text-sm font-medium text-foreground">
-                    Date
-                    <DatePicker
-                      value={reservationDate}
-                      onChange={setReservationDate}
-                      placeholder="Select reservation date"
-                      disabledDates={{ before: today }}
-                      startMonth={today}
-                    />
-                  </label>
-                  <label className="grid gap-2 text-sm font-medium text-foreground">
-                    Time
-                    <input
-                      type="time"
-                      className="h-11 w-full rounded-sm border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
-                    />
-                  </label>
-                </div>
-                <label className="grid gap-2 text-sm font-medium text-foreground">
-                  Number of Persons
-                  <input
-                    type="number"
-                    min="1"
-                    className="h-11 w-full rounded-sm border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
-                    placeholder="How many guests?"
-                  />
-                </label>
-              </>
-            )}
             <label className="grid gap-2 text-sm font-medium text-foreground">
-              {fulfillmentMode === "delivery"
-                ? "Food or Delivery Notes"
-                : "Food or Table Notes"}
+              Delivery Address
+              <input
+                className="h-11 w-full rounded-sm border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
+                placeholder="House number, street, barangay, city"
+              />
+            </label>
+            <label className="grid gap-2 text-sm font-medium text-foreground">
+              Landmark or Delivery Notes
+              <input
+                className="h-11 w-full rounded-sm border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
+                placeholder="Nearby landmark, gate color, or rider instructions"
+              />
+            </label>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="grid gap-2 text-sm font-medium text-foreground">
+                Delivery Date
+                <DatePicker
+                  value={deliveryDate}
+                  onChange={setDeliveryDate}
+                  placeholder="Select delivery date"
+                  disabledDates={{ before: today }}
+                  startMonth={today}
+                />
+              </label>
+              <label className="grid gap-2 text-sm font-medium text-foreground">
+                Preferred Time
+                <input
+                  type="time"
+                  className="h-11 w-full rounded-sm border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
+                />
+              </label>
+            </div>
+            <label className="grid gap-2 text-sm font-medium text-foreground">
+              Food or Delivery Notes
               {items.length > 0 ? (
                 <div className="rounded-sm border border-border bg-background p-3 sm:p-4">
                   <p className="text-xs font-bold uppercase tracking-[0.08em] text-primary">
@@ -303,25 +219,19 @@ export function ReservationPage() {
                   setNotesEdited(true);
                 }}
                 className="min-h-32 w-full rounded-sm border border-input bg-background px-3 py-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
-                placeholder={
-                  fulfillmentMode === "delivery"
-                    ? "Any food request, delivery timing note, or special instruction?"
-                    : "Any food reservation, table preference, or special occasion?"
-                }
+                placeholder="Any food request, delivery timing note, or special instruction?"
               />
             </label>
           </div>
           <Button className="mt-6 min-h-12 w-full whitespace-normal rounded-sm px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em]">
-            {fulfillmentMode === "delivery"
-              ? "Send Delivery Request"
-              : "Send Dine-In Request"}
+            Send Delivery Request
           </Button>
         </form>
         </Reveal>
       </div>
 
       <StaggerContainer className="mx-auto mt-10 grid max-w-[98dvw] grid-cols-1 border-y border-border px-3 sm:px-4 md:max-w-[95dvw] md:grid-cols-3 xl:max-w-[85dvw] xl:px-0">
-        {bookingBenefits.map((benefit) => {
+        {deliveryBenefits.map((benefit) => {
           const Icon = benefit.icon;
 
           return (

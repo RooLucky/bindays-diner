@@ -116,7 +116,7 @@ export function CampaignPage({ campaign }: { campaign: Campaign }) {
                 Make it easy
               </p>
               <h2 className="mt-2 font-serif text-3xl text-foreground">
-                Add your favorites, then choose dine-in or delivery.
+                Add your favorites, then send them for delivery.
               </h2>
             </div>
             <div className="flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row lg:justify-start">

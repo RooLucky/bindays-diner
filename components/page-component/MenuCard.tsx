@@ -82,7 +82,7 @@ export function MenuCard({
       >
         {variant === "student" ? (
           <motion.article
-            className="menu-hologram-card relative mt-16 flex min-h-[21rem] flex-col items-center rounded-sm border border-border bg-card px-4 pb-5 pt-24 text-center text-foreground shadow-[var(--shadow-card)] transition-colors duration-500 group-hover:border-secondary group-hover:bg-secondary group-hover:text-background group-focus-visible:border-secondary group-focus-visible:bg-secondary group-focus-visible:text-background sm:mt-20 sm:min-h-[23rem] sm:px-5 sm:pt-28"
+            className="menu-hologram-card relative grid min-h-[8.75rem] grid-cols-[6.5rem_minmax(0,1fr)] items-center gap-4 overflow-hidden rounded-sm border border-border bg-card p-3 text-left text-foreground shadow-[var(--shadow-card)] transition-colors duration-500 group-hover:border-secondary group-hover:bg-secondary group-hover:text-background group-focus-visible:border-secondary group-focus-visible:bg-secondary group-focus-visible:text-background sm:mt-20 sm:flex sm:min-h-[23rem] sm:flex-col sm:items-center sm:overflow-visible sm:px-5 sm:pb-5 sm:pt-28 sm:text-center"
             style={{ rotateX, rotateY, transformPerspective: 950 }}
             whileHover={{
               y: -15,
@@ -93,40 +93,42 @@ export function MenuCard({
             transition={{ type: "spring", stiffness: 250, damping: 22 }}
           >
             <span className="menu-hologram-effect" aria-hidden="true" />
-            <span className="absolute left-1/2 top-0 size-36 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border-4 border-background bg-card shadow-[var(--shadow-hero-image)] transition-all duration-700 group-hover:rotate-3 group-hover:scale-105 group-hover:border-brand-gold-soft group-focus-visible:border-brand-gold-soft sm:size-40">
+            <span className="relative size-[6.5rem] shrink-0 overflow-hidden rounded-sm border-2 border-background bg-card shadow-[var(--shadow-card)] transition-all duration-700 group-hover:scale-[1.03] group-hover:border-brand-gold-soft group-focus-visible:border-brand-gold-soft sm:absolute sm:left-1/2 sm:top-0 sm:size-40 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-full sm:border-4 sm:shadow-[var(--shadow-hero-image)] sm:group-hover:rotate-3 sm:group-hover:scale-105">
               <Image
                 src={dish.image}
                 alt={dish.name}
                 fill
-                sizes="(max-width: 639px) 9rem, 10rem"
+                sizes="(max-width: 639px) 6.5rem, 10rem"
                 className="object-cover"
               />
             </span>
 
-            {dish.tag ? (
-              <span className="text-[0.65rem] font-bold uppercase tracking-[0.08em] text-secondary transition-colors duration-500 group-hover:text-brand-gold-soft group-focus-visible:text-brand-gold-soft">
-                {dish.tag}
-              </span>
-            ) : null}
-            <h3 className="mt-3 font-serif text-[clamp(1.45rem,3vw,2rem)] leading-tight">
-              {dish.name}
-            </h3>
-            <p className="mt-3 line-clamp-3 text-sm leading-6 text-muted-foreground transition-colors duration-500 group-hover:text-background/80 group-focus-visible:text-background/80">
-              {dish.description}
-            </p>
-            <span className="mt-5 h-px w-16 bg-border transition-colors duration-500 group-hover:bg-background/30 group-focus-visible:bg-background/30" />
-            <div className="mt-auto flex w-full items-end justify-between gap-3 pt-5">
-              <span className="font-serif text-2xl font-semibold">
-                {dish.price}
-              </span>
-              <span className="grid size-10 place-items-center rounded-sm bg-primary text-primary-foreground transition-all duration-300 group-hover:rotate-90 group-hover:bg-background group-hover:text-secondary group-focus-visible:bg-background group-focus-visible:text-secondary">
-                <Plus className="size-5" />
-              </span>
+            <div className="min-w-0 sm:contents">
+              {dish.tag ? (
+                <span className="text-[0.6rem] font-bold uppercase tracking-[0.08em] text-secondary transition-colors duration-500 group-hover:text-brand-gold-soft group-focus-visible:text-brand-gold-soft sm:text-[0.65rem]">
+                  {dish.tag}
+                </span>
+              ) : null}
+              <h3 className="mt-1 line-clamp-1 font-serif text-xl leading-tight sm:mt-3 sm:text-[clamp(1.45rem,3vw,2rem)]">
+                {dish.name}
+              </h3>
+              <p className="mt-2 line-clamp-2 text-xs leading-5 text-muted-foreground transition-colors duration-500 group-hover:text-background/80 group-focus-visible:text-background/80 sm:mt-3 sm:line-clamp-3 sm:text-sm sm:leading-6">
+                {dish.description}
+              </p>
+              <span className="mt-5 hidden h-px w-16 bg-border transition-colors duration-500 group-hover:bg-background/30 group-focus-visible:bg-background/30 sm:block" />
+              <div className="mt-3 flex w-full items-end justify-between gap-3 sm:mt-auto sm:pt-5">
+                <span className="font-serif text-xl font-semibold sm:text-2xl">
+                  {dish.price}
+                </span>
+                <span className="grid size-10 place-items-center rounded-sm bg-primary text-primary-foreground shadow-[var(--shadow-primary-button)] transition-all duration-300 group-hover:rotate-90 group-hover:bg-background group-hover:text-secondary group-focus-visible:bg-background group-focus-visible:text-secondary">
+                  <Plus className="size-5" />
+                </span>
+              </div>
             </div>
           </motion.article>
         ) : (
           <motion.div
-            className="menu-hologram-card relative flex h-full min-h-[29rem] flex-col overflow-hidden rounded-sm border border-border bg-card shadow-[var(--shadow-card)]"
+            className="menu-hologram-card relative grid h-full min-h-[9.5rem] grid-cols-[7rem_minmax(0,1fr)] overflow-hidden rounded-sm border border-border bg-card shadow-[var(--shadow-card)] sm:flex sm:min-h-[29rem] sm:flex-col"
             style={{ rotateX, rotateY, transformPerspective: 950 }}
             whileHover={{
               y: -14,
@@ -136,7 +138,7 @@ export function MenuCard({
             whileTap={{ scale: 0.985 }}
             transition={{ type: "spring", stiffness: 260, damping: 22 }}
           >
-            <div className="relative aspect-[4/3] overflow-hidden border-b border-border">
+            <div className="relative min-h-[9.5rem] overflow-hidden border-r border-border sm:aspect-[4/3] sm:min-h-0 sm:border-b sm:border-r-0">
               <Image
                 src={dish.image}
                 alt={dish.name}
@@ -145,29 +147,29 @@ export function MenuCard({
                 className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
               />
               {dish.tag ? (
-                <span className="absolute left-4 top-4 rounded-sm border border-border/70 bg-popover/90 px-3 py-1.5 text-[0.65rem] font-bold uppercase tracking-[0.08em] text-secondary shadow-[var(--shadow-soft-icon)] backdrop-blur-sm">
+                <span className="absolute left-2 top-2 rounded-sm border border-border/70 bg-popover/90 px-2 py-1 text-[0.55rem] font-bold uppercase tracking-[0.08em] text-secondary shadow-[var(--shadow-soft-icon)] backdrop-blur-sm sm:left-4 sm:top-4 sm:px-3 sm:py-1.5 sm:text-[0.65rem]">
                   {dish.tag}
                 </span>
               ) : null}
             </div>
-            <div className="flex flex-1 flex-col px-5 pb-5 pt-6 sm:px-6">
-              <div className="flex items-baseline gap-3">
-                <h3 className="shrink-0 font-serif text-2xl leading-tight text-foreground">
+            <div className="flex min-w-0 flex-1 flex-col p-4 sm:px-6 sm:pb-5 sm:pt-6">
+              <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-3">
+                <h3 className="line-clamp-2 font-serif text-xl leading-tight text-foreground sm:shrink-0 sm:text-2xl">
                   {dish.name}
                 </h3>
-                <span className="min-w-4 flex-1 border-b border-dotted border-secondary/50" />
-                <span className="shrink-0 font-serif text-xl font-semibold text-primary">
+                <span className="hidden min-w-4 flex-1 border-b border-dotted border-secondary/50 sm:block" />
+                <span className="mt-1 shrink-0 font-serif text-lg font-semibold text-primary sm:mt-0 sm:text-xl">
                   {dish.price}
                 </span>
               </div>
-              <p className="mt-4 line-clamp-3 text-sm leading-6 text-muted-foreground">
+              <p className="mt-2 line-clamp-2 text-xs leading-5 text-muted-foreground sm:mt-4 sm:line-clamp-3 sm:text-sm sm:leading-6">
                 {dish.description}
               </p>
-              <div className="mt-auto flex items-center justify-between border-t border-border pt-5">
-                <span className="text-xs font-bold uppercase tracking-[0.08em] text-secondary">
+              <div className="mt-auto flex items-center justify-between pt-3 sm:border-t sm:border-border sm:pt-5">
+                <span className="text-[0.65rem] font-bold uppercase tracking-[0.08em] text-secondary sm:text-xs">
                   Add to Order
                 </span>
-                <span className="grid size-10 place-items-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-primary-button)] transition-all duration-300 group-hover:rotate-90 group-hover:scale-110 group-focus-visible:rotate-90">
+                <span className="grid size-9 place-items-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-primary-button)] transition-all duration-300 group-hover:rotate-90 group-hover:scale-110 group-focus-visible:rotate-90 sm:size-10">
                   <ShoppingCart className="size-4" />
                 </span>
               </div>

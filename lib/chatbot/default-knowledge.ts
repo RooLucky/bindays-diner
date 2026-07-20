@@ -1,16 +1,16 @@
 export const DEFAULT_CHATBOT_KNOWLEDGE = [
   {
-    question: "How do I reserve meals for dine-in?",
+    question: "How do I place a delivery order?",
     answer:
-      "Add dishes to your cart, select Reserve These Items, then choose Dine In. Enter your visit schedule, party size, contact details, and any food or table notes.",
-    keywords: "food meal order reservation dine in table guests persons schedule cart",
-    category: "Reservations",
+      "Add dishes to your cart, open your food order, then select Continue to Delivery. Enter your contact details, delivery address, preferred date and time, and any food or rider instructions.",
+    keywords: "food meal order delivery address schedule cart rider instructions",
+    category: "Orders",
     isFeatured: true,
   },
   {
     question: "Can I order food for delivery?",
     answer:
-      "Yes. Add dishes to your cart, select Reserve These Items, choose Deliver to Home, and complete the delivery form on the Reservations page.",
+      "Yes. Add dishes to your cart, select Continue to Delivery, and complete the delivery details form. Binday's Diner currently accepts delivery requests only.",
     keywords: "delivery deliver home order cart address food",
     category: "Orders",
     isFeatured: true,

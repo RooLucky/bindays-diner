@@ -298,7 +298,7 @@ export function StudentMealsShowcase({
           )}
         >
           {campaign.dishes.map((dish) => (
-            <StaggerItem key={dish.name}>
+            <StaggerItem key={dish.name} className="h-full">
               <MenuCard dish={dish} source={campaign.slug} variant="student" />
             </StaggerItem>
           ))}

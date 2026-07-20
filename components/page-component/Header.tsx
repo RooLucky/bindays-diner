@@ -3,29 +3,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Home,
-  Leaf,
   Menu,
   Minus,
   Plus,
   ShoppingCart,
-  Store,
   Trash2,
   X,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 
-import {
-  AlertDialog,
-  AlertDialogBackdrop,
-  AlertDialogClose,
-  AlertDialogDescription,
-  AlertDialogPopup,
-  AlertDialogPortal,
-  AlertDialogTitle,
-  AlertDialogViewport,
-} from "@/components/ui/alert-dialog";
 import { buttonVariants } from "@/components/ui/button";
 import {
   Drawer,
@@ -58,14 +45,12 @@ export function Header() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
-  const [fulfillmentOpen, setFulfillmentOpen] = useState(false);
   const {
     clearCart,
     decrementItem,
     incrementItem,
     items,
     removeItem,
-    setFulfillmentMode,
     subtotal,
     totalQuantity,
   } = useCart();
@@ -141,7 +126,7 @@ export function Header() {
                         Your Food Order
                       </DrawerTitle>
                       <DrawerDescription className="mt-1 text-sm text-muted-foreground">
-                        Review your meals before choosing dine-in or delivery.
+                        Review your meals, then enter your delivery details.
                       </DrawerDescription>
                     </div>
                     <DrawerClose
@@ -226,19 +211,16 @@ export function Header() {
                         </span>
                       </div>
                       <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto]">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setCartOpen(false);
-                            setFulfillmentOpen(true);
-                          }}
+                        <Link
+                          href="/reservations"
+                          onClick={() => setCartOpen(false)}
                           className={cn(
                             buttonVariants(),
                             "h-12 rounded-sm text-xs font-semibold uppercase tracking-[0.08em] shadow-[var(--shadow-header-button)]",
                           )}
                         >
-                          Continue with Order
-                        </button>
+                          Continue to Delivery
+                        </Link>
                         <button
                           type="button"
                           onClick={clearCart}
@@ -262,72 +244,6 @@ export function Header() {
               </DrawerViewport>
             </DrawerPortal>
           </Drawer>
-
-          <AlertDialog open={fulfillmentOpen} onOpenChange={setFulfillmentOpen}>
-            <AlertDialogPortal>
-              <AlertDialogBackdrop />
-              <AlertDialogViewport>
-                <AlertDialogPopup className="max-w-xl p-4 sm:p-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <AlertDialogTitle className="font-serif text-3xl leading-tight text-foreground sm:text-4xl">
-                        How would you like your order?
-                      </AlertDialogTitle>
-                      <AlertDialogDescription className="mt-2 text-sm leading-6 text-muted-foreground">
-                        Choose whether to enjoy your selected meals here or have
-                        them delivered.
-                      </AlertDialogDescription>
-                    </div>
-                    <AlertDialogClose
-                      className="inline-flex size-9 shrink-0 items-center justify-center rounded-sm border border-border bg-background text-foreground"
-                      aria-label="Close reservation option picker"
-                    >
-                      <X className="size-4" />
-                    </AlertDialogClose>
-                  </div>
-
-                  <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                    <Link
-                      href="/reservations"
-                      onClick={() => {
-                        setFulfillmentMode("dine-in");
-                        setFulfillmentOpen(false);
-                      }}
-                      className="rounded-sm border border-border bg-background p-4 text-left transition-colors hover:bg-muted sm:p-5"
-                    >
-                      <span className="flex size-11 items-center justify-center rounded-full bg-brand-gold-soft text-secondary">
-                        <Store className="size-5" />
-                      </span>
-                      <span className="mt-4 block font-serif text-2xl text-foreground">
-                        Dine In
-                      </span>
-                      <span className="mt-2 block text-sm leading-6 text-muted-foreground">
-                        Reserve these meals and a table for your visit.
-                      </span>
-                    </Link>
-                    <Link
-                      href="/reservations"
-                      onClick={() => {
-                        setFulfillmentMode("delivery");
-                        setFulfillmentOpen(false);
-                      }}
-                      className="rounded-sm border border-border bg-background p-4 text-left transition-colors hover:bg-muted sm:p-5"
-                    >
-                      <span className="flex size-11 items-center justify-center rounded-full bg-brand-gold-soft text-secondary">
-                        <Home className="size-5" />
-                      </span>
-                      <span className="mt-4 block font-serif text-2xl text-foreground">
-                        Deliver to Home
-                      </span>
-                      <span className="mt-2 block text-sm leading-6 text-muted-foreground">
-                        Send delivery address and preferred delivery time.
-                      </span>
-                    </Link>
-                  </div>
-                </AlertDialogPopup>
-              </AlertDialogViewport>
-            </AlertDialogPortal>
-          </AlertDialog>
 
           <Drawer
             open={menuOpen}
