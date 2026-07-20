@@ -41,6 +41,7 @@ import {
 import { cn } from "@/lib/utils";
 
 import { useCart } from "./CartProvider";
+import Image from "next/image";
 
 const navItems = [
   { label: "Home", href: "/home" },
@@ -78,10 +79,16 @@ export function Header() {
           aria-label="Binday's Diner home"
         >
           <span className="flex size-9 items-center justify-center text-secondary sm:size-10">
-            <Leaf className="size-6 sm:size-7" strokeWidth={1.5} />
+            <Image
+              src="/images/web-logo.png"
+              alt="Binday's Diner logo"
+              width={1254}
+              height={1254}
+              className="h-16 w-16 object-contain sm:h-10 sm:w-10"
+            />
           </span>
           <span className="leading-none">
-            <span className="block font-serif text-2xl text-primary sm:text-3xl">
+            <span className="block font-serif text-xl text-primary sm:text-2xl">
               Binday's Diner
             </span>
             <span className="block pt-1 text-[0.58rem] font-semibold uppercase tracking-[0.3em] text-muted-foreground sm:text-[0.65rem] sm:tracking-[0.38em]">
