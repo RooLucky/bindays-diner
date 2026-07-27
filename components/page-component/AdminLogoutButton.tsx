@@ -17,7 +17,7 @@ export function AdminLogoutButton() {
       return;
     }
 
-    router.push("/admin/login");
+    router.push("/login");
     router.refresh();
   }
 

@@ -30,6 +30,7 @@ import type {
   ManagementItemResponse,
   ManagementPayload,
   ManagementCategorySlug,
+  ManagementItemCategoryResponse,
 } from "@/lib/management";
 
 const emptyItemForm = {
@@ -59,6 +60,9 @@ export function ManagementTable({
   const [editingItem, setEditingItem] = useState<ManagementItemResponse | null>(
     null,
   );
+  const [itemCategories, setItemCategories] = useState<
+    ManagementItemCategoryResponse[]
+  >([]);
   const [pageContentOpen, setPageContentOpen] = useState(false);
   const [itemModalOpen, setItemModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -92,8 +96,24 @@ export function ManagementTable({
     setCurrentPage(1);
   }
 
+  async function loadItemCategories() {
+    const response = await fetch("/api/admin/management/item-categories");
+    const data = (await response.json()) as {
+      categories?: ManagementItemCategoryResponse[];
+      error?: string;
+    };
+
+    if (!response.ok || !data.categories) {
+      toast.error(data.error ?? "Unable to load item categories.");
+      return;
+    }
+
+    setItemCategories(data.categories);
+  }
+
   useEffect(() => {
     void loadData();
+    void loadItemCategories();
   }, [endpoint]);
 
   const allItems = payload?.items ?? [];
@@ -105,6 +125,9 @@ export function ManagementTable({
     () => allItems.slice(pageStartIndex, pageEndIndex),
     [allItems, pageEndIndex, pageStartIndex],
   );
+  const selectedTagIsCustom =
+    itemForm.tag.length > 0 &&
+    !itemCategories.some((categoryOption) => categoryOption.name === itemForm.tag);
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -527,14 +550,27 @@ export function ManagementTable({
                   />
                 </label>
                 <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
-                  Tag
-                  <input
+                  Category{" "}
+                  <span className="font-normal text-muted-foreground">
+                    (optional)
+                  </span>
+                  <select
                     value={itemForm.tag}
                     onChange={(event) =>
                       updateItemField("tag", event.target.value)
                     }
                     className="h-10 rounded-sm border border-border bg-background px-3 text-sm outline-none focus:border-primary"
-                  />
+                  >
+                    <option value="">No category</option>
+                    {selectedTagIsCustom ? (
+                      <option value={itemForm.tag}>{itemForm.tag}</option>
+                    ) : null}
+                    {itemCategories.map((categoryOption) => (
+                      <option key={categoryOption.id} value={categoryOption.name}>
+                        {categoryOption.name}
+                      </option>
+                    ))}
+                  </select>
                 </label>
                 <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
                   Sort
@@ -645,7 +681,7 @@ export function ManagementTable({
                 <th className="px-4 py-3">Image</th>
                 <th className="px-4 py-3">Name</th>
                 <th className="px-4 py-3">Price</th>
-                <th className="px-4 py-3">Tag</th>
+                <th className="px-4 py-3">Category</th>
                 <th className="px-4 py-3">Sort</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3 text-right">Actions</th>

@@ -1,17 +1,6 @@
-import Link from "next/link";
-
 import { AdminLogoutButton } from "@/components/page-component/AdminLogoutButton";
+import { AdminManagementMenu } from "@/components/page-component/AdminManagementMenu";
 import { requireAdminSession } from "@/lib/admin-auth";
-
-const navItems = [
-  { label: "Chatbot Knowledge", href: "/management/chatbot-knowledge" },
-  { label: "Drinks", href: "/management/drinks" },
-  { label: "Meal of the Day", href: "/management/meal-of-the-day" },
-  { label: "Best Seller", href: "/management/best-seller" },
-  { label: "Promo", href: "/management/promo" },
-  { label: "Student Meal", href: "/management/student-meal" },
-  { label: "Main Dish", href: "/management/main-dish" },
-];
 
 export default async function AdminPanelLayout({
   children,
@@ -33,15 +22,7 @@ export default async function AdminPanelLayout({
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="rounded-sm border border-border bg-background px-3 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-foreground hover:bg-muted"
-              >
-                {item.label}
-              </Link>
-            ))}
+            <AdminManagementMenu />
             <AdminLogoutButton />
           </div>
         </div>

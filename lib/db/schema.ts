@@ -112,6 +112,17 @@ export const managementItems = pgTable(
   ],
 );
 
+export const managementItemCategories = pgTable(
+  "management_item_categories",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: varchar("name", { length: 80 }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [uniqueIndex("management_item_categories_name_idx").on(table.name)],
+);
+
 export const loyaltyMembers = pgTable(
   "loyalty_members",
   {

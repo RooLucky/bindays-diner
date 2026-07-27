@@ -10,11 +10,13 @@ import {
   adminSettings,
   chatbotKnowledgeEntries,
   managementCategories,
+  managementItemCategories,
   managementItems,
 } from "@/lib/db/schema";
 import { getServerEnv } from "@/lib/env";
 import {
   MANAGEMENT_CATEGORIES,
+  getStaticManagementItemCategoryNames,
   getStaticManagementCategory,
   getStaticManagementItems,
 } from "@/lib/management";
@@ -174,6 +176,21 @@ async function seed() {
   }
 
   console.log("Seeded management categories and items.");
+
+  for (const name of getStaticManagementItemCategoryNames()) {
+    await getDb()
+      .insert(managementItemCategories)
+      .values({ name })
+      .onConflictDoUpdate({
+        target: managementItemCategories.name,
+        set: {
+          name,
+          updatedAt: new Date(),
+        },
+      });
+  }
+
+  console.log("Seeded management item category options.");
 
   await getDb()
     .insert(chatbotKnowledgeEntries)

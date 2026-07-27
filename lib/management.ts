@@ -4,6 +4,7 @@ import type { LucideIcon } from "lucide-react";
 import { getDb } from "@/lib/db";
 import {
   managementCategories,
+  managementItemCategories,
   managementItems,
   type adminAccounts,
 } from "@/lib/db/schema";
@@ -29,6 +30,14 @@ export type ManagementCategorySlug = (typeof MANAGEMENT_CATEGORIES)[number];
 export type AdminAccount = typeof adminAccounts.$inferSelect;
 export type ManagementCategory = typeof managementCategories.$inferSelect;
 export type ManagementItem = typeof managementItems.$inferSelect;
+export type ManagementItemCategory = typeof managementItemCategories.$inferSelect;
+
+export type ManagementItemCategoryResponse = {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+};
 
 export type ManagementCategoryResponse = {
   slug: ManagementCategorySlug;
@@ -159,6 +168,38 @@ export function getStaticManagementItems(slug: ManagementCategorySlug) {
     sortOrder: index,
     isActive: true,
   }));
+}
+
+export function getStaticManagementItemCategoryNames() {
+  return Array.from(
+    new Set(
+      MANAGEMENT_CATEGORIES.flatMap((slug) =>
+        getStaticManagementItems(slug)
+          .map((item) => item.tag)
+          .filter((tag): tag is string => Boolean(tag)),
+      ),
+    ),
+  ).sort((a, b) => a.localeCompare(b));
+}
+
+export function toManagementItemCategoryResponse(
+  category: ManagementItemCategory,
+): ManagementItemCategoryResponse {
+  return {
+    id: category.id,
+    name: category.name,
+    createdAt: category.createdAt.toISOString(),
+    updatedAt: category.updatedAt.toISOString(),
+  };
+}
+
+export async function getManagementItemCategories() {
+  const categories = await getDb()
+    .select()
+    .from(managementItemCategories)
+    .orderBy(asc(managementItemCategories.name));
+
+  return categories.map(toManagementItemCategoryResponse);
 }
 
 export function toManagementCategoryResponse(

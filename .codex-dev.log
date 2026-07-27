@@ -1,0 +1,13 @@
+
+> bindays-diner@0.1.0 dev C:\2026\bindays-diner
+> next dev
+
+▲ Next.js 16.2.10 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://10.0.0.140:3000
+- Environments: .env
+✓ Ready in 617ms
+
+ GET /management/meal-of-the-day 500 in 1707ms (next.js: 965ms, application-code: 742ms)
+[?25h
+ ELIFECYCLE  Command failed with exit code 4294967295.

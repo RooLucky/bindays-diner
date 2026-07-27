@@ -114,7 +114,7 @@ export async function requireAdminSession() {
   const user = await getAdminSessionUser();
 
   if (!user) {
-    redirect("/admin/login");
+    redirect("/login");
   }
 
   return user;

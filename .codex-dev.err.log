@@ -1,0 +1,58 @@
+⨯ Error [DrizzleQueryError]: Failed query: delete from "admin_sessions" where "admin_sessions"."expires_at" < $1
+params: 2026-07-27T03:33:49.986Z
+    at async getAdminSessionUser (lib\admin-auth.ts:88:3)
+    at async requireAdminSession (lib\admin-auth.ts:114:16)
+    at async AdminPanelLayout (app\(admin-panel)\layout.tsx:10:16)
+  86 |   }
+  87 |
+> 88 |   await getDb().delete(adminSessions).where(lt(adminSessions.expiresAt, new Date()));
+     |   ^
+  89 |
+  90 |   const [row] = await getDb()
+  91 |     .select({ {
+  query: 'delete from "admin_sessions" where "admin_sessions"."expires_at" < $1',
+  params: [ '2026-07-27T03:33:49.986Z' ],
+  digest: '1828271771',
+  [cause]: Error [NeonDbError]: Error connecting to database: TypeError: fetch failed
+      at async getAdminSessionUser (lib\admin-auth.ts:88:3)
+      at async requireAdminSession (lib\admin-auth.ts:114:16)
+      at async AdminPanelLayout (app\(admin-panel)\layout.tsx:10:16)
+    86 |   }
+    87 |
+  > 88 |   await getDb().delete(adminSessions).where(lt(adminSessions.expiresAt, new Date()));
+       |   ^
+    89 |
+    90 |   const [row] = await getDb()
+    91 |     .select({ {
+    severity: undefined,
+    code: undefined,
+    detail: undefined,
+    hint: undefined,
+    position: undefined,
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: undefined,
+    line: undefined,
+    routine: undefined,
+    sourceError: [TypeError: fetch failed] { [cause]: [AggregateError] }
+  }
+}
+[browser] Uncaught DrizzleQueryError: Failed query: delete from "admin_sessions" where "admin_sessions"."expires_at" < $1
+params: 2026-07-27T03:33:49.986Z
+    at <anonymous> (node_modules\.pnpm\drizzle-orm@1.0.0-rc.4_@neo_46ed3ac23a34df911b5a1dc1e7f5c695\node_modules\src\pg-core\async\session.ts:71:11)
+    at  getAdminSessionUser (lib\admin-auth.ts:88:3)
+    at  requireAdminSession (lib\admin-auth.ts:114:16)
+    at  AdminPanelLayout (app\(admin-panel)\layout.tsx:10:16)
+  69 | 			logger.logQuery(sql, params);
+  70 | 			const res = executor(params).catch((e) => {
+> 71 | 				throw new DrizzleQueryError(sql, params, e as Error);
+     |       ^
+  72 | 			});
+  73 | 			if (!mapper) return res;
+  74 |
