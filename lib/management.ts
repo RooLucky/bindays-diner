@@ -15,10 +15,12 @@ import {
   type CampaignFeature,
   type Dish,
 } from "@/lib/menu-campaigns";
+import { getMainMenuSeedItems } from "@/lib/main-menu-seed-data";
 import { getR2PublicUrl } from "@/lib/r2";
 
 export const MANAGEMENT_CATEGORIES = [
   "drinks",
+  "add-ons",
   "meal-of-the-day",
   "best-seller",
   "promo",
@@ -153,6 +155,23 @@ export function getStaticManagementCategory(
 }
 
 export function getStaticManagementItems(slug: ManagementCategorySlug) {
+  const mainMenuItems = getMainMenuSeedItems(slug);
+
+  if (mainMenuItems) {
+    return mainMenuItems.map((dish, index) => ({
+      categorySlug: slug,
+      name: dish.name,
+      description: dish.description,
+      price: dish.price,
+      tag: dish.tag,
+      imageKey: null,
+      imageUrl: dish.image,
+      imageAlt: dish.name,
+      sortOrder: index,
+      isActive: true,
+    }));
+  }
+
   const campaign = staticCampaignForSlug(slug);
   const dishes = campaign?.dishes ?? menuDishes;
 

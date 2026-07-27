@@ -12,6 +12,8 @@
     "db:reset": "tsx scripts/reset-db.ts",
     "db:seed": "tsx seed.ts",
     "db:seed:item-categories": "tsx scripts/seed-item-categories.ts",
+    "db:seed:add-ons": "tsx scripts/seed-add-ons.ts",
+    "db:seed:main-menu": "tsx scripts/seed-main-menu.ts",
     "db:seed-chatbot": "tsx scripts/seed-chatbot.ts",
     "db:fresh": "tsx scripts/reset-db.ts && drizzle-kit push --force && pnpm db:generate && pnpm db:seed",
     "db:studio": "drizzle-kit studio"

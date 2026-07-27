@@ -102,6 +102,70 @@ export const menuDishes: Dish[] = [
 ];
 
 export const campaigns: Record<string, Campaign> = {
+  "add-ons": {
+    slug: "add-ons",
+    eyebrow: "Complete Your Meal",
+    title: "A Little Extra on the Side",
+    description:
+      "Round out your order with easy extras, savory sides, and filling additions made to pair with any meal.",
+    ctaLabel: "Choose Add-ons",
+    ctaHref: "#add-ons",
+    heroImage: "/images/fries.png",
+    heroAlt: "Crispy fries served as a meal add-on",
+    badge: "Starts at P25",
+    dishes: [
+      {
+        name: "Extra Rice",
+        description: "An extra serving of warm steamed rice for a more filling meal.",
+        price: "P25",
+        image: "/images/multi.png",
+        tag: "Rice",
+      },
+      {
+        name: "French Fries",
+        description: "Golden, crispy fries served hot and lightly seasoned.",
+        price: "P49",
+        image: "/images/fries.png",
+        tag: "Side Dish",
+      },
+      {
+        name: "Fried Rice",
+        description: "Flavorful fried rice for upgrading your regular rice serving.",
+        price: "P45",
+        image: "/images/friedrice.png",
+        tag: "Rice",
+      },
+      {
+        name: "Pancit Side",
+        description: "A smaller serving of savory pancit to share or add to your plate.",
+        price: "P49",
+        image: "/images/pancit.png",
+        tag: "Noodles",
+      },
+    ],
+    features: [
+      {
+        icon: PackageCheck,
+        title: "Easy Additions",
+        description: "Simple extras that fit naturally into any food order.",
+      },
+      {
+        icon: WalletCards,
+        title: "Budget Friendly",
+        description: "Small upgrades at prices that are easy to add on.",
+      },
+      {
+        icon: ChefHat,
+        title: "Made Fresh",
+        description: "Sides prepared with the same care as every main dish.",
+      },
+      {
+        icon: Sparkles,
+        title: "More to Enjoy",
+        description: "Extra flavor and variety whenever your meal needs it.",
+      },
+    ],
+  },
   "main-dish": {
     slug: "main-dish",
     eyebrow: "Paboritong Pinoy",

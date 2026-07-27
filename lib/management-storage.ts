@@ -94,7 +94,11 @@ export async function replaceManagementImage(input: {
     return null;
   }
 
-  const key = `management/${input.category}/${randomUUID()}-${safeFilename(
+  const prefix =
+    input.category === "add-ons"
+      ? "add-ons"
+      : `management/${input.category}`;
+  const key = `${prefix}/${randomUUID()}-${safeFilename(
     input.file.name,
   )}`;
   const body = Buffer.from(await input.file.arrayBuffer());

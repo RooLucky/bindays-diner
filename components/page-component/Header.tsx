@@ -26,6 +26,7 @@ import Image from "next/image";
 const navItems = [
   { label: "Home", href: "/home" },
   { label: "Menu", href: "/menu" },
+  { label: "Add-ons", href: "/add-ons" },
   { label: "Drinks", href: "/drinks" },
   { label: "Student Meals", href: "/student-meals" },
   { label: "Promos", href: "/promos" },

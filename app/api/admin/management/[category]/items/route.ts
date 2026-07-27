@@ -45,12 +45,18 @@ export async function POST(
     const categorySlug = await getCategoryFromContext(context);
     const formData = await request.formData();
     const db = getDb();
+    const fallback = getStaticManagementCategory(categorySlug);
+
+    await db
+      .insert(managementCategories)
+      .values(fallback)
+      .onConflictDoNothing({ target: managementCategories.slug });
+
     const [category] = await db
       .select()
       .from(managementCategories)
       .where(eq(managementCategories.slug, categorySlug))
       .limit(1);
-    const fallback = getStaticManagementCategory(categorySlug);
     const name = getRequiredString(formData, "name");
     const image = await replaceManagementImage({
       category: categorySlug,

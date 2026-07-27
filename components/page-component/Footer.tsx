@@ -4,6 +4,7 @@ import { MapPin, Phone } from "lucide-react";
 
 const footerLinks = [
   { label: "Food Menu", href: "/menu" },
+  { label: "Add-ons", href: "/add-ons" },
   { label: "Drinks", href: "/drinks" },
   { label: "Loyalty Card", href: "/loyalty" },
   { label: "Delivery Order", href: "/reservations" },

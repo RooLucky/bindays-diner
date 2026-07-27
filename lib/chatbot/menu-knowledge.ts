@@ -27,6 +27,13 @@ const menuKnowledgeConfig: Record<
     queryTerms: string[];
   }
 > = {
+  "add-ons": {
+    question: "What add-ons are currently available?",
+    label: "add-ons",
+    category: "Live Menu - Add-ons",
+    keywords: "add-on add-ons addon addons extras sides rice fries sauce meal upgrade",
+    queryTerms: ["add-ons", "addons", "extras", "side dishes", "extra rice"],
+  },
   drinks: {
     question: "What drinks are currently available?",
     label: "drinks",
@@ -74,6 +81,7 @@ const menuKnowledgeConfig: Record<
 const categorySlugs = Object.keys(menuKnowledgeConfig) as ManagementCategorySlug[];
 
 const menuCategoryHrefs: Record<ManagementCategorySlug, string> = {
+  "add-ons": "/add-ons",
   drinks: "/drinks",
   "meal-of-the-day": "/meal-of-the-day",
   "best-seller": "/best-seller",
@@ -86,6 +94,7 @@ const menuCategoryPatterns: Array<{
   slug: ManagementCategorySlug;
   pattern: RegExp;
 }> = [
+  { slug: "add-ons", pattern: /\b(add[\s-]?ons?|extras?|side\s+dishes?)\b/i },
   { slug: "drinks", pattern: /\b(drinks?|beverages?|refreshments?)\b/i },
   { slug: "student-meal", pattern: /\bstudent\s+(?:meals?|menu)\b/i },
   { slug: "promo", pattern: /\b(promos?|promotions?|deals?|offers?)\b/i },

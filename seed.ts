@@ -14,6 +14,7 @@ import {
   managementItems,
 } from "@/lib/db/schema";
 import { getServerEnv } from "@/lib/env";
+import { getMainMenuSeedItems } from "@/lib/main-menu-seed-data";
 import {
   MANAGEMENT_CATEGORIES,
   getStaticManagementItemCategoryNames,
@@ -125,6 +126,9 @@ async function seed() {
   for (const slug of MANAGEMENT_CATEGORIES) {
     const category = getStaticManagementCategory(slug);
     const items = getStaticManagementItems(slug);
+    const source = getMainMenuSeedItems(slug)
+      ? "public/Main Menu"
+      : "campaign defaults";
 
     await getDb()
       .insert(managementCategories)
@@ -169,7 +173,7 @@ async function seed() {
     }
 
     console.log(
-      `Seeded management category "${slug}" with ${items.length} items: ${items
+      `Seeded management category "${slug}" from ${source} with ${items.length} items: ${items
         .map((item) => `${item.name} [${item.imageUrl}]`)
         .join(", ")}`,
     );

@@ -97,8 +97,8 @@ export function ManagementTable({
   }
 
   async function loadItemCategories() {
-    const response = await fetch("/api/admin/management/item-categories");
-    const data = (await response.json()) as {
+      const response = await fetch("/api/admin/management/item-categories");
+      const data = (await response.json()) as {
       categories?: ManagementItemCategoryResponse[];
       error?: string;
     };
