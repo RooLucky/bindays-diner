@@ -220,6 +220,164 @@
   }
 }
 
+@keyframes story-hologram-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes story-hologram-pulse {
+  0%,
+  100% {
+    opacity: 0.82;
+    filter: saturate(0.94) brightness(0.98);
+  }
+  50% {
+    opacity: 1;
+    filter: saturate(1.12) brightness(1.06);
+  }
+}
+
+@keyframes story-hologram-scan {
+  0% {
+    opacity: 0;
+    transform: translateY(-130%);
+  }
+  14%,
+  78% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(560%);
+  }
+}
+
+@keyframes story-hologram-particle {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: translate3d(0, 12px, 0) scale(0.7);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translate3d(0, -18px, 0) scale(1.2);
+  }
+}
+
+.story-hologram-panel {
+  isolation: isolate;
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in oklab, var(--brand-white) 86%, transparent),
+      color-mix(in oklab, var(--brand-gold-soft) 70%, transparent)
+    );
+  box-shadow:
+    0 34px 80px color-mix(in oklab, var(--brand-olive) 18%, transparent),
+    inset 0 0 50px color-mix(in oklab, var(--brand-gold) 13%, transparent),
+    0 0 0 1px color-mix(in oklab, var(--brand-white) 60%, transparent);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+.story-hologram-grid {
+  background-image:
+    linear-gradient(
+      color-mix(in oklab, var(--brand-olive) 8%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--brand-gold) 9%, transparent) 1px,
+      transparent 1px
+    ),
+    radial-gradient(
+      circle at center,
+      color-mix(in oklab, var(--brand-gold-soft) 48%, transparent),
+      transparent 68%
+    );
+  background-size: 28px 28px, 28px 28px, 100% 100%;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 18%, black 82%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, black 18%, black 82%, transparent);
+  opacity: 0.7;
+}
+
+.story-hologram-beam {
+  background: linear-gradient(
+    to top,
+    color-mix(in oklab, var(--brand-gold) 22%, transparent),
+    color-mix(in oklab, var(--brand-olive) 8%, transparent) 55%,
+    transparent
+  );
+  clip-path: polygon(36% 100%, 64% 100%, 100% 0, 0 0);
+  filter: blur(18px);
+  opacity: 0.72;
+}
+
+.story-hologram-orbit {
+  animation: story-hologram-orbit 28s linear infinite;
+  box-shadow: inset 0 0 30px color-mix(in oklab, var(--brand-gold) 10%, transparent);
+}
+
+.story-hologram-orbit::before,
+.story-hologram-orbit::after {
+  position: absolute;
+  top: 50%;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: var(--brand-gold);
+  box-shadow: 0 0 16px color-mix(in oklab, var(--brand-gold) 75%, transparent);
+  content: "";
+}
+
+.story-hologram-orbit::before {
+  left: -0.25rem;
+}
+
+.story-hologram-orbit::after {
+  right: -0.25rem;
+}
+
+.story-hologram-orbit-reverse {
+  animation-direction: reverse;
+  animation-duration: 21s;
+}
+
+.story-hologram-logo {
+  animation: story-hologram-pulse 4.8s ease-in-out infinite;
+}
+
+.story-hologram-scanline {
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in oklab, var(--brand-gold-soft) 70%, transparent),
+    color-mix(in oklab, var(--brand-white) 78%, transparent),
+    transparent
+  );
+  filter: blur(5px);
+  animation: story-hologram-scan 5.6s ease-in-out infinite;
+}
+
+.story-hologram-particle {
+  animation: story-hologram-particle 3.8s ease-in-out infinite;
+  box-shadow: 0 0 14px currentColor;
+}
+
+.story-hologram-particle:nth-of-type(2) {
+  animation-delay: -1.1s;
+}
+
+.story-hologram-particle:nth-of-type(3) {
+  animation-delay: -2.2s;
+}
+
+.story-hologram-particle:nth-of-type(4) {
+  animation-delay: -3s;
+}
+
 .hero-bowl-rotation {
   animation: hero-bowl-rotation 135s linear infinite;
   will-change: transform;
@@ -257,7 +415,11 @@
   .hero-steam-wisp,
   .menu-hologram-effect,
   .menu-hologram-effect::before,
-  .menu-hologram-effect::after {
+  .menu-hologram-effect::after,
+  .story-hologram-logo,
+  .story-hologram-orbit,
+  .story-hologram-particle,
+  .story-hologram-scanline {
     animation: none;
   }
 

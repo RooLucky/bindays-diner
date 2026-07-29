@@ -46,7 +46,11 @@ type DecorationAsset = {
 
 const decorationSets: Record<
   DecorationTheme,
-  { primary: DecorationAsset; secondary: DecorationAsset; tertiary?: DecorationAsset }
+  {
+    primary: DecorationAsset;
+    secondary: DecorationAsset;
+    tertiary?: DecorationAsset;
+  }
 > = {
   food: {
     primary: {
@@ -290,6 +294,7 @@ export function StudentMealsShowcase({
         </Reveal>
 
         <StaggerContainer
+          revealOnMount
           className={cn(
             "relative z-10 mx-auto mt-10 grid grid-cols-1 gap-x-5 gap-y-8 sm:mt-12 sm:grid-cols-2 lg:mt-14",
             useFourColumns

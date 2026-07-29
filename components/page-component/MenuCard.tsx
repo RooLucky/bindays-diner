@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Minus, Plus, ShoppingCart, X } from "lucide-react";
+import { Minus, Plus, ShoppingCart, X, ZoomIn } from "lucide-react";
 import { useState, type PointerEvent } from "react";
 import { motion, useReducedMotion, useSpring } from "motion/react";
 import { toast } from "sonner";
@@ -18,6 +18,17 @@ import {
   AlertDialogViewport,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogBackdrop,
+  DialogClose,
+  DialogDescription,
+  DialogPopup,
+  DialogPortal,
+  DialogTitle,
+  DialogTrigger,
+  DialogViewport,
+} from "@/components/ui/dialog";
 import type { Dish } from "@/lib/menu-campaigns";
 import { cn } from "@/lib/utils";
 
@@ -71,39 +82,41 @@ export function MenuCard({
   }
 
   return (
-    <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogTrigger
-        className={cn(
-          "group h-full w-full cursor-pointer rounded-sm text-left focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/30",
-        )}
-        aria-label={`Choose quantity for ${dish.name}`}
-        onPointerMove={handlePointerMove}
-        onPointerLeave={resetHologram}
-      >
-        {variant === "student" ? (
-          <motion.article
-            className="menu-hologram-card relative grid min-h-[8.75rem] grid-cols-[6.5rem_minmax(0,1fr)] items-center gap-4 overflow-hidden rounded-sm border border-border bg-card p-3 text-left text-foreground shadow-[var(--shadow-card)] transition-colors duration-500 group-hover:border-secondary group-hover:bg-secondary group-hover:text-background group-focus-visible:border-secondary group-focus-visible:bg-secondary group-focus-visible:text-background sm:mt-20 sm:flex sm:min-h-[23rem] sm:flex-col sm:items-center sm:overflow-visible sm:px-5 sm:pb-5 sm:pt-28 sm:text-center"
-            style={{ rotateX, rotateY, transformPerspective: 950 }}
-            whileHover={{
-              y: -15,
-              scale: 1.045,
-              boxShadow: "var(--shadow-hologram-card)",
-            }}
-            whileTap={{ scale: 0.985 }}
-            transition={{ type: "spring", stiffness: 250, damping: 22 }}
+    <Dialog>
+      <div className="relative isolate h-full">
+        <AlertDialog open={open} onOpenChange={setOpen}>
+          <AlertDialogTrigger
+            className={cn(
+              "group relative z-0 h-full w-full cursor-pointer rounded-sm text-left focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/30",
+            )}
+            aria-label={`Choose quantity for ${dish.name}`}
+            onPointerMove={handlePointerMove}
+            onPointerLeave={resetHologram}
           >
-            <span className="menu-hologram-effect" aria-hidden="true" />
-            <span className="relative size-[6.5rem] shrink-0 overflow-hidden rounded-sm border-2 border-background bg-card shadow-[var(--shadow-card)] transition-all duration-700 group-hover:scale-[1.03] group-hover:border-brand-gold-soft group-focus-visible:border-brand-gold-soft sm:absolute sm:left-1/2 sm:top-0 sm:size-40 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-full sm:border-4 sm:shadow-[var(--shadow-hero-image)] sm:group-hover:rotate-3 sm:group-hover:scale-105">
-              <Image
-                src={dish.image}
-                alt={dish.name}
-                fill
-                sizes="(max-width: 639px) 6.5rem, 10rem"
-                className="object-cover"
-              />
-            </span>
+            {variant === "student" ? (
+              <motion.article
+                className="menu-hologram-card relative grid min-h-[8.75rem] grid-cols-[6.5rem_minmax(0,1fr)] items-center gap-4 overflow-hidden rounded-sm border border-border bg-card p-3 text-left text-foreground shadow-[var(--shadow-card)] transition-colors duration-500 group-hover:border-secondary group-hover:bg-secondary group-hover:text-background group-focus-visible:border-secondary group-focus-visible:bg-secondary group-focus-visible:text-background sm:mt-20 sm:flex sm:min-h-[23rem] sm:flex-col sm:items-center sm:overflow-visible sm:px-5 sm:pb-5 sm:pt-28 sm:text-center"
+                style={{ rotateX, rotateY, transformPerspective: 950 }}
+                whileHover={{
+                  y: -15,
+                  scale: 1.045,
+                  boxShadow: "var(--shadow-hologram-card)",
+                }}
+                whileTap={{ scale: 0.985 }}
+                transition={{ type: "spring", stiffness: 250, damping: 22 }}
+              >
+                <span className="menu-hologram-effect" aria-hidden="true" />
+                <span className="relative size-[6.5rem] shrink-0 overflow-hidden rounded-sm border-2 border-background bg-card shadow-[var(--shadow-card)] transition-all duration-700 group-hover:scale-[1.03] group-hover:border-brand-gold-soft group-focus-visible:border-brand-gold-soft sm:absolute sm:left-1/2 sm:top-0 sm:size-40 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-full sm:border-4 sm:shadow-[var(--shadow-hero-image)] sm:group-hover:rotate-3 sm:group-hover:scale-105">
+                  <Image
+                    src={dish.image}
+                    alt={dish.name}
+                    fill
+                    sizes="(max-width: 639px) 6.5rem, 10rem"
+                    className="object-cover"
+                  />
+                </span>
 
-            <div className="min-w-0 sm:contents">
+                <div className="min-w-0 sm:contents">
               {dish.tag ? (
                 <span className="text-[0.6rem] font-bold uppercase tracking-[0.08em] text-secondary transition-colors duration-500 group-hover:text-brand-gold-soft group-focus-visible:text-brand-gold-soft sm:text-[0.65rem]">
                   {dish.tag}
@@ -124,10 +137,10 @@ export function MenuCard({
                   <Plus className="size-5" />
                 </span>
               </div>
-            </div>
-          </motion.article>
-        ) : (
-          <motion.div
+                </div>
+              </motion.article>
+            ) : (
+              <motion.div
             className="menu-hologram-card relative grid h-full min-h-[9.5rem] grid-cols-[7rem_minmax(0,1fr)] overflow-hidden rounded-sm border border-border bg-card shadow-[var(--shadow-card)] sm:flex sm:min-h-[29rem] sm:flex-col"
             style={{ rotateX, rotateY, transformPerspective: 950 }}
             whileHover={{
@@ -174,11 +187,11 @@ export function MenuCard({
                 </span>
               </div>
             </div>
-          </motion.div>
-        )}
-      </AlertDialogTrigger>
+              </motion.div>
+            )}
+          </AlertDialogTrigger>
 
-      <AlertDialogPortal>
+          <AlertDialogPortal>
         <AlertDialogBackdrop />
         <AlertDialogViewport>
           <AlertDialogPopup>
@@ -257,7 +270,60 @@ export function MenuCard({
             </Button>
           </AlertDialogPopup>
         </AlertDialogViewport>
-      </AlertDialogPortal>
-    </AlertDialog>
+          </AlertDialogPortal>
+        </AlertDialog>
+
+        <DialogTrigger
+          type="button"
+          aria-label={`View full image of ${dish.name}`}
+          className={cn(
+            "group/image absolute z-30 cursor-zoom-in overflow-hidden rounded-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/40",
+            variant === "student"
+              ? "left-3 top-3 size-[6.5rem] sm:left-1/2 sm:top-0 sm:size-40 sm:-translate-x-1/2 sm:rounded-full"
+              : "inset-y-0 left-0 w-28 sm:inset-x-0 sm:bottom-auto sm:aspect-[4/3] sm:w-full",
+          )}
+        >
+          <span className="absolute inset-0 grid place-items-center bg-foreground/0 transition-colors group-hover/image:bg-foreground/25 group-focus-visible/image:bg-foreground/25">
+            <span className="inline-flex items-center gap-1.5 rounded-sm border border-background/60 bg-background/90 px-2 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.08em] text-foreground opacity-90 shadow-[var(--shadow-card)] transition-opacity sm:opacity-0 sm:group-hover/image:opacity-100 sm:group-focus-visible/image:opacity-100">
+              <ZoomIn className="size-4" />
+              <span className="hidden sm:inline">View image</span>
+            </span>
+          </span>
+        </DialogTrigger>
+      </div>
+
+      <DialogPortal>
+        <DialogBackdrop />
+        <DialogViewport>
+          <DialogPopup className="max-w-5xl overflow-hidden p-0 sm:p-0">
+            <div className="flex items-start justify-between gap-4 border-b border-border px-4 py-3 sm:px-5">
+              <div className="min-w-0">
+                <DialogTitle className="truncate font-serif text-2xl text-foreground sm:text-3xl">
+                  {dish.name}
+                </DialogTitle>
+                <DialogDescription className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                  {dish.description}
+                </DialogDescription>
+              </div>
+              <DialogClose
+                className="inline-flex size-9 shrink-0 items-center justify-center rounded-sm border border-border bg-background text-foreground hover:bg-muted"
+                aria-label="Close image preview"
+              >
+                <X className="size-4" />
+              </DialogClose>
+            </div>
+            <div className="relative h-[min(74dvh,48rem)] w-full bg-muted/35">
+              <Image
+                src={dish.image}
+                alt={dish.name}
+                fill
+                sizes="(max-width: 1024px) 94vw, 64rem"
+                className="object-contain p-2 sm:p-5"
+              />
+            </div>
+          </DialogPopup>
+        </DialogViewport>
+      </DialogPortal>
+    </Dialog>
   );
 }

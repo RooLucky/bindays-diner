@@ -1,4 +1,79 @@
+import {
+  BINDAYS_MOTTO,
+  BINDAYS_STORY_ANSWER,
+} from "@/lib/brand-content";
+
 export const DEFAULT_CHATBOT_KNOWLEDGE = [
+  {
+    question: "What is Binday's Diner?",
+    answer:
+      "Binday's Diner is a casual Filipino restaurant and neighborhood hangout in Legazpi City. It serves affordable, satisfying meals with the familiar comfort of home, including breakfast favorites, rice meals, noodles, platters, snacks, and drinks.",
+    keywords:
+      "about binday bindays diner restaurant history story filipino legazpi home comfort food",
+    category: "About",
+    isFeatured: true,
+  },
+  {
+    question: "What is Binday's Diner's motto?",
+    answer: BINDAYS_MOTTO,
+    keywords:
+      "motto moto slogan tagline catchphrase every meal feels like home",
+    category: "About",
+    isFeatured: false,
+  },
+  {
+    question: "What is the story of Binday's Diner?",
+    answer: BINDAYS_STORY_ANSWER,
+    keywords:
+      "our story history origin dream family journey perseverance sacrifice faith resilience love generosity hope community rawis legazpi hospitality every meal feels like home",
+    category: "About",
+    isFeatured: false,
+  },
+  {
+    question: "When did Binday's Diner open?",
+    answer:
+      "Binday's Diner held its grand opening on February 28, 2026, in Legazpi City.",
+    keywords:
+      "started start founded established opened opening grand opening date history february 28 2026",
+    category: "About",
+    isFeatured: false,
+  },
+  {
+    question: "What food does Binday's Diner offer?",
+    answer:
+      "Binday's Diner offers Filipino comfort food for breakfast, lunch, dinner, and casual food trips. The menu includes goto, mami, pares meals, platters, silog meals, student meals, main dishes, add-ons, and refreshing drinks. Visit the menu pages for the current dishes and prices.",
+    keywords:
+      "offers serves food menu breakfast lunch dinner goto mami pares platter silog student meals main dishes add-ons drinks",
+    category: "About",
+    isFeatured: true,
+  },
+  {
+    question: "What time does Binday's Diner open and close?",
+    answer:
+      "Binday's Diner is currently listed as open daily from 7:00 AM to 10:00 PM. Business hours can change on holidays or special occasions, so check the restaurant's latest Facebook update before visiting.",
+    keywords:
+      "hours schedule business hours opening closing open close time daily today monday tuesday wednesday thursday friday saturday sunday",
+    category: "About",
+    isFeatured: true,
+  },
+  {
+    question: "Where is Binday's Diner located?",
+    answer:
+      "Binday's Diner is at the corner of T. Alonzo Street, ground floor of Ranola Building, Oro Site, Legazpi City, Albay, Philippines. You may contact the restaurant at +63 992 945 0801.",
+    keywords:
+      "location located address directions map contact phone telephone legazpi albay oro site t alonzo ranola 09929450801",
+    category: "About",
+    isFeatured: true,
+  },
+  {
+    question: "Does Binday's Diner offer dine-in, takeout, or delivery?",
+    answer:
+      "Binday's Diner welcomes guests at its Legazpi City location and is listed for takeout. This website currently accepts delivery requests, and the restaurant is also listed on GrabFood and foodpanda. Availability may depend on the restaurant's current hours and delivery area.",
+    keywords:
+      "dine in dine-in takeaway takeout pickup delivery grabfood foodpanda visit restaurant order",
+    category: "About",
+    isFeatured: false,
+  },
   {
     question: "How do I place a delivery order?",
     answer:

@@ -34,16 +34,19 @@ export function Reveal({
 export function StaggerContainer({
   children,
   className,
+  revealOnMount = false,
 }: {
   children: ReactNode;
   className?: string;
+  revealOnMount?: boolean;
 }) {
   return (
     <motion.div
       className={className}
       initial="hidden"
-      whileInView="show"
-      viewport={{ once: false, amount: 0.12 }}
+      animate={revealOnMount ? "show" : undefined}
+      whileInView={revealOnMount ? undefined : "show"}
+      viewport={revealOnMount ? undefined : { once: true, amount: 0.12 }}
       variants={{
         hidden: {},
         show: {
