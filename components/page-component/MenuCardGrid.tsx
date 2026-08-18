@@ -21,7 +21,10 @@ export function MenuCardGrid({
 }) {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const categories = useMemo(
-    () => Array.from(new Set(dishes.flatMap((dish) => (dish.tag ? [dish.tag] : [])))),
+    () =>
+      Array.from(
+        new Set(dishes.flatMap((dish) => (dish.tag ? [dish.tag] : []))),
+      ),
     [dishes],
   );
   const filteredDishes =
@@ -34,7 +37,7 @@ export function MenuCardGrid({
       {categories.length > 1 ? (
         <nav
           aria-label="Filter menu by category"
-          className="mt-8 flex gap-2 overflow-x-auto pb-2 sm:mt-10 sm:justify-center"
+          className="mt-8 flex gap-2 overflow-x-auto py-4 sm:mt-10 sm:justify-center"
         >
           {["All", ...categories].map((category) => (
             <button

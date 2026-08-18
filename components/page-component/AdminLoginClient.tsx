@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, LockKeyhole, LogIn, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, LockKeyhole, LogIn, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -12,6 +12,7 @@ export function AdminLoginClient() {
   const router = useRouter();
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function submitLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -118,14 +119,25 @@ export function AdminLoginClient() {
               </label>
               <label className="grid gap-2 text-sm font-semibold text-foreground">
                 Password
-                <input
-                  name="password"
-                  type="password"
-                  required
-                  autoComplete="current-password"
-                  className="h-12 rounded-sm border border-input bg-background px-3 text-sm outline-none transition focus:border-primary focus-visible:ring-3 focus-visible:ring-ring/30"
-                  placeholder="Enter your password"
-                />
+                <span className="relative">
+                  <input
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    autoComplete="current-password"
+                    className="h-12 w-full rounded-sm border border-input bg-background px-3 pr-12 text-sm outline-none transition focus:border-primary focus-visible:ring-3 focus-visible:ring-ring/30"
+                    placeholder="Enter your password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((current) => !current)}
+                    className="absolute inset-y-0 right-0 inline-flex w-12 items-center justify-center text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:text-primary"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-pressed={showPassword}
+                  >
+                    {showPassword ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
+                  </button>
+                </span>
               </label>
             </div>
             {message ? (

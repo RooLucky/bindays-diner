@@ -44,16 +44,19 @@ export function Footer() {
           </p>
         </div>
 
-        <nav aria-label="Footer navigation" className="border-y border-brand-white/15 py-7 text-left md:border-0 md:py-0">
+        <nav
+          aria-label="Footer navigation"
+          className="border-y border-brand-white/15 py-7 text-left md:border-0 md:py-0"
+        >
           <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-brand-white">
             Explore
           </h2>
-          <div className="mt-5 grid grid-cols-2 gap-2 md:grid-cols-1 md:gap-y-3">
+          <div className="mt-5 grid grid-cols-1 gap-2 md:gap-y-3">
             {footerLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="rounded-sm bg-brand-white/10 px-3 py-2.5 text-sm text-brand-white/85 transition-colors hover:bg-brand-white hover:text-brand-olive md:bg-transparent md:px-0 md:py-1 md:text-brand-white/75"
+                className="rounded-sm bg-brand-gold-soft/5 px-3 py-2.5 text-sm text-brand-white/85 transition-colors hover:bg-brand-white hover:text-brand-olive md:bg-transparent md:px-0 md:py-1 md:text-brand-white/75"
               >
                 {link.label}
               </Link>
@@ -68,16 +71,16 @@ export function Footer() {
           <div className="mt-5 space-y-4">
             <a
               href="tel:+639929450801"
-              className="group flex items-start justify-start gap-3 rounded-sm bg-brand-white/5 p-3 text-sm text-brand-white/75 transition-colors hover:bg-brand-white/10"
+              className="group flex items-start justify-start gap-3 rounded-sm bg-brand-gold-soft/5 p-3 text-sm text-brand-white/75 transition-colors hover:bg-brand-white/10"
             >
               <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-full bg-brand-white/10 text-brand-white transition-colors group-hover:bg-brand-white group-hover:text-brand-olive">
                 <Phone className="size-4" />
               </span>
               <span className="pt-1.5 transition-colors group-hover:text-brand-white">
-                +63 992 945 0801
+                +63 992 945 0802
               </span>
             </a>
-            <div className="flex items-start justify-start gap-3 rounded-sm bg-brand-white/5 p-3 text-sm leading-6 text-brand-white/75">
+            <div className="flex items-start justify-start gap-3 rounded-sm bg-brand-gold-soft/5 p-3 text-sm leading-6 text-brand-white/75">
               <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-full bg-brand-white/10 text-brand-white">
                 <MapPin className="size-4" />
               </span>
