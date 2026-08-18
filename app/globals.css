@@ -277,7 +277,6 @@
     inset 0 0 50px color-mix(in oklab, var(--brand-gold) 13%, transparent),
     0 0 0 1px color-mix(in oklab, var(--brand-white) 60%, transparent);
   -webkit-backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
 }
 

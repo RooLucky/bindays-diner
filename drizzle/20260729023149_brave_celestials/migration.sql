@@ -1,0 +1,1 @@
+ALTER TABLE "management_categories" ADD COLUMN "is_header_active" boolean DEFAULT true NOT NULL;

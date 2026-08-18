@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 
 const managementLinks = [
   { label: "Chatbot Knowledge", href: "/management/chatbot-knowledge" },
+  { label: "Reviews", href: "/management/reviews" },
   { label: "Categories", href: "/management/categories" },
   { label: "Add-ons", href: "/management/add-ons" },
   { label: "Drinks", href: "/management/drinks" },

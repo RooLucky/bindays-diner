@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
+import { BINDAYS_MOTTO } from "@/lib/brand-content";
 import { cn } from "@/lib/utils";
 
 import { ParallaxLayer, Reveal } from "./MotionEffects";
@@ -48,8 +49,10 @@ export function HeroPage() {
               Mabuhay!
             </p>
             <h1 className="mt-4 font-serif text-[clamp(2.85rem,14vw,6rem)] leading-[0.98] tracking-normal text-foreground sm:mt-5 sm:text-[clamp(4.2rem,8vw,6rem)] lg:text-[clamp(4.2rem,6.2vw,6rem)]">
-              <span className="whitespace-nowrap">Lutong Pinoy,</span>
-              <span className="block text-primary">Pusong Busog.</span>
+              <span>
+                {BINDAYS_MOTTO.replace(" Home", "")}
+              </span>
+              <span className="block text-primary">Home</span>
             </h1>
             <p className="mx-auto mt-6 max-w-md text-sm leading-7 text-muted-foreground sm:mt-7 sm:text-base lg:mx-0">
               Comforting Filipino favorites cooked fresh, served generously,

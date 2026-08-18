@@ -1,9 +1,12 @@
 import { StudentMealsShowcase } from "@/components/page-component/StudentMealsShowcase";
+import { requireActiveHeaderRoute } from "@/lib/header-navigation";
 import { getPublicCampaign } from "@/lib/management";
 
 export const dynamic = "force-dynamic";
 
 export default async function DrinksPage() {
+  await requireActiveHeaderRoute("drinks");
+
   const campaign = await getPublicCampaign("drinks");
 
   return (

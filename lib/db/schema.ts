@@ -27,6 +27,12 @@ export const adminAccountRole = pgEnum("admin_account_role", [
   "admin",
 ]);
 
+export const customerReviewStatus = pgEnum("customer_review_status", [
+  "draft",
+  "approved",
+  "rejected",
+]);
+
 export const adminAccounts = pgTable(
   "admin_accounts",
   {
@@ -80,6 +86,7 @@ export const managementCategories = pgTable(
     heroImageUrl: text("hero_image_url").notNull(),
     heroAlt: varchar("hero_alt", { length: 220 }).notNull(),
     badge: varchar("badge", { length: 80 }),
+    isHeaderActive: boolean("is_header_active").default(true).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
@@ -206,5 +213,38 @@ export const chatbotRateLimits = pgTable("chatbot_rate_limits", {
   windowStartedAt: timestamp("window_started_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const customerReviews = pgTable(
+  "customer_reviews",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    fullName: varchar("full_name", { length: 160 }).notNull(),
+    rating: integer("rating").notNull(),
+    comment: text("comment").notNull(),
+    favoriteItem: varchar("favorite_item", { length: 120 }),
+    status: customerReviewStatus("status").default("draft").notNull(),
+    isApproved: boolean("is_approved").default(false).notNull(),
+    imageKeysJson: text("image_keys_json").default("[]").notNull(),
+    imageUrlsJson: text("image_urls_json").default("[]").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("customer_reviews_approved_created_idx").on(
+      table.isApproved,
+      table.createdAt,
+    ),
+  ],
+);
+
+export const googleReviewCache = pgTable("google_review_cache", {
+  placeId: varchar("place_id", { length: 160 }).primaryKey(),
+  rating: varchar("rating", { length: 16 }),
+  userRatingCount: integer("user_rating_count"),
+  googleMapsUrl: text("google_maps_url"),
+  reviewsJson: text("reviews_json").default("[]").notNull(),
+  fetchedAt: timestamp("fetched_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });

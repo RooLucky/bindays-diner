@@ -6,17 +6,6 @@ import { useState, type PointerEvent } from "react";
 import { motion, useReducedMotion, useSpring } from "motion/react";
 import { toast } from "sonner";
 
-import {
-  AlertDialog,
-  AlertDialogBackdrop,
-  AlertDialogClose,
-  AlertDialogDescription,
-  AlertDialogPopup,
-  AlertDialogPortal,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-  AlertDialogViewport,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -82,10 +71,9 @@ export function MenuCard({
   }
 
   return (
-    <Dialog>
-      <div className="relative isolate h-full">
-        <AlertDialog open={open} onOpenChange={setOpen}>
-          <AlertDialogTrigger
+    <div className="relative isolate h-full">
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger
             className={cn(
               "group relative z-0 h-full w-full cursor-pointer rounded-sm text-left focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/30",
             )}
@@ -167,7 +155,10 @@ export function MenuCard({
             </div>
             <div className="flex min-w-0 flex-1 flex-col p-4 sm:px-6 sm:pb-5 sm:pt-6">
               <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-3">
-                <h3 className="line-clamp-2 font-serif text-xl leading-tight text-foreground sm:shrink-0 sm:text-2xl">
+                <h3
+                  className="min-w-0 truncate font-serif text-xl leading-tight text-foreground sm:flex-1 sm:text-2xl"
+                  title={dish.name}
+                >
                   {dish.name}
                 </h3>
                 <span className="hidden min-w-4 flex-1 border-b border-dotted border-secondary/50 sm:block" />
@@ -189,141 +180,145 @@ export function MenuCard({
             </div>
               </motion.div>
             )}
-          </AlertDialogTrigger>
+          </DialogTrigger>
 
-          <AlertDialogPortal>
-        <AlertDialogBackdrop />
-        <AlertDialogViewport>
-          <AlertDialogPopup>
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <AlertDialogTitle className="font-serif text-3xl text-foreground">
-                  {dish.name}
-                </AlertDialogTitle>
-                <AlertDialogDescription className="mt-2 text-sm leading-6 text-muted-foreground">
-                  Choose how many orders to add to your cart.
-                </AlertDialogDescription>
-              </div>
-              <AlertDialogClose
-                className="inline-flex size-9 shrink-0 items-center justify-center rounded-sm border border-border bg-background text-foreground"
-                aria-label="Close quantity picker"
-              >
-                <X className="size-4" />
-              </AlertDialogClose>
-            </div>
+          <DialogPortal>
+            <DialogBackdrop className="bg-foreground/40 backdrop-blur-md" />
+            <DialogViewport>
+              <DialogPopup className="max-w-lg overflow-hidden p-0 sm:p-0">
+                <div className="border-b border-border px-5 py-5 sm:px-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <DialogTitle className="font-serif text-3xl text-foreground">
+                        {dish.name}
+                      </DialogTitle>
+                      <DialogDescription className="mt-2 text-sm leading-6 text-muted-foreground">
+                        Choose how many orders to add to your cart.
+                      </DialogDescription>
+                    </div>
+                    <DialogClose
+                      className="inline-flex size-9 shrink-0 items-center justify-center rounded-sm border border-border bg-background text-foreground"
+                      aria-label="Close quantity picker"
+                    >
+                      <X className="size-4" />
+                    </DialogClose>
+                  </div>
+                </div>
 
-            <div className="mt-5 overflow-hidden rounded-sm border border-border bg-background">
-              <div className="relative aspect-[2.05/1]">
-                <Image
-                  src={dish.image}
-                  alt={dish.name}
-                  fill
-                  sizes="24rem"
-                  className="object-cover"
-                />
-              </div>
-              <div className="p-4">
-                <p className="text-sm leading-6 text-muted-foreground">
-                  {dish.description}
-                </p>
-                <p className="mt-3 text-xs font-bold uppercase tracking-[0.08em] text-primary">
-                  {dish.price} per order
-                </p>
-              </div>
-            </div>
+                <div className="relative aspect-[4/3] max-h-[45dvh] bg-muted/35">
+                  <Image
+                    src={dish.image}
+                    alt={dish.name}
+                    fill
+                    sizes="32rem"
+                    className="object-contain p-2"
+                  />
+                </div>
 
-            <div className="mt-6 flex items-center justify-between rounded-sm border border-border bg-background p-3">
-              <span className="text-sm font-semibold uppercase tracking-[0.08em] text-foreground">
-                Quantity
+                <div className="p-5 sm:p-6">
+                  <div>
+                    <p className="text-sm leading-6 text-muted-foreground">
+                      {dish.description}
+                    </p>
+                    <p className="mt-3 text-xs font-bold uppercase tracking-[0.08em] text-primary">
+                      {dish.price} per order
+                    </p>
+                  </div>
+
+                  <div className="mt-6 flex items-center justify-between rounded-sm border border-border bg-background p-3">
+                    <span className="text-sm font-semibold uppercase tracking-[0.08em] text-foreground">
+                      Quantity
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setQuantity((current) => Math.max(1, current - 1))
+                        }
+                        className="inline-flex size-10 items-center justify-center rounded-sm border border-border bg-card text-foreground hover:bg-muted"
+                        aria-label={`Decrease ${dish.name} quantity`}
+                      >
+                        <Minus className="size-4" />
+                      </button>
+                      <span className="grid h-10 min-w-12 place-items-center rounded-sm border border-border bg-card px-4 text-base font-semibold text-foreground">
+                        {quantity}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setQuantity((current) => current + 1)}
+                        className="inline-flex size-10 items-center justify-center rounded-sm border border-border bg-card text-foreground hover:bg-muted"
+                        aria-label={`Increase ${dish.name} quantity`}
+                      >
+                        <Plus className="size-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <Button
+                    type="button"
+                    onClick={handleAddToCart}
+                    className="mt-6 h-12 w-full rounded-sm text-xs font-semibold uppercase tracking-[0.08em] shadow-[var(--shadow-header-button)]"
+                  >
+                    Add {quantity} to Cart
+                  </Button>
+                </div>
+              </DialogPopup>
+            </DialogViewport>
+          </DialogPortal>
+        </Dialog>
+
+        <Dialog>
+          <DialogTrigger
+            type="button"
+            aria-label={`View full image of ${dish.name}`}
+            className={cn(
+              "group/image absolute z-30 cursor-zoom-in overflow-hidden rounded-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/40",
+              variant === "student"
+                ? "left-3 top-3 size-[6.5rem] sm:left-1/2 sm:top-0 sm:size-40 sm:-translate-x-1/2 sm:rounded-full"
+                : "inset-y-0 left-0 w-28 sm:inset-x-0 sm:bottom-auto sm:aspect-[4/3] sm:w-full",
+            )}
+          >
+            <span className="absolute inset-0 grid place-items-center bg-foreground/0 transition-colors group-hover/image:bg-foreground/25 group-focus-visible/image:bg-foreground/25">
+              <span className="inline-flex items-center gap-1.5 rounded-sm border border-background/60 bg-background/90 px-2 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.08em] text-foreground opacity-90 shadow-[var(--shadow-card)] transition-opacity sm:opacity-0 sm:group-hover/image:opacity-100 sm:group-focus-visible/image:opacity-100">
+                <ZoomIn className="size-4" />
+                <span className="hidden sm:inline">View image</span>
               </span>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setQuantity((current) => Math.max(1, current - 1))
-                  }
-                  className="inline-flex size-10 items-center justify-center rounded-sm border border-border bg-card text-foreground hover:bg-muted"
-                  aria-label={`Decrease ${dish.name} quantity`}
-                >
-                  <Minus className="size-4" />
-                </button>
-                <span className="grid h-10 min-w-12 place-items-center rounded-sm border border-border bg-card px-4 text-base font-semibold text-foreground">
-                  {quantity}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setQuantity((current) => current + 1)}
-                  className="inline-flex size-10 items-center justify-center rounded-sm border border-border bg-card text-foreground hover:bg-muted"
-                  aria-label={`Increase ${dish.name} quantity`}
-                >
-                  <Plus className="size-4" />
-                </button>
-              </div>
-            </div>
-
-            <Button
-              type="button"
-              onClick={handleAddToCart}
-              className="mt-6 h-12 w-full rounded-sm text-xs font-semibold uppercase tracking-[0.08em] shadow-[var(--shadow-header-button)]"
-            >
-              Add {quantity} to Cart
-            </Button>
-          </AlertDialogPopup>
-        </AlertDialogViewport>
-          </AlertDialogPortal>
-        </AlertDialog>
-
-        <DialogTrigger
-          type="button"
-          aria-label={`View full image of ${dish.name}`}
-          className={cn(
-            "group/image absolute z-30 cursor-zoom-in overflow-hidden rounded-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/40",
-            variant === "student"
-              ? "left-3 top-3 size-[6.5rem] sm:left-1/2 sm:top-0 sm:size-40 sm:-translate-x-1/2 sm:rounded-full"
-              : "inset-y-0 left-0 w-28 sm:inset-x-0 sm:bottom-auto sm:aspect-[4/3] sm:w-full",
-          )}
-        >
-          <span className="absolute inset-0 grid place-items-center bg-foreground/0 transition-colors group-hover/image:bg-foreground/25 group-focus-visible/image:bg-foreground/25">
-            <span className="inline-flex items-center gap-1.5 rounded-sm border border-background/60 bg-background/90 px-2 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.08em] text-foreground opacity-90 shadow-[var(--shadow-card)] transition-opacity sm:opacity-0 sm:group-hover/image:opacity-100 sm:group-focus-visible/image:opacity-100">
-              <ZoomIn className="size-4" />
-              <span className="hidden sm:inline">View image</span>
             </span>
-          </span>
-        </DialogTrigger>
-      </div>
+          </DialogTrigger>
 
-      <DialogPortal>
-        <DialogBackdrop />
-        <DialogViewport>
-          <DialogPopup className="max-w-5xl overflow-hidden p-0 sm:p-0">
-            <div className="flex items-start justify-between gap-4 border-b border-border px-4 py-3 sm:px-5">
-              <div className="min-w-0">
-                <DialogTitle className="truncate font-serif text-2xl text-foreground sm:text-3xl">
-                  {dish.name}
-                </DialogTitle>
-                <DialogDescription className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                  {dish.description}
-                </DialogDescription>
-              </div>
-              <DialogClose
-                className="inline-flex size-9 shrink-0 items-center justify-center rounded-sm border border-border bg-background text-foreground hover:bg-muted"
-                aria-label="Close image preview"
-              >
-                <X className="size-4" />
-              </DialogClose>
-            </div>
-            <div className="relative h-[min(74dvh,48rem)] w-full bg-muted/35">
-              <Image
-                src={dish.image}
-                alt={dish.name}
-                fill
-                sizes="(max-width: 1024px) 94vw, 64rem"
-                className="object-contain p-2 sm:p-5"
-              />
-            </div>
-          </DialogPopup>
-        </DialogViewport>
-      </DialogPortal>
-    </Dialog>
+          <DialogPortal>
+            <DialogBackdrop className="bg-foreground/40 backdrop-blur-md" />
+            <DialogViewport>
+              <DialogPopup className="max-w-5xl overflow-hidden p-0 sm:p-0">
+                <div className="flex items-start justify-between gap-4 border-b border-border px-4 py-3 sm:px-5">
+                  <div className="min-w-0">
+                    <DialogTitle className="truncate font-serif text-2xl text-foreground sm:text-3xl">
+                      {dish.name}
+                    </DialogTitle>
+                    <DialogDescription className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                      {dish.description}
+                    </DialogDescription>
+                  </div>
+                  <DialogClose
+                    className="inline-flex size-9 shrink-0 items-center justify-center rounded-sm border border-border bg-background text-foreground hover:bg-muted"
+                    aria-label="Close image preview"
+                  >
+                    <X className="size-4" />
+                  </DialogClose>
+                </div>
+                <div className="relative h-[min(74dvh,48rem)] w-full bg-muted/35">
+                  <Image
+                    src={dish.image}
+                    alt={dish.name}
+                    fill
+                    sizes="(max-width: 1024px) 94vw, 64rem"
+                    className="object-contain p-2 sm:p-5"
+                  />
+                </div>
+              </DialogPopup>
+            </DialogViewport>
+          </DialogPortal>
+        </Dialog>
+      </div>
   );
 }

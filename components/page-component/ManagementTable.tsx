@@ -15,6 +15,7 @@ import {
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { HeaderVisibilityManager } from "@/components/page-component/HeaderVisibilityManager";
 import {
   Dialog,
   DialogBackdrop,
@@ -32,6 +33,7 @@ import type {
   ManagementCategorySlug,
   ManagementItemCategoryResponse,
 } from "@/lib/management";
+import { isHeaderManagedCategorySlug } from "@/lib/header-navigation-contracts";
 
 const emptyItemForm = {
   name: "",
@@ -151,6 +153,20 @@ export function ManagementTable({
   function resetItemForm() {
     setEditingItem(null);
     setItemForm(emptyItemForm);
+  }
+
+  function updateHeaderVisibility(isHeaderActive: boolean) {
+    setCategoryForm((current) =>
+      current ? { ...current, isHeaderActive } : current,
+    );
+    setPayload((current) =>
+      current
+        ? {
+            ...current,
+            category: { ...current.category, isHeaderActive },
+          }
+        : current,
+    );
   }
 
   function openCreateItem() {
@@ -320,6 +336,15 @@ export function ManagementTable({
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
+          {categoryForm && isHeaderManagedCategorySlug(category) ? (
+            <HeaderVisibilityManager
+              category={category}
+              title={title}
+              isActive={categoryForm.isHeaderActive}
+              disabled={pending}
+              onUpdated={updateHeaderVisibility}
+            />
+          ) : null}
           <Button
             type="button"
             variant="outline"

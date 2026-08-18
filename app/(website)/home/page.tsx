@@ -1,4 +1,5 @@
 import { HeroPage } from "@/components/page-component/HeroPage";
+import { CustomerReviewsSection } from "@/components/page-component/CustomerReviewsSection";
 import { MenuPage } from "@/components/page-component/MenuPage";
 import { OurStorySection } from "@/components/page-component/OurStorySection";
 import { Ticker } from "@/components/page-component/Ticker";
@@ -14,6 +15,7 @@ export default async function HomePage() {
       <HeroPage />
       <Ticker />
       <OurStorySection />
+      <CustomerReviewsSection />
       <MenuPage dishes={dishes} />
     </>
   );

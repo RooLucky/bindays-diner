@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Menu, Minus, Plus, ShoppingCart, Trash2, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Ably from "ably";
+import type { InboundMessage } from "ably";
 
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -19,24 +21,81 @@ import {
   DrawerViewport,
 } from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
+import {
+  DEFAULT_HEADER_NAVIGATION_VISIBILITY,
+  HEADER_MANAGED_CATEGORIES,
+  HEADER_MANAGED_ROUTES,
+  type HeaderManagedCategorySlug,
+  type HeaderNavigationVisibility,
+} from "@/lib/header-navigation-contracts";
+import {
+  MENU_CONTENT_CHANNEL,
+  MENU_CONTENT_UPDATED_EVENT,
+  type MenuContentUpdatedMessage,
+} from "@/lib/realtime-contracts";
 
 import { useCart } from "./CartProvider";
 import Image from "next/image";
 
-const navItems = [
+type NavigationItem = {
+  label: string;
+  href: string;
+  managedCategory?: HeaderManagedCategorySlug;
+};
+
+const navItems: NavigationItem[] = [
   { label: "Home", href: "/home" },
   { label: "Menu", href: "/menu" },
-  { label: "Add-ons", href: "/add-ons" },
-  { label: "Drinks", href: "/drinks" },
-  { label: "Student Meals", href: "/student-meals" },
-  { label: "Promos", href: "/promos" },
-  { label: "Meal of the Day", href: "/meal-of-the-day" },
-  { label: "Best Seller", href: "/best-seller" },
+  { label: "Add-ons", href: "/add-ons", managedCategory: "add-ons" },
+  { label: "Drinks", href: "/drinks", managedCategory: "drinks" },
+  {
+    label: "Student Meals",
+    href: "/student-meals",
+    managedCategory: "student-meal",
+  },
+  { label: "Promos", href: "/promos", managedCategory: "promo" },
+  {
+    label: "Meal of the Day",
+    href: "/meal-of-the-day",
+    managedCategory: "meal-of-the-day",
+  },
+  {
+    label: "Best Seller",
+    href: "/best-seller",
+    managedCategory: "best-seller",
+  },
   { label: "Loyalty", href: "/loyalty" },
 ];
 
-export function Header() {
+function isHeaderNavigationUpdate(
+  value: unknown,
+): value is MenuContentUpdatedMessage {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const message = value as Partial<MenuContentUpdatedMessage>;
+
+  return (
+    typeof message.categorySlug === "string" &&
+    HEADER_MANAGED_CATEGORIES.includes(
+      message.categorySlug as HeaderManagedCategorySlug,
+    )
+  );
+}
+
+export function Header({
+  navigationVisibility = DEFAULT_HEADER_NAVIGATION_VISIBILITY,
+  realtimeEnabled = false,
+}: {
+  navigationVisibility?: HeaderNavigationVisibility;
+  realtimeEnabled?: boolean;
+}) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [liveNavigationVisibility, setLiveNavigationVisibility] = useState(
+    navigationVisibility,
+  );
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const {
@@ -48,6 +107,103 @@ export function Header() {
     subtotal,
     totalQuantity,
   } = useCart();
+  const currentManagedCategory = useMemo(() => {
+    return Object.entries(HEADER_MANAGED_ROUTES).find(
+      ([, route]) => route === pathname,
+    )?.[0] as HeaderManagedCategorySlug | undefined;
+  }, [pathname]);
+  const visibleNavItems = navItems.filter(
+    (item) =>
+      !item.managedCategory ||
+      liveNavigationVisibility[item.managedCategory],
+  );
+
+  useEffect(() => {
+    setLiveNavigationVisibility(navigationVisibility);
+  }, [navigationVisibility]);
+
+  useEffect(() => {
+    let isMounted = true;
+    let activeRequest: AbortController | undefined;
+
+    async function refreshNavigationVisibility() {
+      activeRequest?.abort();
+      activeRequest = new AbortController();
+
+      try {
+        const response = await fetch("/api/header-navigation", {
+          cache: "no-store",
+          signal: activeRequest.signal,
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const payload = (await response.json()) as {
+          navigationVisibility?: HeaderNavigationVisibility;
+        };
+
+        if (!payload.navigationVisibility || !isMounted) {
+          return;
+        }
+
+        setLiveNavigationVisibility(payload.navigationVisibility);
+
+        if (
+          currentManagedCategory &&
+          !payload.navigationVisibility[currentManagedCategory]
+        ) {
+          setMenuOpen(false);
+          router.replace("/home");
+          router.refresh();
+        }
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === "AbortError")) {
+          console.warn("Unable to refresh header navigation.", error);
+        }
+      }
+    }
+
+    void refreshNavigationVisibility();
+
+    const intervalId = window.setInterval(refreshNavigationVisibility, 5000);
+    const handleWindowFocus = () => void refreshNavigationVisibility();
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void refreshNavigationVisibility();
+      }
+    };
+    const realtime = realtimeEnabled
+      ? new Ably.Realtime({
+          authUrl: "/api/realtime/token",
+          authMethod: "GET",
+          useTokenAuth: true,
+        })
+      : undefined;
+    const channel = realtime?.channels.get(MENU_CONTENT_CHANNEL);
+    const handleRealtimeUpdate = (message: InboundMessage) => {
+      if (isHeaderNavigationUpdate(message.data)) {
+        void refreshNavigationVisibility();
+      }
+    };
+
+    window.addEventListener("focus", handleWindowFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    void channel
+      ?.subscribe(MENU_CONTENT_UPDATED_EVENT, handleRealtimeUpdate)
+      .catch(() => undefined);
+
+    return () => {
+      isMounted = false;
+      activeRequest?.abort();
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", handleWindowFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      channel?.unsubscribe(MENU_CONTENT_UPDATED_EVENT, handleRealtimeUpdate);
+      realtime?.close();
+    };
+  }, [currentManagedCategory, realtimeEnabled, router]);
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/70 bg-background/90 backdrop-blur-xl">
@@ -77,7 +233,7 @@ export function Header() {
         </Link>
 
         <nav className="hidden items-center gap-6 text-xs font-semibold uppercase tracking-[0.08em] text-foreground xl:flex 2xl:gap-9">
-          {navItems.map((item) => (
+          {visibleNavItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -273,7 +429,7 @@ export function Header() {
                   </div>
 
                   <nav className="mt-7 grid gap-2">
-                    {navItems.map((item) => (
+                    {visibleNavItems.map((item) => (
                       <Link
                         key={item.href}
                         href={item.href}

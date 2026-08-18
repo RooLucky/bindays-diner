@@ -36,6 +36,9 @@ const serverEnvSchema = z.object({
   OLLAMA_CHATBOT_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(16).default(4),
   CHATBOT_RATE_LIMIT_SALT: z.string().min(16).optional(),
   ABLY_API_KEY: z.string().min(1).optional(),
+  GOOGLE_MAPS_API_KEY: z.string().min(1).optional(),
+  GOOGLE_PLACE_ID: z.string().min(1).optional(),
+  GOOGLE_REVIEW_URL: z.string().url().optional(),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema> & {

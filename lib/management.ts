@@ -52,6 +52,7 @@ export type ManagementCategoryResponse = {
   heroImageUrl: string;
   heroAlt: string;
   badge: string | null;
+  isHeaderActive: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -136,6 +137,7 @@ export function getStaticManagementCategory(
       heroImageUrl: campaign.heroImage,
       heroAlt: campaign.heroAlt,
       badge: campaign.badge ?? null,
+      isHeaderActive: true,
     };
   }
 
@@ -151,6 +153,7 @@ export function getStaticManagementCategory(
     heroImageUrl: "/images/hero-pasta.png",
     heroAlt: "Featured pasta dish",
     badge: "Lutong Bahay",
+    isHeaderActive: true,
   };
 }
 
@@ -235,6 +238,7 @@ export function toManagementCategoryResponse(
     heroImageUrl: resolveImageUrl(category.heroImageKey, category.heroImageUrl),
     heroAlt: category.heroAlt,
     badge: category.badge,
+    isHeaderActive: category.isHeaderActive,
     createdAt: category.createdAt.toISOString(),
     updatedAt: category.updatedAt.toISOString(),
   };
