@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, Minus, Plus, ShoppingCart, Trash2, X } from "lucide-react";
+import { LogIn, Menu, Minus, Plus, ShoppingCart, Trash2, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import Ably from "ably";
@@ -253,6 +253,14 @@ export function Header({
         </nav>
 
         <div className="flex items-center gap-3">
+          <Link
+            href="/login"
+            className="inline-flex size-11 items-center justify-center rounded-sm border border-border bg-card text-foreground shadow-[var(--shadow-soft-icon)] transition-colors hover:bg-muted"
+            aria-label="Staff login"
+            title="Staff login"
+          >
+            <LogIn className="size-5" />
+          </Link>
           <Drawer
             open={cartOpen}
             onOpenChange={setCartOpen}
