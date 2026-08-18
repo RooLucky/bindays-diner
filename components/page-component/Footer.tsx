@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { MapPin, Phone } from "lucide-react";
+import { MapPin, MessageSquare, Phone } from "lucide-react";
 
 const footerLinks = [
   { label: "Food Menu", href: "/menu" },
@@ -42,6 +42,13 @@ export function Footer() {
             Filipino comfort food, refreshing drinks, and local favorites
             prepared for delivery around Legazpi City.
           </p>
+          <Link
+            href="/review"
+            className="mt-6 inline-flex h-11 items-center gap-2 rounded-sm border border-brand-white/40 px-5 text-xs font-semibold uppercase tracking-[0.08em] text-brand-white transition hover:bg-brand-white hover:text-brand-olive"
+          >
+            <MessageSquare className="size-4" aria-hidden="true" />
+            Leave a review
+          </Link>
         </div>
 
         <nav aria-label="Footer navigation" className="text-center md:text-left">

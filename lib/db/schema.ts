@@ -33,6 +33,12 @@ export const customerReviewStatus = pgEnum("customer_review_status", [
   "rejected",
 ]);
 
+export const reservationPaymentStatus = pgEnum("reservation_payment_status", [
+  "pending",
+  "unpaid",
+  "paid",
+]);
+
 export const adminAccounts = pgTable(
   "admin_accounts",
   {
@@ -248,3 +254,39 @@ export const googleReviewCache = pgTable("google_review_cache", {
   fetchedAt: timestamp("fetched_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
+
+export const reservations = pgTable(
+  "reservations",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    fullName: varchar("full_name", { length: 160 }).notNull(),
+    email: varchar("email", { length: 255 }).notNull(),
+    phone: varchar("phone", { length: 40 }).notNull(),
+    deliveryAddress: text("delivery_address").notNull(),
+    landmark: text("landmark"),
+    deliveryDate: varchar("delivery_date", { length: 10 }).notNull(),
+    deliveryTime: varchar("delivery_time", { length: 5 }).notNull(),
+    notes: text("notes"),
+    itemsJson: text("items_json").notNull(),
+    subtotal: integer("subtotal").notNull(),
+    paymentStatus: reservationPaymentStatus("payment_status")
+      .default("pending")
+      .notNull(),
+    paymentToken: varchar("payment_token", { length: 64 }).notNull(),
+    paymentLinkExpiresAt: timestamp("payment_link_expires_at", {
+      withTimezone: true,
+    }).notNull(),
+    receiptKey: text("receipt_key"),
+    receiptUrl: text("receipt_url"),
+    paidAt: timestamp("paid_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("reservations_payment_token_idx").on(table.paymentToken),
+    index("reservations_payment_status_expiry_idx").on(
+      table.paymentStatus,
+      table.paymentLinkExpiresAt,
+    ),
+  ],
+);

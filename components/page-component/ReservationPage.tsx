@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState, useTransition } from "react";
 import { CalendarDays, Mail, MapPin, Phone, ShoppingCart } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -24,17 +25,35 @@ const deliveryBenefits = [
   },
   {
     icon: Phone,
-    title: "Order Confirmation",
-    description: "Your request stays pending until our team confirms it.",
+    title: "Secure Payment Link",
+    description: "Your request stays pending until payment is confirmed from the emailed link.",
   },
 ];
 
+function defaultDeliverySchedule() {
+  const date = new Date(Date.now() + 45 * 60 * 1_000);
+  const dateValue = [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
+  const timeValue = [
+    String(date.getHours()).padStart(2, "0"),
+    String(date.getMinutes()).padStart(2, "0"),
+  ].join(":");
+
+  return { dateValue, timeValue };
+}
+
 export function ReservationPage() {
-  const { getSummary, items, subtotal, totalQuantity } = useCart();
+  const { clearCart, getSummary, items, subtotal, totalQuantity } = useCart();
   const cartSummary = useMemo(() => getSummary(), [getSummary]);
   const [notes, setNotes] = useState("");
   const [notesEdited, setNotesEdited] = useState(false);
   const [deliveryDate, setDeliveryDate] = useState("");
+  const [deliveryTime, setDeliveryTime] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [isPending, startTransition] = useTransition();
   const today = useMemo(() => {
     const date = new Date();
     date.setHours(0, 0, 0, 0);
@@ -47,6 +66,99 @@ export function ReservationPage() {
       setNotes(cartSummary);
     }
   }, [cartSummary, notesEdited]);
+
+  useEffect(() => {
+    const schedule = defaultDeliverySchedule();
+    setDeliveryDate(schedule.dateValue);
+    setDeliveryTime(schedule.timeValue);
+  }, []);
+
+  const inputClassName = (field: string) =>
+    cn(
+      "h-11 w-full rounded-sm border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30",
+      fieldErrors[field] &&
+        "border-destructive ring-1 ring-destructive/30 focus-visible:ring-destructive/30",
+    );
+
+  const clearFieldError = (field: string) => {
+    setFieldErrors((errors) => {
+      if (!errors[field]) {
+        return errors;
+      }
+
+      const nextErrors = { ...errors };
+      delete nextErrors[field];
+      return nextErrors;
+    });
+  };
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const fullName = String(formData.get("fullName") ?? "").trim();
+    const phone = String(formData.get("phone") ?? "").trim();
+    const email = String(formData.get("email") ?? "").trim();
+    const deliveryAddress = String(formData.get("deliveryAddress") ?? "").trim();
+    const selectedDeliveryTime = String(formData.get("deliveryTime") ?? "").trim();
+    const errors: Record<string, string> = {};
+
+    if (fullName.length < 2) errors.fullName = "Enter your full name.";
+    if (phone.length < 7) errors.phone = "Enter a valid phone number.";
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      errors.email = "Enter a valid contact email.";
+    }
+    if (deliveryAddress.length < 8) {
+      errors.deliveryAddress = "Enter your house number, street, barangay, and city.";
+    }
+    if (!deliveryDate) errors.deliveryDate = "Choose a delivery date.";
+    if (!selectedDeliveryTime) errors.deliveryTime = "Choose a preferred time.";
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      toast.error("Please complete all required delivery details correctly.");
+      return;
+    }
+
+    setFieldErrors({});
+
+    startTransition(async () => {
+      const response = await fetch("/api/reservations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: formData.get("fullName"),
+          email: formData.get("email"),
+          phone: formData.get("phone"),
+          deliveryAddress: formData.get("deliveryAddress"),
+          landmark: formData.get("landmark"),
+          deliveryDate,
+          deliveryTime: formData.get("deliveryTime"),
+          notes,
+          items: items.map(({ name, price, quantity }) => ({
+            name,
+            price,
+            quantity,
+          })),
+          subtotal,
+        }),
+      });
+      const data = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        toast.error(data.error ?? "Unable to send your delivery request.");
+        return;
+      }
+
+      clearCart();
+      form.reset();
+      setDeliveryDate("");
+      setDeliveryTime("");
+      setNotes("");
+      setNotesEdited(false);
+      toast.success("Reservation request sent. Check your email for the payment link.");
+    });
+  }
 
   if (items.length === 0) {
     return (
@@ -128,7 +240,7 @@ export function ReservationPage() {
         </div>
 
         <Reveal className="mx-auto w-full max-w-2xl lg:max-w-none" y={34}>
-        <form className="rounded-sm border border-border bg-card p-4 shadow-[var(--shadow-card)] sm:p-5 md:p-6 xl:p-8">
+        <form noValidate onSubmit={handleSubmit} className="rounded-sm border border-border bg-card p-4 shadow-[var(--shadow-card)] sm:p-5 md:p-6 xl:p-8">
           <h2 className="font-serif text-2xl text-foreground sm:text-3xl">
             Delivery Details
           </h2>
@@ -136,27 +248,58 @@ export function ReservationPage() {
             <label className="grid gap-2 text-sm font-medium text-foreground">
               Full Name
               <input
-                className="h-11 w-full rounded-sm border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
+                name="fullName"
+                required
+                aria-invalid={Boolean(fieldErrors.fullName)}
+                onChange={() => clearFieldError("fullName")}
+                className={inputClassName("fullName")}
                 placeholder="Enter your full name"
               />
+              {fieldErrors.fullName ? <span className="text-xs font-normal text-destructive">{fieldErrors.fullName}</span> : null}
             </label>
             <label className="grid gap-2 text-sm font-medium text-foreground">
               Phone
               <input
-                className="h-11 w-full rounded-sm border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
+                name="phone"
+                required
+                aria-invalid={Boolean(fieldErrors.phone)}
+                onChange={() => clearFieldError("phone")}
+                className={inputClassName("phone")}
                 placeholder="Enter your phone number"
               />
+              {fieldErrors.phone ? <span className="text-xs font-normal text-destructive">{fieldErrors.phone}</span> : null}
+            </label>
+            <label className="grid gap-2 text-sm font-medium text-foreground">
+              Contact Email
+              <input
+                name="email"
+                type="email"
+                required
+                autoComplete="email"
+                aria-invalid={Boolean(fieldErrors.email)}
+                onChange={() => clearFieldError("email")}
+                className={inputClassName("email")}
+                placeholder="you@example.com"
+              />
+              {fieldErrors.email ? <span className="text-xs font-normal text-destructive">{fieldErrors.email}</span> : null}
+              <span className="text-xs font-normal text-muted-foreground">We&apos;ll email your 30-minute payment link here.</span>
             </label>
             <label className="grid gap-2 text-sm font-medium text-foreground">
               Delivery Address
               <input
-                className="h-11 w-full rounded-sm border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
+                name="deliveryAddress"
+                required
+                aria-invalid={Boolean(fieldErrors.deliveryAddress)}
+                onChange={() => clearFieldError("deliveryAddress")}
+                className={inputClassName("deliveryAddress")}
                 placeholder="House number, street, barangay, city"
               />
+              {fieldErrors.deliveryAddress ? <span className="text-xs font-normal text-destructive">{fieldErrors.deliveryAddress}</span> : null}
             </label>
             <label className="grid gap-2 text-sm font-medium text-foreground">
               Landmark or Delivery Notes
               <input
+                name="landmark"
                 className="h-11 w-full rounded-sm border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
                 placeholder="Nearby landmark, gate color, or rider instructions"
               />
@@ -166,18 +309,32 @@ export function ReservationPage() {
                 Delivery Date
                 <DatePicker
                   value={deliveryDate}
-                  onChange={setDeliveryDate}
+                  onChange={(value) => {
+                    setDeliveryDate(value);
+                    clearFieldError("deliveryDate");
+                  }}
                   placeholder="Select delivery date"
                   disabledDates={{ before: today }}
                   startMonth={today}
+                  className={fieldErrors.deliveryDate ? "border-destructive ring-1 ring-destructive/30" : undefined}
                 />
+                {fieldErrors.deliveryDate ? <span className="text-xs font-normal text-destructive">{fieldErrors.deliveryDate}</span> : null}
               </label>
               <label className="grid gap-2 text-sm font-medium text-foreground">
                 Preferred Time
                 <input
+                  name="deliveryTime"
                   type="time"
-                  className="h-11 w-full rounded-sm border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
+                  required
+                  value={deliveryTime}
+                  aria-invalid={Boolean(fieldErrors.deliveryTime)}
+                  onChange={(event) => {
+                    setDeliveryTime(event.target.value);
+                    clearFieldError("deliveryTime");
+                  }}
+                  className={inputClassName("deliveryTime")}
                 />
+                {fieldErrors.deliveryTime ? <span className="text-xs font-normal text-destructive">{fieldErrors.deliveryTime}</span> : null}
               </label>
             </div>
             <label className="grid gap-2 text-sm font-medium text-foreground">
@@ -213,6 +370,7 @@ export function ReservationPage() {
                 </div>
               ) : null}
               <textarea
+                name="notes"
                 value={notes}
                 onChange={(event) => {
                   setNotes(event.target.value);
@@ -223,8 +381,8 @@ export function ReservationPage() {
               />
             </label>
           </div>
-          <Button className="mt-6 min-h-12 w-full whitespace-normal rounded-sm px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em]">
-            Send Delivery Request
+          <Button type="submit" disabled={isPending} className="mt-6 min-h-12 w-full whitespace-normal rounded-sm px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em]">
+            {isPending ? "Sending request..." : "Send Delivery Request"}
           </Button>
         </form>
         </Reveal>

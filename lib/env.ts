@@ -39,6 +39,16 @@ const serverEnvSchema = z.object({
   GOOGLE_MAPS_API_KEY: z.string().min(1).optional(),
   GOOGLE_PLACE_ID: z.string().min(1).optional(),
   GOOGLE_REVIEW_URL: z.string().url().optional(),
+  SMTP_HOST: z.string().min(1).optional(),
+  SMTP_PORT: z.coerce.number().int().min(1).max(65535).optional(),
+  SMTP_USER: z.string().min(1).optional(),
+  SMTP_PASS: z.string().min(1).optional(),
+  SMTP_FROM: z.string().email().optional(),
+  SMTP2_HOST: z.string().min(1).optional(),
+  SMTP2_PORT: z.coerce.number().int().min(1).max(65535).optional(),
+  SMTP2_USER: z.string().min(1).optional(),
+  SMTP2_PASS: z.string().min(1).optional(),
+  SMTP2_FROM: z.string().email().optional(),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema> & {

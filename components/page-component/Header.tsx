@@ -128,12 +128,13 @@ export function Header({
 
     async function refreshNavigationVisibility() {
       activeRequest?.abort();
-      activeRequest = new AbortController();
+      const requestController = new AbortController();
+      activeRequest = requestController;
 
       try {
         const response = await fetch("/api/header-navigation", {
           cache: "no-store",
-          signal: activeRequest.signal,
+          signal: requestController.signal,
         });
 
         if (!response.ok) {
@@ -159,7 +160,10 @@ export function Header({
           router.refresh();
         }
       } catch (error) {
-        if (!(error instanceof DOMException && error.name === "AbortError")) {
+        if (
+          !requestController.signal.aborted &&
+          !(error instanceof DOMException && error.name === "AbortError")
+        ) {
           console.warn("Unable to refresh header navigation.", error);
         }
       }
