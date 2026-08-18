@@ -40,6 +40,12 @@ const EMPTY_MANAGEMENT_SEED_CATEGORIES = new Set<ManagementCategorySlug>([
   "best-seller",
 ]);
 
+const DEFAULT_INACTIVE_HEADER_CATEGORIES = new Set<ManagementCategorySlug>([
+  "promo",
+  "meal-of-the-day",
+  "best-seller",
+]);
+
 const DEFAULT_MENU_CATEGORY_NAMES = [
   "Add-ons",
   "Best Seller",
@@ -153,7 +159,7 @@ export function getStaticManagementCategory(
       heroImageUrl: campaign.heroImage,
       heroAlt: campaign.heroAlt,
       badge: campaign.badge ?? null,
-      isHeaderActive: true,
+      isHeaderActive: !DEFAULT_INACTIVE_HEADER_CATEGORIES.has(slug),
     };
   }
 

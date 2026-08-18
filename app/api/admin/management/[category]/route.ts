@@ -99,6 +99,7 @@ export async function PATCH(
       heroImageUrl: heroImage?.url ?? current?.heroImageUrl ?? fallback.heroImageUrl,
       heroAlt: getRequiredString(formData, "heroAlt"),
       badge: parseBadge(formData),
+      isHeaderActive: current?.isHeaderActive ?? fallback.isHeaderActive,
       updatedAt: new Date(),
     };
 
