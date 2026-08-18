@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-export function AdminLogoutButton() {
+export function AdminLogoutButton({ className }: { className?: string }) {
   const router = useRouter();
 
   async function logout() {
@@ -25,7 +26,7 @@ export function AdminLogoutButton() {
     <Button
       type="button"
       variant="outline"
-      className="rounded-sm bg-transparent"
+      className={cn("rounded-sm bg-transparent", className)}
       onClick={logout}
     >
       <LogOut className="size-4" />

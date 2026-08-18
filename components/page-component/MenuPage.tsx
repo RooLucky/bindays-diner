@@ -1,8 +1,8 @@
 import { menuDishes, type Dish } from "@/lib/menu-campaigns";
 import { isAblyRealtimeEnabled } from "@/lib/realtime";
 
-import { MenuCard } from "./MenuCard";
-import { Reveal, StaggerContainer, StaggerItem } from "./MotionEffects";
+import { MenuCardGrid } from "./MenuCardGrid";
+import { Reveal } from "./MotionEffects";
 import { PublicMenuRealtimeRefresh } from "./PublicMenuRealtimeRefresh";
 
 export function MenuPage({ dishes = menuDishes }: { dishes?: Dish[] }) {
@@ -30,13 +30,11 @@ export function MenuPage({ dishes = menuDishes }: { dishes?: Dish[] }) {
           </div>
         </Reveal>
 
-        <StaggerContainer className="mt-12 grid gap-7 md:grid-cols-3 xl:mt-14 xl:grid-cols-4">
-          {dishes.map((dish) => (
-            <StaggerItem key={dish.name} className="h-full">
-              <MenuCard dish={dish} source="menu" />
-            </StaggerItem>
-          ))}
-        </StaggerContainer>
+        <MenuCardGrid
+          dishes={dishes}
+          source="menu"
+          className="mt-12 grid gap-7 md:grid-cols-3 xl:mt-14 xl:grid-cols-4"
+        />
       </div>
     </section>
   );

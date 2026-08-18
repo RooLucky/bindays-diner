@@ -2,6 +2,8 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
+  Check,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Edit3,
@@ -15,7 +17,6 @@ import {
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { HeaderVisibilityManager } from "@/components/page-component/HeaderVisibilityManager";
 import {
   Dialog,
   DialogBackdrop,
@@ -26,6 +27,13 @@ import {
   DialogTitle,
   DialogViewport,
 } from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverPopup,
+  PopoverPortal,
+  PopoverPositioner,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import type {
   ManagementCategoryResponse,
   ManagementItemResponse,
@@ -33,7 +41,6 @@ import type {
   ManagementCategorySlug,
   ManagementItemCategoryResponse,
 } from "@/lib/management";
-import { isHeaderManagedCategorySlug } from "@/lib/header-navigation-contracts";
 
 const emptyItemForm = {
   name: "",
@@ -67,6 +74,7 @@ export function ManagementTable({
   >([]);
   const [pageContentOpen, setPageContentOpen] = useState(false);
   const [itemModalOpen, setItemModalOpen] = useState(false);
+  const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [pending, setPending] = useState(false);
@@ -153,20 +161,6 @@ export function ManagementTable({
   function resetItemForm() {
     setEditingItem(null);
     setItemForm(emptyItemForm);
-  }
-
-  function updateHeaderVisibility(isHeaderActive: boolean) {
-    setCategoryForm((current) =>
-      current ? { ...current, isHeaderActive } : current,
-    );
-    setPayload((current) =>
-      current
-        ? {
-            ...current,
-            category: { ...current.category, isHeaderActive },
-          }
-        : current,
-    );
   }
 
   function openCreateItem() {
@@ -336,15 +330,6 @@ export function ManagementTable({
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
-          {categoryForm && isHeaderManagedCategorySlug(category) ? (
-            <HeaderVisibilityManager
-              category={category}
-              title={title}
-              isActive={categoryForm.isHeaderActive}
-              disabled={pending}
-              onUpdated={updateHeaderVisibility}
-            />
-          ) : null}
           <Button
             type="button"
             variant="outline"
@@ -574,29 +559,58 @@ export function ManagementTable({
                     className="h-10 rounded-sm border border-border bg-background px-3 text-sm outline-none focus:border-primary"
                   />
                 </label>
-                <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
-                  Category{" "}
-                  <span className="font-normal text-muted-foreground">
-                    (optional)
+                <div className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
+                  <span>
+                    Category{" "}
+                    <span className="font-normal text-muted-foreground">
+                      (optional)
+                    </span>
                   </span>
-                  <select
-                    value={itemForm.tag}
-                    onChange={(event) =>
-                      updateItemField("tag", event.target.value)
-                    }
-                    className="h-10 rounded-sm border border-border bg-background px-3 text-sm outline-none focus:border-primary"
+                  <Popover
+                    open={categoryPickerOpen}
+                    onOpenChange={setCategoryPickerOpen}
                   >
-                    <option value="">No category</option>
-                    {selectedTagIsCustom ? (
-                      <option value={itemForm.tag}>{itemForm.tag}</option>
-                    ) : null}
-                    {itemCategories.map((categoryOption) => (
-                      <option key={categoryOption.id} value={categoryOption.name}>
-                        {categoryOption.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                    <PopoverTrigger
+                      render={
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="h-10 w-full justify-between rounded-sm bg-background px-3 text-left text-sm font-normal hover:bg-muted"
+                        />
+                      }
+                    >
+                      <span className="truncate">
+                        {itemForm.tag || "No category"}
+                      </span>
+                      <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+                    </PopoverTrigger>
+                    <PopoverPortal>
+                      <PopoverPositioner side="bottom" align="start">
+                        <PopoverPopup className="w-[min(22rem,calc(100vw-3rem))] max-h-64 overflow-y-auto p-1">
+                          {["", ...(selectedTagIsCustom ? [itemForm.tag] : []), ...itemCategories.map((categoryOption) => categoryOption.name)].map((categoryName) => {
+                            const isSelected = itemForm.tag === categoryName;
+                            const label = categoryName || "No category";
+
+                            return (
+                              <button
+                                key={categoryName || "no-category"}
+                                type="button"
+                                onClick={() => {
+                                  updateItemField("tag", categoryName);
+                                  setCategoryPickerOpen(false);
+                                }}
+                                className="flex w-full items-center justify-between gap-3 rounded-sm px-3 py-2.5 text-left text-sm text-foreground outline-none transition-colors hover:bg-muted focus-visible:bg-muted"
+                              >
+                                <span className="truncate">{label}</span>
+                                {isSelected ? <Check className="size-4 shrink-0 text-primary" /> : null}
+                              </button>
+                            );
+                          })}
+                        </PopoverPopup>
+                      </PopoverPositioner>
+                    </PopoverPortal>
+                  </Popover>
+                </div>
                 <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
                   Sort
                   <input

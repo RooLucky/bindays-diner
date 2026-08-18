@@ -7,13 +7,11 @@ import type { Campaign } from "@/lib/menu-campaigns";
 import { isAblyRealtimeEnabled } from "@/lib/realtime";
 
 import { CampaignFeatureStrip } from "./CampaignFeatureStrip";
-import { MenuCard } from "./MenuCard";
 import {
   ParallaxLayer,
   Reveal,
-  StaggerContainer,
-  StaggerItem,
 } from "./MotionEffects";
+import { MenuCardGrid } from "./MenuCardGrid";
 import { PublicMenuRealtimeRefresh } from "./PublicMenuRealtimeRefresh";
 
 export function CampaignPage({ campaign }: { campaign: Campaign }) {
@@ -95,13 +93,11 @@ export function CampaignPage({ campaign }: { campaign: Campaign }) {
         id="campaign-dishes"
         className="mx-auto max-w-[98dvw] scroll-mt-28 px-4 py-8 md:max-w-[95dvw] xl:max-w-[85dvw] xl:px-0"
       >
-        <StaggerContainer className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {campaign.dishes.map((dish) => (
-            <StaggerItem key={dish.name}>
-              <MenuCard dish={dish} source={campaign.slug} />
-            </StaggerItem>
-          ))}
-        </StaggerContainer>
+        <MenuCardGrid
+          dishes={campaign.dishes}
+          source={campaign.slug}
+          className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4"
+        />
       </section>
 
       <section className="pb-12 pt-4">

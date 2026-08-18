@@ -23,7 +23,7 @@ import {
 } from "@/lib/management";
 import { hashSecret } from "@/lib/secrets";
 
-const DEFAULT_ADMIN_EMAIL = "admin@bindays.local";
+const DEFAULT_ADMIN_EMAIL = "bindaysdiner2025@gmail.com";
 
 function getSeedAdminConfig() {
   const env = getServerEnv();
@@ -35,7 +35,7 @@ function getSeedAdminConfig() {
 
   const generatedPassword = env.ADMIN_PASSWORD
     ? undefined
-    : `bindaysdiner**`;
+    : `Binday2025**`;
   const password = env.ADMIN_PASSWORD ?? generatedPassword;
 
   if (!password) {

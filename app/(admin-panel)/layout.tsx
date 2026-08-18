@@ -1,4 +1,3 @@
-import { AdminLogoutButton } from "@/components/page-component/AdminLogoutButton";
 import { AdminManagementMenu } from "@/components/page-component/AdminManagementMenu";
 import { requireAdminSession } from "@/lib/admin-auth";
 
@@ -23,7 +22,6 @@ export default async function AdminPanelLayout({
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <AdminManagementMenu />
-            <AdminLogoutButton />
           </div>
         </div>
       </header>

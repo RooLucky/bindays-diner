@@ -9,13 +9,11 @@ import { isAblyRealtimeEnabled } from "@/lib/realtime";
 import { cn } from "@/lib/utils";
 
 import { CampaignFeatureStrip } from "./CampaignFeatureStrip";
-import { MenuCard } from "./MenuCard";
 import {
   ParallaxLayer,
   Reveal,
-  StaggerContainer,
-  StaggerItem,
 } from "./MotionEffects";
+import { MenuCardGrid } from "./MenuCardGrid";
 import { PublicMenuRealtimeRefresh } from "./PublicMenuRealtimeRefresh";
 
 type StudentMealsShowcaseProps = {
@@ -293,21 +291,17 @@ export function StudentMealsShowcase({
           ) : null}
         </Reveal>
 
-        <StaggerContainer
-          revealOnMount
+        <MenuCardGrid
+          dishes={campaign.dishes}
+          source={campaign.slug}
+          variant="student"
           className={cn(
             "relative z-10 mx-auto mt-10 grid grid-cols-1 gap-x-5 gap-y-8 sm:mt-12 sm:grid-cols-2 lg:mt-14",
             useFourColumns
               ? "max-w-6xl lg:grid-cols-4"
               : "max-w-5xl lg:grid-cols-3",
           )}
-        >
-          {campaign.dishes.map((dish) => (
-            <StaggerItem key={dish.name} className="h-full">
-              <MenuCard dish={dish} source={campaign.slug} variant="student" />
-            </StaggerItem>
-          ))}
-        </StaggerContainer>
+        />
       </section>
 
       <section className="pb-10">

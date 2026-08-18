@@ -34,6 +34,22 @@ export type ManagementCategory = typeof managementCategories.$inferSelect;
 export type ManagementItem = typeof managementItems.$inferSelect;
 export type ManagementItemCategory = typeof managementItemCategories.$inferSelect;
 
+const EMPTY_MANAGEMENT_SEED_CATEGORIES = new Set<ManagementCategorySlug>([
+  "promo",
+  "meal-of-the-day",
+  "best-seller",
+]);
+
+const DEFAULT_MENU_CATEGORY_NAMES = [
+  "Add-ons",
+  "Best Seller",
+  "Drinks",
+  "Main Dish",
+  "Meal of the Day",
+  "Promo",
+  "Student Meal",
+];
+
 export type ManagementItemCategoryResponse = {
   id: string;
   name: string;
@@ -158,6 +174,10 @@ export function getStaticManagementCategory(
 }
 
 export function getStaticManagementItems(slug: ManagementCategorySlug) {
+  if (EMPTY_MANAGEMENT_SEED_CATEGORIES.has(slug)) {
+    return [];
+  }
+
   const mainMenuItems = getMainMenuSeedItems(slug);
 
   if (mainMenuItems) {
@@ -195,11 +215,14 @@ export function getStaticManagementItems(slug: ManagementCategorySlug) {
 export function getStaticManagementItemCategoryNames() {
   return Array.from(
     new Set(
-      MANAGEMENT_CATEGORIES.flatMap((slug) =>
-        getStaticManagementItems(slug)
-          .map((item) => item.tag)
-          .filter((tag): tag is string => Boolean(tag)),
-      ),
+      [
+        ...DEFAULT_MENU_CATEGORY_NAMES,
+        ...MANAGEMENT_CATEGORIES.flatMap((slug) =>
+          getStaticManagementItems(slug)
+            .map((item) => item.tag)
+            .filter((tag): tag is string => Boolean(tag)),
+        ),
+      ],
     ),
   ).sort((a, b) => a.localeCompare(b));
 }
