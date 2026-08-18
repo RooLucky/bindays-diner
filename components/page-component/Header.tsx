@@ -255,7 +255,7 @@ export function Header({
         <div className="flex items-center gap-3">
           <Link
             href="/login"
-            className="inline-flex size-11 items-center justify-center rounded-sm border border-border bg-card text-foreground shadow-[var(--shadow-soft-icon)] transition-colors hover:bg-muted"
+            className="hidden size-11 items-center justify-center rounded-sm border border-border bg-card text-foreground shadow-[var(--shadow-soft-icon)] transition-colors hover:bg-muted xl:inline-flex"
             aria-label="Staff login"
             title="Staff login"
           >
@@ -267,7 +267,7 @@ export function Header({
             swipeDirection="down"
           >
             <DrawerTrigger
-              className="relative inline-flex size-11 items-center justify-center rounded-sm border border-border bg-card text-foreground shadow-[var(--shadow-soft-icon)]"
+              className="relative hidden size-11 items-center justify-center rounded-sm border border-border bg-card text-foreground shadow-[var(--shadow-soft-icon)] xl:inline-flex"
               aria-label="Open cart"
             >
               <ShoppingCart className="size-5" />
@@ -413,10 +413,15 @@ export function Header({
             swipeDirection="down"
           >
             <DrawerTrigger
-              className="inline-flex size-11 items-center justify-center rounded-sm border border-border bg-card text-foreground shadow-[var(--shadow-soft-icon)] xl:hidden"
+              className="relative inline-flex size-11 items-center justify-center rounded-sm border border-border bg-card text-foreground shadow-[var(--shadow-soft-icon)] xl:hidden"
               aria-label="Open navigation menu"
             >
               <Menu className="size-5" />
+              {totalQuantity > 0 ? (
+                <span className="absolute -right-2 -top-2 grid size-6 place-items-center rounded-full bg-primary text-[0.7rem] font-bold text-primary-foreground">
+                  {totalQuantity}
+                </span>
+              ) : null}
             </DrawerTrigger>
             <DrawerPortal>
               <DrawerBackdrop />
@@ -456,6 +461,34 @@ export function Header({
                       </Link>
                     ))}
                   </nav>
+                  <div className="mt-6 grid gap-2 border-t border-border pt-5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        setCartOpen(true);
+                      }}
+                      className="flex min-h-12 items-center justify-between rounded-sm border border-border bg-background px-4 text-sm font-semibold uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-muted"
+                    >
+                      <span className="flex items-center gap-3">
+                        <ShoppingCart className="size-5" />
+                        Your Cart
+                      </span>
+                      {totalQuantity > 0 ? (
+                        <span className="grid size-6 place-items-center rounded-full bg-primary text-[0.7rem] font-bold text-primary-foreground">
+                          {totalQuantity}
+                        </span>
+                      ) : null}
+                    </button>
+                    <Link
+                      href="/login"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex min-h-12 items-center gap-3 rounded-sm border border-border bg-background px-4 text-sm font-semibold uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-muted"
+                    >
+                      <LogIn className="size-5" />
+                      Admin Login
+                    </Link>
+                  </div>
                 </DrawerPopup>
               </DrawerViewport>
             </DrawerPortal>
