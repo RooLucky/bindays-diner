@@ -299,7 +299,7 @@ export function ChatbotKnowledgeManager() {
             <Bot className="size-4" />
             Grounded Q and A
           </p>
-          <h1 className="mt-2 font-serif text-4xl text-foreground sm:text-5xl">
+          <h1 className="mt-2 font-serif text-[clamp(2.25rem,7vw,3.75rem)] text-foreground">
             Chatbot Knowledge
           </h1>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">

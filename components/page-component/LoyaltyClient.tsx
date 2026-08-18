@@ -196,7 +196,7 @@ export function LoyaltyClient() {
         <p className="mt-3 text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
           Binday's Diner
         </p>
-        <h2 className="mt-2 font-serif text-4xl text-primary">Loyalty Card</h2>
+        <h2 className="mt-2 font-serif text-[clamp(2rem,6vw,3rem)] text-primary">Loyalty Card</h2>
         <div className="mt-6 grid grid-cols-5 gap-3">
           {Array.from({ length: card?.rewardThreshold ?? 10 }, (_, index) => {
             const stampNumber = index + 1;

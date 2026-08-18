@@ -48,11 +48,17 @@ export function HeroPage() {
             <p className="font-serif text-2xl italic text-brand-script sm:text-3xl">
               Mabuhay!
             </p>
-            <h1 className="mt-4 font-serif text-[clamp(2.85rem,14vw,6rem)] leading-[0.98] tracking-normal text-foreground sm:mt-5 sm:text-[clamp(4.2rem,8vw,6rem)] lg:text-[clamp(4.2rem,6.2vw,6rem)]">
-              <span>
+            <h1 className="mt-4 font-serif text-[clamp(2.4rem,8.2vw,5.75rem)] leading-[0.98] tracking-normal text-foreground sm:mt-5">
+              <span className="lg:hidden">
+                <span className="block">Every Meal Feels</span>
+                <span className="block">
+                  Like <span className="text-primary">Home</span>
+                </span>
+              </span>
+              <span className="hidden lg:inline">
                 {BINDAYS_MOTTO.replace(" Home", "")}
               </span>
-              <span className="block text-primary">Home</span>
+              <span className="hidden text-primary lg:block">Home</span>
             </h1>
             <p className="mx-auto mt-6 max-w-md text-sm leading-7 text-muted-foreground sm:mt-7 sm:text-base lg:mx-0">
               Comforting Filipino favorites cooked fresh, served generously,

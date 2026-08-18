@@ -36,7 +36,7 @@ export function CampaignPage({ campaign }: { campaign: Campaign }) {
             <p className="font-serif text-2xl italic text-brand-script sm:text-3xl">
               {campaign.eyebrow}
             </p>
-            <h1 className="mt-4 font-serif text-[clamp(2.8rem,10vw,5.4rem)] leading-[0.98] text-foreground lg:text-[clamp(4rem,5.4vw,4.5rem)]">
+            <h1 className="mt-4 font-serif text-[clamp(2.25rem,7.5vw,4.5rem)] leading-[0.98] text-foreground">
               {campaign.title}
             </h1>
             <p className="mx-auto mt-6 max-w-md text-sm leading-7 text-muted-foreground sm:text-base lg:mx-0">
@@ -111,7 +111,7 @@ export function CampaignPage({ campaign }: { campaign: Campaign }) {
               <p className="text-sm font-bold uppercase tracking-[0.08em] text-primary">
                 Make it easy
               </p>
-              <h2 className="mt-2 font-serif text-3xl text-foreground">
+              <h2 className="mt-2 font-serif text-[clamp(1.8rem,5.5vw,2.5rem)] text-foreground">
                 Add your favorites, then send them for delivery.
               </h2>
             </div>

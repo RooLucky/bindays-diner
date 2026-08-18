@@ -94,7 +94,7 @@ export function OurStorySection() {
           </p>
           <h2
             id="our-story-title"
-            className="mt-3 font-serif text-4xl leading-tight sm:text-5xl md:text-6xl"
+            className="mt-3 font-serif text-[clamp(2.2rem,7.5vw,4.5rem)] leading-tight"
           >
             Our Story
           </h2>
@@ -174,7 +174,7 @@ export function OurStorySection() {
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">
               The Heart of Binday&apos;s
             </p>
-            <h2 className="mt-3 font-serif text-4xl leading-tight sm:text-5xl">
+            <h2 className="mt-3 font-serif text-[clamp(2rem,6vw,3rem)] leading-tight">
               Our Core Values
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-base leading-8 text-muted-foreground">
@@ -233,7 +233,7 @@ export function OurStorySection() {
             <p className="relative text-xs font-bold uppercase tracking-[0.18em] text-brand-gold-soft">
               Our Promise
             </p>
-            <p className="relative mx-auto mt-3 max-w-4xl font-serif text-3xl italic leading-tight text-brand-white sm:text-4xl md:text-5xl">
+            <p className="relative mx-auto mt-3 max-w-4xl font-serif text-[clamp(1.8rem,5.5vw,3rem)] italic leading-tight text-brand-white">
               “{BINDAYS_MOTTO}”
             </p>
           </div>
@@ -263,7 +263,7 @@ function PurposeCard({
       <p className="relative mt-7 text-xs font-bold uppercase tracking-[0.14em] text-primary">
         {eyebrow}
       </p>
-      <h3 className="relative mt-2 font-serif text-3xl text-foreground sm:text-4xl">
+      <h3 className="relative mt-2 font-serif text-[clamp(1.8rem,5.5vw,2.5rem)] text-foreground">
         {title}
       </h3>
       <p className="relative mt-5 text-base leading-8 text-muted-foreground">

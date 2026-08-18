@@ -30,7 +30,7 @@ export function LoyaltyPage() {
             <p className="font-serif text-2xl italic text-brand-script sm:text-3xl">
               Join Our Family
             </p>
-            <h1 className="mt-4 font-serif text-[clamp(3rem,10vw,5.6rem)] leading-[0.98] text-foreground">
+            <h1 className="mt-4 font-serif text-[clamp(2.3rem,7.5vw,4.8rem)] leading-[0.98] text-foreground">
               Loyalty Card Eat More, Earn More
             </h1>
             <p className="mx-auto mt-6 max-w-md text-base leading-8 text-muted-foreground lg:mx-0">

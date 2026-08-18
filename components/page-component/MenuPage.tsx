@@ -19,7 +19,7 @@ export function MenuPage({ dishes = menuDishes }: { dishes?: Dish[] }) {
             <p className="font-serif text-2xl italic text-brand-olive sm:text-3xl">
               - Paboritong Pinoy -
             </p>
-            <h2 className="mt-3 font-serif text-4xl leading-tight text-foreground sm:text-5xl md:text-6xl">
+            <h2 className="mt-3 font-serif text-[clamp(2.2rem,7.5vw,4.5rem)] leading-tight text-foreground">
               Mga Paborito sa Hapag
             </h2>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-muted-foreground">

@@ -326,7 +326,7 @@ export function ManagementTable({
           <p className="font-serif text-2xl italic text-brand-script">
             Management
           </p>
-          <h1 className="mt-2 font-serif text-5xl text-foreground">{title}</h1>
+          <h1 className="mt-2 font-serif text-[clamp(2.25rem,7vw,3.75rem)] text-foreground">{title}</h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
             Edit the public page copy and manage the rows shown on this section.
           </p>

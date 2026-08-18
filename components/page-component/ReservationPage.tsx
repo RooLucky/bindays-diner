@@ -170,7 +170,7 @@ export function ReservationPage() {
           <p className="mt-6 text-sm font-bold uppercase tracking-[0.08em] text-primary">
             Food selection required
           </p>
-          <h1 className="mt-3 font-serif text-4xl text-foreground sm:text-5xl">
+          <h1 className="mt-3 font-serif text-[clamp(2.2rem,7vw,3rem)] text-foreground">
             Add meals before delivery
           </h1>
           <p className="mt-4 max-w-lg text-sm leading-7 text-muted-foreground sm:text-base">
@@ -199,7 +199,7 @@ export function ReservationPage() {
             <p className="font-serif text-xl italic text-brand-script sm:text-2xl md:text-3xl">
               Deliver To Your Home
             </p>
-            <h1 className="mt-3 font-serif text-[clamp(2.55rem,12vw,4rem)] leading-[0.98] text-foreground md:text-[clamp(3.6rem,8vw,5rem)] lg:text-[clamp(4rem,5.6vw,5.6rem)]">
+            <h1 className="mt-3 font-serif text-[clamp(2.25rem,7.5vw,5rem)] leading-[0.98] text-foreground">
               Get Your Favorites Delivered Fresh
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8 lg:mx-0 lg:max-w-md">
@@ -241,7 +241,7 @@ export function ReservationPage() {
 
         <Reveal className="mx-auto w-full max-w-2xl lg:max-w-none" y={34}>
         <form noValidate onSubmit={handleSubmit} className="rounded-sm border border-border bg-card p-4 shadow-[var(--shadow-card)] sm:p-5 md:p-6 xl:p-8">
-          <h2 className="font-serif text-2xl text-foreground sm:text-3xl">
+          <h2 className="font-serif text-[clamp(1.8rem,5vw,2.5rem)] text-foreground">
             Delivery Details
           </h2>
           <div className="mt-5 grid gap-4 sm:mt-6">

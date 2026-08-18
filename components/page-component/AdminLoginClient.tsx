@@ -98,7 +98,7 @@ export function AdminLoginClient() {
             <p className="mt-6 text-xs font-bold uppercase tracking-[0.14em] text-primary">
               Restaurant administration
             </p>
-            <h1 className="mt-2 font-serif text-4xl text-foreground sm:text-5xl">
+            <h1 className="mt-2 font-serif text-[clamp(2.25rem,6vw,3rem)] text-foreground">
               Access your dashboard
             </h1>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -144,6 +144,13 @@ export function AdminLoginClient() {
               <LogIn className="size-4" />
               {pending ? "Signing in..." : "Access dashboard"}
             </Button>
+            <Link
+              href="/home"
+              className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-sm border border-border bg-transparent text-xs font-semibold uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-muted"
+            >
+              <ArrowLeft className="size-4" />
+              Return to website
+            </Link>
           </form>
         </section>
       </div>

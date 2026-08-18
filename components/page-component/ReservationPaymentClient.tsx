@@ -63,7 +63,7 @@ export function ReservationPaymentClient({
         <p className="text-xs font-bold uppercase tracking-[0.12em] text-primary">
           Binday&apos;s Diner Reservation
         </p>
-        <h1 className="mt-3 font-serif text-4xl text-foreground sm:text-5xl">
+        <h1 className="mt-3 font-serif text-[clamp(2.2rem,7vw,3rem)] text-foreground">
           {isPaid
             ? "Payment received"
             : isExpired

@@ -278,8 +278,18 @@ export function StudentMealsShowcase({
           <p className="font-serif text-xl italic text-brand-script sm:text-2xl">
             {campaign.eyebrow}
           </p>
-          <h1 className="mt-3 font-serif text-[clamp(2.65rem,8vw,4.75rem)] leading-[0.95] text-foreground">
-            {campaign.title}
+          <h1 className="mt-3 font-serif text-[clamp(2.25rem,7.5vw,4.5rem)] leading-[0.98] text-foreground">
+            {campaign.slug === "add-ons" ? (
+              <>
+                <span className="lg:hidden">
+                  <span className="block">A Little Extra</span>
+                  <span className="block">on the Side</span>
+                </span>
+                <span className="hidden lg:inline">{campaign.title}</span>
+              </>
+            ) : (
+              campaign.title
+            )}
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8">
             {campaign.description}
@@ -314,7 +324,7 @@ export function StudentMealsShowcase({
             <p className="text-xs font-bold uppercase tracking-[0.08em] text-primary">
               {footerEyebrow}
             </p>
-            <h2 className="mt-2 max-w-2xl font-serif text-3xl leading-tight text-foreground sm:text-4xl">
+            <h2 className="mt-2 max-w-2xl font-serif text-[clamp(1.8rem,5.5vw,2.5rem)] leading-tight text-foreground">
               {footerTitle}
             </h2>
           </div>

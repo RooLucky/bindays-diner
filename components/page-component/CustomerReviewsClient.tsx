@@ -99,16 +99,16 @@ export function CustomerReviewsClient({
     <section
       id="reviews"
       aria-labelledby="reviews-title"
-      className="relative overflow-hidden border-y border-border bg-background py-16 text-foreground lg:py-24"
+      className="relative overflow-hidden border-y border-border bg-background py-10 text-foreground sm:py-14 lg:py-24"
     >
-      <div className="mx-auto grid max-w-[98dvw] gap-10 px-4 md:max-w-[95dvw] lg:grid-cols-[0.92fr_1.08fr] lg:gap-12 xl:max-w-[85dvw] xl:px-0">
-        <div>
+      <div className="mx-auto grid w-full max-w-xl gap-8 px-4 sm:max-w-[95dvw] sm:gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:gap-12 xl:max-w-[85dvw] xl:px-0">
+        <div className="min-w-0">
           <p className="font-serif text-2xl italic text-brand-script sm:text-3xl">
             - Guest Reviews -
           </p>
           <h2
             id="reviews-title"
-            className="mt-3 max-w-xl font-serif text-4xl leading-tight sm:text-5xl md:text-6xl"
+            className="mt-3 max-w-xl font-serif text-[clamp(2.2rem,7.5vw,4.5rem)] leading-[1.02]"
           >
             Loved by neighbors, classmates, and families.
           </h2>
@@ -118,7 +118,7 @@ export function CustomerReviewsClient({
             Maps.
           </p>
 
-          <div className="mt-8 rounded-sm border border-border bg-card p-6 shadow-[var(--shadow-card)] sm:p-7">
+          <div className="mt-7 rounded-sm border border-border bg-card p-4 shadow-[var(--shadow-card)] sm:mt-8 sm:p-7">
             <div className="flex flex-wrap items-center gap-4">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">
@@ -148,7 +148,7 @@ export function CustomerReviewsClient({
               rel="noreferrer"
               className={cn(
                 buttonVariants(),
-                "mt-6 h-11 rounded-sm px-5 text-xs font-semibold uppercase tracking-[0.08em]",
+                "mt-6 h-11 w-full justify-center rounded-sm px-5 text-xs font-semibold uppercase tracking-[0.08em] sm:w-auto",
               )}
             >
               Review on Google Maps
@@ -178,15 +178,15 @@ export function CustomerReviewsClient({
           ) : null}
         </div>
 
-        <div className="grid gap-6">
+        <div className="grid min-w-0 gap-6">
           <form
             onSubmit={handleSubmit}
-            className="rounded-sm border border-border bg-card p-5 shadow-[var(--shadow-card)] sm:p-7"
+            className="min-w-0 rounded-sm border border-border bg-card p-4 shadow-[var(--shadow-card)] sm:p-7"
           >
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">
               Review Binday&apos;s
             </p>
-            <h3 className="mt-2 font-serif text-3xl text-foreground">
+            <h3 className="mt-2 font-serif text-[clamp(1.8rem,5.5vw,2.5rem)] text-foreground">
               Share your experience
             </h3>
 
@@ -215,14 +215,14 @@ export function CustomerReviewsClient({
 
             <div className="mt-5">
               <p className="text-sm font-semibold text-foreground">Rating</p>
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div className="mt-2 grid grid-cols-5 gap-2">
                 {ratingOptions.map((value) => (
                   <button
                     key={value}
                     type="button"
                     onClick={() => setRating(value)}
                     className={cn(
-                      "inline-flex h-10 items-center gap-1 rounded-sm border px-3 text-sm font-semibold transition-colors",
+                      "inline-flex h-10 w-full items-center justify-center gap-1 rounded-sm border px-1 text-sm font-semibold transition-colors",
                       rating === value
                         ? "border-primary bg-primary text-primary-foreground"
                         : "border-border bg-background text-foreground hover:bg-muted",
@@ -318,7 +318,7 @@ export function CustomerReviewsClient({
             </Button>
           </form>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid min-w-0 gap-4 sm:grid-cols-2">
             {payload.reviews.length > 0 ? (
               payload.reviews.map((review) => (
                 <article
