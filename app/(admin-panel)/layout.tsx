@@ -11,7 +11,7 @@ export default async function AdminPanelLayout({
   return (
     <div className="min-h-dvh bg-muted/30">
       <header className="border-b border-border bg-background">
-        <div className="mx-auto flex max-w-[92rem] flex-col gap-4 px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="mx-auto flex max-w-[92rem] items-center justify-between gap-4 px-4 py-4">
           <div>
             <p className="font-serif text-2xl italic text-brand-script">
               Binday's Diner

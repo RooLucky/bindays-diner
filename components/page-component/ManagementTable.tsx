@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Edit3,
   ImagePlus,
+  MoreVertical,
   Plus,
   RefreshCcw,
   Save,
@@ -75,6 +76,7 @@ export function ManagementTable({
   const [pageContentOpen, setPageContentOpen] = useState(false);
   const [itemModalOpen, setItemModalOpen] = useState(false);
   const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
+  const [actionsMenuOpen, setActionsMenuOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [pending, setPending] = useState(false);
@@ -319,7 +321,7 @@ export function ManagementTable({
 
   return (
     <div className="grid gap-8">
-      <section className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+      <section className="flex items-start justify-between gap-4">
         <div>
           <p className="font-serif text-2xl italic text-brand-script">
             Management
@@ -329,7 +331,69 @@ export function ManagementTable({
             Edit the public page copy and manage the rows shown on this section.
           </p>
         </div>
-        <div className="flex flex-col gap-2 sm:flex-row">
+        <div>
+          <Popover open={actionsMenuOpen} onOpenChange={setActionsMenuOpen}>
+            <PopoverTrigger
+              render={
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="rounded-sm bg-transparent sm:hidden"
+                  aria-label="Open page actions"
+                />
+              }
+            >
+              <MoreVertical className="size-5" />
+            </PopoverTrigger>
+            <PopoverPortal>
+              <PopoverPositioner side="bottom" align="end">
+                <PopoverPopup className="w-52 p-1.5 sm:hidden">
+                  <div className="grid gap-1">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="w-full justify-start rounded-sm"
+                      disabled={pending}
+                      onClick={() => {
+                        setActionsMenuOpen(false);
+                        void loadData();
+                      }}
+                    >
+                      <RefreshCcw className="size-4" />
+                      Refresh
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="w-full justify-start rounded-sm"
+                      disabled={pending || !categoryForm}
+                      onClick={() => {
+                        setActionsMenuOpen(false);
+                        setPageContentOpen(true);
+                      }}
+                    >
+                      <Edit3 className="size-4" />
+                      Page Content
+                    </Button>
+                    <Button
+                      type="button"
+                      className="w-full justify-start rounded-sm"
+                      disabled={pending}
+                      onClick={() => {
+                        setActionsMenuOpen(false);
+                        openCreateItem();
+                      }}
+                    >
+                      <Plus className="size-4" />
+                      Add Item
+                    </Button>
+                  </div>
+                </PopoverPopup>
+              </PopoverPositioner>
+            </PopoverPortal>
+          </Popover>
+          <div className="hidden gap-2 sm:flex">
           <Button
             type="button"
             variant="outline"
@@ -359,6 +423,7 @@ export function ManagementTable({
             <Plus className="size-4" />
             Add Item
           </Button>
+          </div>
         </div>
       </section>
 
