@@ -32,29 +32,44 @@ export const BINDAYS_VISION =
 
 export const BINDAYS_CORE_VALUES = [
   {
-    title: "Hospitality",
-    description: "Treat every guest like family.",
-  },
-  {
-    title: "Quality",
-    description: "Serve fresh, flavorful, and consistently delicious meals.",
-  },
-  {
-    title: "Integrity",
-    description: "Be honest, respectful, and accountable in everything we do.",
-  },
-  {
-    title: "Family",
+    title: "Family at the Heart",
     description:
-      "Foster meaningful relationships with our guests, employees, and community.",
+      "We treat our guests and our team like family. We believe in kindness, respect, understanding, and creating a place where everyone feels welcome and valued.",
+  },
+  {
+    title: "Food Made with Love",
+    description:
+      "Every dish is prepared with care, using quality ingredients and the comforting flavors of Filipino home cooking. We want every bite to remind you of the warmth of a meal shared with family.",
+  },
+  {
+    title: "Genuine Filipino Hospitality",
+    description:
+      "We proudly embrace the Filipino spirit of malasakit—caring for others with sincerity and compassion. Every guest who walks through our doors deserves to be welcomed with a smile and served with genuine care.",
+  },
+  {
+    title: "Quality & Consistency",
+    description:
+      "We are committed to serving food that is fresh, delicious, and consistently prepared. Whether it is your first visit or your hundredth, we want you to enjoy the same quality and care every time.",
+  },
+  {
+    title: "Integrity & Responsibility",
+    description:
+      "We believe in doing what is right, even when no one is watching. We value honesty, accountability, cleanliness, food safety, and responsible service in everything we do.",
   },
   {
     title: "Community",
-    description: "Support local suppliers and give back whenever possible.",
+    description:
+      "BINDAY’s Diner is more than a restaurant—we want to be part of the community we serve. We support local families, celebrate Filipino culture, and strive to create a gathering place where friendships and memories can grow.",
   },
   {
-    title: "Excellence",
+    title: "Gratitude",
     description:
-      "Strive for continuous improvement in food, service, and cleanliness.",
+      "We never forget that our customers are the reason we are here. Every visit, every order, and every recommendation means something to us. We serve with humility and gratitude for the trust our community places in us.",
   },
 ] as const;
+
+export const BINDAYS_CORE_VALUES_INTRO =
+  "At Binday’s Diner, we believe food is more than something we serve—it is a way to bring people together, create memories, and make everyone feel at home. Our values guide everything we do, from the meals we prepare to the way we welcome every guest.";
+
+export const BINDAYS_PROMISE =
+  "To serve delicious Filipino comfort food with warmth, quality, and genuine hospitality—so that every person who comes to Binday’s Diner leaves feeling cared for, satisfied, and a little closer to home.";

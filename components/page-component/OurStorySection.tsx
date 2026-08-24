@@ -12,8 +12,10 @@ import {
 
 import {
   BINDAYS_CORE_VALUES,
+  BINDAYS_CORE_VALUES_INTRO,
   BINDAYS_MISSION,
   BINDAYS_MOTTO,
+  BINDAYS_PROMISE,
   BINDAYS_STORY_PARAGRAPHS,
   BINDAYS_VISION,
 } from "@/lib/brand-content";
@@ -27,12 +29,13 @@ import {
 import { StoryLogoHologram } from "./StoryLogoHologram";
 
 const valueIcons = {
-  Hospitality: HeartHandshake,
-  Quality: ChefHat,
-  Integrity: ShieldCheck,
-  Family: Users,
+  "Family at the Heart": Users,
+  "Food Made with Love": ChefHat,
+  "Genuine Filipino Hospitality": HeartHandshake,
+  "Quality & Consistency": Star,
+  "Integrity & Responsibility": ShieldCheck,
   Community: HandHeart,
-  Excellence: Star,
+  Gratitude: HeartHandshake,
 } satisfies Record<(typeof BINDAYS_CORE_VALUES)[number]["title"], LucideIcon>;
 
 const storyBody = BINDAYS_STORY_PARAGRAPHS.slice(3, -3);
@@ -178,8 +181,7 @@ export function OurStorySection() {
               Our Core Values
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-base leading-8 text-muted-foreground">
-              The promises we bring to every plate, every guest, and every
-              community we serve.
+              {BINDAYS_CORE_VALUES_INTRO}
             </p>
           </Reveal>
 
@@ -233,8 +235,11 @@ export function OurStorySection() {
             <p className="relative text-xs font-bold uppercase tracking-[0.18em] text-brand-gold-soft">
               Our Promise
             </p>
-            <p className="relative mx-auto mt-3 max-w-4xl font-serif text-[clamp(1.8rem,5.5vw,3rem)] italic leading-tight text-brand-white">
-              “{BINDAYS_MOTTO}”
+            <p className="relative mx-auto mt-3 max-w-3xl text-base leading-8 text-brand-white/85 sm:text-lg">
+              {BINDAYS_PROMISE}
+            </p>
+            <p className="relative mx-auto mt-6 max-w-4xl font-serif text-[clamp(1.8rem,5.5vw,3rem)] italic leading-tight text-brand-white">
+              Binday&apos;s Diner — {BINDAYS_MOTTO}.
             </p>
           </div>
         </Reveal>

@@ -61,8 +61,8 @@ export function HeroPage() {
               <span className="hidden text-primary lg:block">Home</span>
             </h1>
             <p className="mx-auto mt-6 max-w-md text-sm leading-7 text-muted-foreground sm:mt-7 sm:text-base lg:mx-0">
-              Comforting Filipino favorites cooked fresh, served generously,
-              and made for sharing with family and friends.
+              Comforting Filipino favorites cooked fresh, served generously, and
+              made for sharing with family and friends.
             </p>
           </Reveal>
 
@@ -129,7 +129,7 @@ export function HeroPage() {
 
               <div className="hero-bowl-rotation absolute inset-0 z-10">
                 <Image
-                  src="/images/friedrice.png"
+                  src="/images/goto-lechon-kawali-transparent.png"
                   alt="A bowl of Filipino fried rice garnished with herbs and lemon"
                   width={728}
                   height={728}
