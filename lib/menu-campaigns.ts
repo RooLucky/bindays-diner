@@ -500,6 +500,41 @@ export const campaigns: Record<string, Campaign> = {
       },
     ],
   },
+  "bilao-tray": {
+    slug: "bilao-tray",
+    eyebrow: "Made for Sharing",
+    title: "Bilao Trays",
+    description:
+      "Generous Filipino favorites prepared in shareable bilao trays for family meals, gatherings, and celebrations.",
+    ctaLabel: "Inquire About Bilao Trays",
+    ctaHref: "/reservations",
+    heroImage: images.hero,
+    heroAlt: "A generous Filipino meal prepared for sharing",
+    badge: "For Sharing",
+    dishes: [],
+    features: [
+      {
+        icon: Users,
+        title: "Made for the Group",
+        description: "Shareable portions for family meals, teams, and celebrations.",
+      },
+      {
+        icon: PackageCheck,
+        title: "Prepared with Care",
+        description: "Every tray is packed with the same care as every meal we serve.",
+      },
+      {
+        icon: CalendarHeart,
+        title: "Gathering Ready",
+        description: "A convenient choice for birthdays, meetings, and special occasions.",
+      },
+      {
+        icon: Heart,
+        title: "Filipino Favorites",
+        description: "Comforting dishes that make sharing feel like home.",
+      },
+    ],
+  },
 };
 
 export const allCampaigns = Object.values(campaigns);

@@ -23,6 +23,7 @@ const publicPathsByCategory: Record<ManagementCategorySlug, string[]> = {
   promo: ["/promos"],
   "meal-of-the-day": ["/meal-of-the-day"],
   "best-seller": ["/best-seller"],
+  "bilao-tray": ["/bilao"],
 };
 
 let ablyRest: Ably.Rest | undefined;

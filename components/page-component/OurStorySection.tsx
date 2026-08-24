@@ -239,7 +239,7 @@ export function OurStorySection() {
               {BINDAYS_PROMISE}
             </p>
             <p className="relative mx-auto mt-6 max-w-4xl font-serif text-[clamp(1.8rem,5.5vw,3rem)] italic leading-tight text-brand-white">
-              Binday&apos;s Diner — {BINDAYS_MOTTO}.
+              {BINDAYS_MOTTO}.
             </p>
           </div>
         </Reveal>

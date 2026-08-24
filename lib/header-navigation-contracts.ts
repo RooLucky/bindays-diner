@@ -5,6 +5,7 @@ export const HEADER_MANAGED_CATEGORIES = [
   "promo",
   "meal-of-the-day",
   "best-seller",
+  "bilao-tray",
 ] as const;
 
 export type HeaderManagedCategorySlug =
@@ -22,6 +23,7 @@ export const DEFAULT_HEADER_NAVIGATION_VISIBILITY: HeaderNavigationVisibility = 
   promo: true,
   "meal-of-the-day": true,
   "best-seller": true,
+  "bilao-tray": false,
 };
 
 export const HEADER_MANAGED_ROUTES: Record<HeaderManagedCategorySlug, string> = {
@@ -31,6 +33,7 @@ export const HEADER_MANAGED_ROUTES: Record<HeaderManagedCategorySlug, string> = 
   promo: "/promos",
   "meal-of-the-day": "/meal-of-the-day",
   "best-seller": "/best-seller",
+  "bilao-tray": "/bilao",
 };
 
 export function isHeaderManagedCategorySlug(

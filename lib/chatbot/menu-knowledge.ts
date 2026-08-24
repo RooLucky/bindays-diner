@@ -76,6 +76,14 @@ const menuKnowledgeConfig: Record<
     keywords: "menu main dish main dishes food available dishes meals pasta pizza dessert",
     queryTerms: ["menu", "main dish", "food available", "dishes available"],
   },
+  "bilao-tray": {
+    question: "What Bilao Trays are currently available?",
+    label: "Bilao Trays",
+    category: "Live Menu - Bilao Trays",
+    keywords:
+      "bilao tray trays sharing family party gathering celebration group order handaan",
+    queryTerms: ["bilao", "bilao tray", "bilao trays", "party tray", "sharing tray"],
+  },
 };
 
 const categorySlugs = Object.keys(menuKnowledgeConfig) as ManagementCategorySlug[];
@@ -88,6 +96,7 @@ const menuCategoryHrefs: Record<ManagementCategorySlug, string> = {
   promo: "/promos",
   "student-meal": "/student-meals",
   "main-dish": "/menu",
+  "bilao-tray": "/bilao",
 };
 
 const menuCategoryPatterns: Array<{
@@ -103,6 +112,7 @@ const menuCategoryPatterns: Array<{
     pattern: /\b(meal\s+of\s+the\s+day|daily\s+meal|today'?s\s+special)\b/i,
   },
   { slug: "best-seller", pattern: /\b(best[\s-]?sellers?|top[\s-]?sellers?)\b/i },
+  { slug: "bilao-tray", pattern: /\b(bilao(?:\s+trays?)?|party\s+trays?|sharing\s+trays?)\b/i },
   { slug: "main-dish", pattern: /\b(main\s+(?:menu|dishes?)|food\s+menu|menu)\b/i },
 ];
 

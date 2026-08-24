@@ -64,6 +64,11 @@ const navItems: NavigationItem[] = [
     href: "/best-seller",
     managedCategory: "best-seller",
   },
+  {
+    label: "Bilao Trays",
+    href: "/bilao",
+    managedCategory: "bilao-tray",
+  },
   { label: "Loyalty", href: "/loyalty" },
 ];
 

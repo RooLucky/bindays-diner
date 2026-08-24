@@ -32,7 +32,8 @@ type DecorationTheme =
   | "menu"
   | "promo"
   | "daily"
-  | "best-seller";
+  | "best-seller"
+  | "bilao";
 
 type DecorationAsset = {
   src: string;
@@ -160,6 +161,22 @@ const decorationSets: Record<
       imageClassName: "rotate-[-14deg]",
     },
   },
+  bilao: {
+    primary: {
+      src: "/images/decorative-leaf.png",
+      width: 1254,
+      height: 1254,
+      wrapperClassName: "-left-16 top-10 w-72",
+      imageClassName: "rotate-[26deg]",
+    },
+    secondary: {
+      src: "/images/decorative-single-leaf.png",
+      width: 1254,
+      height: 1254,
+      wrapperClassName: "-right-12 bottom-6 w-64",
+      imageClassName: "rotate-[-42deg]",
+    },
+  },
 };
 
 export function StudentMealsShowcase({
@@ -174,6 +191,7 @@ export function StudentMealsShowcase({
   const realtimeEnabled = isAblyRealtimeEnabled();
   const decorations = decorationSets[decorationTheme];
   const useFourColumns = campaign.dishes.length === 4;
+  const isBilaoTheme = decorationTheme === "bilao";
 
   return (
     <main className="overflow-hidden bg-background text-foreground">
@@ -185,6 +203,52 @@ export function StudentMealsShowcase({
         id={sectionId}
         className="relative mx-auto w-full scroll-mt-28 px-4 pb-14 pt-10 md:pb-16 md:pt-12  xl:px-0"
       >
+        {isBilaoTheme ? (
+          <>
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute left-1/2 top-5 hidden h-[28rem] w-[min(72rem,92vw)] -translate-x-1/2 rounded-[48%] border-[0.85rem] border-[#b98543]/45 opacity-80 shadow-[inset_0_0_0_1px_rgba(108,75,31,0.14),0_1.5rem_4rem_rgba(103,70,28,0.1)] lg:block"
+              style={{
+                backgroundColor: "rgba(246, 222, 170, 0.18)",
+                backgroundImage:
+                  "repeating-linear-gradient(42deg, rgba(147, 97, 36, 0.16) 0 2px, transparent 2px 13px), repeating-linear-gradient(-42deg, rgba(202, 146, 69, 0.16) 0 2px, transparent 2px 13px)",
+              }}
+            >
+              <span className="absolute inset-4 rounded-[45%] border border-[#a87432]/35" />
+              <span className="absolute inset-8 rounded-[42%] border border-[#a87432]/25" />
+            </div>
+            <ParallaxLayer
+              className="pointer-events-none absolute -left-20 top-2 hidden w-80 opacity-80 lg:block"
+              distance={32}
+              reverse
+            >
+              <Image
+                src="/images/decorative-leaf.png"
+                alt=""
+                aria-hidden="true"
+                width={1254}
+                height={1254}
+                className="h-auto w-full rotate-[26deg] drop-shadow-xl"
+              />
+            </ParallaxLayer>
+            <ParallaxLayer
+              className="pointer-events-none absolute -right-16 bottom-4 hidden w-72 opacity-75 lg:block"
+              distance={40}
+            >
+              <Image
+                src="/images/decorative-single-leaf.png"
+                alt=""
+                aria-hidden="true"
+                width={1254}
+                height={1254}
+                className="h-auto w-full rotate-[-38deg] drop-shadow-xl"
+              />
+            </ParallaxLayer>
+          </>
+        ) : null}
+
+        {!isBilaoTheme ? (
+          <>
         <ParallaxLayer
           className="pointer-events-none absolute -left-14 top-72 hidden w-64 opacity-40 lg:block"
           distance={36}
@@ -273,8 +337,15 @@ export function StudentMealsShowcase({
             />
           </ParallaxLayer>
         ) : null}
+          </>
+        ) : null}
 
         <Reveal className="relative z-10 mx-auto max-w-5xl text-center">
+          {isBilaoTheme ? (
+            <span className="mb-3 inline-flex rounded-full border border-[#a87432]/30 bg-[#f7e6bd]/75 px-4 py-1.5 text-[0.65rem] font-bold uppercase tracking-[0.18em] text-[#77511f] shadow-sm">
+              Salu-salo favorites
+            </span>
+          ) : null}
           <p className="font-serif text-xl italic text-brand-script sm:text-2xl">
             {campaign.eyebrow}
           </p>

@@ -23,6 +23,7 @@ const managementGroups = [
       { label: "Menu Categories", href: "/management/categories" },
       { label: "Main Dishes", href: "/management/main-dish" },
       { label: "Student Meals", href: "/management/student-meal" },
+      { label: "Bilao Trays", href: "/management/bilao-tray" },
       { label: "Add-ons", href: "/management/add-ons" },
       { label: "Drinks", href: "/management/drinks" },
     ],

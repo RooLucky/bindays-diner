@@ -26,6 +26,7 @@ export const MANAGEMENT_CATEGORIES = [
   "promo",
   "student-meal",
   "main-dish",
+  "bilao-tray",
 ] as const;
 
 export type ManagementCategorySlug = (typeof MANAGEMENT_CATEGORIES)[number];
@@ -38,12 +39,14 @@ const EMPTY_MANAGEMENT_SEED_CATEGORIES = new Set<ManagementCategorySlug>([
   "promo",
   "meal-of-the-day",
   "best-seller",
+  "bilao-tray",
 ]);
 
 const DEFAULT_INACTIVE_HEADER_CATEGORIES = new Set<ManagementCategorySlug>([
   "promo",
   "meal-of-the-day",
   "best-seller",
+  "bilao-tray",
 ]);
 
 const DEFAULT_MENU_CATEGORY_NAMES = [
@@ -54,6 +57,7 @@ const DEFAULT_MENU_CATEGORY_NAMES = [
   "Meal of the Day",
   "Promo",
   "Student Meal",
+  "Bilao Tray",
 ];
 
 export type ManagementItemCategoryResponse = {
@@ -145,6 +149,23 @@ function staticCampaignForSlug(slug: ManagementCategorySlug) {
 export function getStaticManagementCategory(
   slug: ManagementCategorySlug,
 ): StaticManagementCategory {
+  if (slug === "bilao-tray") {
+    return {
+      slug,
+      eyebrow: "Made for Sharing",
+      title: "Bilao Trays",
+      description:
+        "Generous Filipino favorites prepared in shareable bilao trays for family meals, gatherings, and celebrations.",
+      ctaLabel: "Inquire About Bilao Trays",
+      ctaHref: "/reservations",
+      heroImageKey: null,
+      heroImageUrl: "/images/hero-pasta.png",
+      heroAlt: "A generous Filipino meal prepared for sharing",
+      badge: "For Sharing",
+      isHeaderActive: false,
+    };
+  }
+
   const campaign = staticCampaignForSlug(slug);
 
   if (campaign) {

@@ -19,6 +19,7 @@ const navigationLabels: Record<HeaderManagedCategorySlug, string> = {
   promo: "Promotions",
   "meal-of-the-day": "Meal of the Day",
   "best-seller": "Best Sellers",
+  "bilao-tray": "Bilao Trays",
 };
 
 export function HeaderNavigationManager() {
