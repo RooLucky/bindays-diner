@@ -431,68 +431,72 @@ export function Header({
             <DrawerPortal>
               <DrawerBackdrop />
               <DrawerViewport>
-                <DrawerPopup>
-                  <div className="mx-auto mb-5 h-1.5 w-14 rounded-full bg-border" />
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <DrawerTitle className="font-serif text-3xl text-primary">
-                        Binday's Diner
-                      </DrawerTitle>
-                      <DrawerDescription className="mt-1 text-sm text-muted-foreground">
-                        Choose a page to continue.
-                      </DrawerDescription>
+                <DrawerPopup className="flex h-[50dvh] max-h-[50dvh] flex-col overflow-hidden p-0 xl:hidden">
+                  <div className="shrink-0 px-6 pt-4">
+                    <div className="mx-auto mb-4 h-1.5 w-14 rounded-full bg-border" />
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <DrawerTitle className="font-serif text-3xl text-primary">
+                          Binday's Diner
+                        </DrawerTitle>
+                        <DrawerDescription className="mt-1 text-sm text-muted-foreground">
+                          Choose a page to continue.
+                        </DrawerDescription>
+                      </div>
+                      <DrawerClose
+                        className="inline-flex size-9 shrink-0 items-center justify-center rounded-sm border border-border bg-background text-foreground"
+                        aria-label="Close navigation menu"
+                      >
+                        <X className="size-4" />
+                      </DrawerClose>
                     </div>
-                    <DrawerClose
-                      className="inline-flex size-9 items-center justify-center rounded-sm border border-border bg-background text-foreground"
-                      aria-label="Close navigation menu"
-                    >
-                      <X className="size-4" />
-                    </DrawerClose>
                   </div>
 
-                  <nav className="mt-7 grid gap-2">
-                    {visibleNavItems.map((item) => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={() => setMenuOpen(false)}
-                        className={cn(
-                          "flex items-center justify-between rounded-sm border border-transparent px-4 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-foreground transition-colors hover:border-border hover:bg-background",
-                          pathname === item.href &&
-                            "border-primary/25 bg-background text-primary",
-                        )}
+                  <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-6">
+                    <nav className="mt-5 grid gap-2">
+                      {visibleNavItems.map((item) => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setMenuOpen(false)}
+                          className={cn(
+                            "flex items-center justify-between rounded-sm border border-transparent px-4 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-foreground transition-colors hover:border-border hover:bg-background",
+                            pathname === item.href &&
+                              "border-primary/25 bg-background text-primary",
+                          )}
+                        >
+                          {item.label}
+                        </Link>
+                      ))}
+                    </nav>
+                    <div className="mt-6 grid gap-2 border-t border-border pt-5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          setCartOpen(true);
+                        }}
+                        className="flex min-h-12 items-center justify-between rounded-sm border border-border bg-background px-4 text-sm font-semibold uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-muted"
                       >
-                        {item.label}
-                      </Link>
-                    ))}
-                  </nav>
-                  <div className="mt-6 grid gap-2 border-t border-border pt-5">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMenuOpen(false);
-                        setCartOpen(true);
-                      }}
-                      className="flex min-h-12 items-center justify-between rounded-sm border border-border bg-background px-4 text-sm font-semibold uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-muted"
-                    >
-                      <span className="flex items-center gap-3">
-                        <ShoppingCart className="size-5" />
-                        Your Cart
-                      </span>
-                      {totalQuantity > 0 ? (
-                        <span className="grid size-6 place-items-center rounded-full bg-primary text-[0.7rem] font-bold text-primary-foreground">
-                          {totalQuantity}
+                        <span className="flex items-center gap-3">
+                          <ShoppingCart className="size-5" />
+                          Your Cart
                         </span>
-                      ) : null}
-                    </button>
-                    <Link
-                      href="/login"
-                      onClick={() => setMenuOpen(false)}
-                      className="flex min-h-12 items-center gap-3 rounded-sm border border-border bg-background px-4 text-sm font-semibold uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-muted"
-                    >
-                      <LogIn className="size-5" />
-                      Admin Login
-                    </Link>
+                        {totalQuantity > 0 ? (
+                          <span className="grid size-6 place-items-center rounded-full bg-primary text-[0.7rem] font-bold text-primary-foreground">
+                            {totalQuantity}
+                          </span>
+                        ) : null}
+                      </button>
+                      <Link
+                        href="/login"
+                        onClick={() => setMenuOpen(false)}
+                        className="flex min-h-12 items-center gap-3 rounded-sm border border-border bg-background px-4 text-sm font-semibold uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-muted"
+                      >
+                        <LogIn className="size-5" />
+                        Admin Login
+                      </Link>
+                    </div>
                   </div>
                 </DrawerPopup>
               </DrawerViewport>
