@@ -25,7 +25,7 @@ export const DEFAULT_CHATBOT_KNOWLEDGE = [
     question: "What is the story of Binday's Diner?",
     answer: BINDAYS_STORY_ANSWER,
     keywords:
-      "our story history origin dream family journey perseverance sacrifice faith resilience love generosity hope community rawis legazpi hospitality every meal feels like home",
+      "our story history origin dream family journey perseverance sacrifice faith resilience love generosity hope community hospitality every meal feels like home",
     category: "About",
     isFeatured: false,
   },
