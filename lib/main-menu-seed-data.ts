@@ -7,7 +7,9 @@ export type MainMenuSeedItem = {
 };
 
 function menuImage(section: string, filename: string) {
-  return `/Main Menu/${section}/${filename}`;
+  return ["", "Main Menu", section, filename]
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
 }
 
 function item(
@@ -34,7 +36,7 @@ const mainDishItems: MainMenuSeedItem[] = [
   item("Goto Special", "A fuller serving of goto with savory meat and toppings.", "P129", "GOTO", "Goto Special - Php 129.00.jpg", "Goto"),
   item("Goto Lechon Kawali", "Filipino rice porridge served with crispy pork belly.", "P139", "GOTO", "Goto Lechon Kawali - Php 139.jpg", "Goto"),
   item("Goto Beef Pares", "Warm goto paired with sweet and savory braised beef.", "P149", "GOTO", "Goto Beef Pares - Php 149.00.jpg", "Goto"),
-  item("Goto Overload", "A generous bowl of goto with assorted meat and toppings.", "P180", "GOTO", "Goto Overload - Php 180.00.jpg", "Goto"),
+  item("Goto Overload", "A generous bowl of goto with assorted meat and toppings.", "P189", "GOTO", "Goto Overload - Php 189.00.jpg", "Goto"),
 
   item("Beef Mami Ordinary", "Warm noodle soup with tender beef and vegetables.", "P129", "MAMI", "Beef Mami Ordinary - Php 129.00.jpg", "Mami"),
   item("Beef Mami Special", "Beef noodle soup with a fuller serving of meat and toppings.", "P159", "MAMI", "Beef Mami Special - Php 159.00.jpg", "Mami"),

@@ -4,6 +4,7 @@ import { getDb } from "@/lib/db";
 import { loyaltyMembers, loyaltyRedemptions, loyaltyStamps } from "@/lib/db/schema";
 
 export const LOYALTY_REWARD_THRESHOLD = 10;
+export const LOYALTY_QR_BASE_URL = "https://www.bindaysdiner.com";
 
 export type LoyaltyCard = Awaited<ReturnType<typeof getLoyaltyCard>>;
 
@@ -25,15 +26,7 @@ export function createQrToken() {
 }
 
 export function getPublicBaseUrl() {
-  if (process.env.NEXT_PUBLIC_SITE_URL) {
-    return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
-  }
-
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-
-  return "http://localhost:3000";
+  return LOYALTY_QR_BASE_URL;
 }
 
 export function getMemberQrUrl(memberCode: string) {

@@ -38,7 +38,10 @@ const managementGroups = [
   },
   {
     label: "Customer experience",
-    links: [{ label: "Reviews", href: "/management/reviews" }],
+    links: [
+      { label: "Loyalty Program", href: "/management/loyalty" },
+      { label: "Reviews", href: "/management/reviews" },
+    ],
   },
   {
     label: "System settings",

@@ -129,7 +129,7 @@ export function HeroPage() {
 
               <div className="hero-bowl-rotation absolute inset-0 z-10">
                 <Image
-                  src="/images/goto-lechon-kawali-transparent.png"
+                  src="/images/home.png"
                   alt="A bowl of Filipino fried rice garnished with herbs and lemon"
                   width={728}
                   height={728}

@@ -316,7 +316,7 @@ export function toManagementItemResponse(
 
 function resolveImageUrl(key: string | null, storedUrl: string) {
   if (!key) {
-    return storedUrl;
+    return normalizeLocalImageUrl(storedUrl);
   }
 
   try {
@@ -324,6 +324,23 @@ function resolveImageUrl(key: string | null, storedUrl: string) {
   } catch {
     return storedUrl;
   }
+}
+
+function normalizeLocalImageUrl(url: string) {
+  if (!url.startsWith("/")) {
+    return url;
+  }
+
+  return url
+    .split("/")
+    .map((segment) => {
+      try {
+        return encodeURIComponent(decodeURIComponent(segment));
+      } catch {
+        return encodeURIComponent(segment);
+      }
+    })
+    .join("/");
 }
 
 export async function getManagementPayload(slug: ManagementCategorySlug) {
