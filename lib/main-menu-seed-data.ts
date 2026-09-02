@@ -75,8 +75,8 @@ const mainDishItems: MainMenuSeedItem[] = [
 ];
 
 const studentMealItems: MainMenuSeedItem[] = [
-  item("Buttered Chicken with Rice", "Buttered chicken bites served with rice and a simple side.", "Price TBD", "STUDENT MEAL", "Buttered Chicken with Rice.jpg", "Student Meal"),
-  item("Chicken Chop", "Crispy chicken chop served with rice and a simple side.", "Price TBD", "STUDENT MEAL", "Chicken Chop.jpg", "Student Meal"),
+  item("Buttered Chicken with Rice", "Buttered chicken bites served with rice and a simple side.", "P99", "STUDENT MEAL", "Buttered Chicken with Rice - Php 99.00.jpg", "Student Meal"),
+  item("Chicken Chop", "Crispy chicken chop served with rice and a simple side.", "P79", "STUDENT MEAL", "Chicken Chop - Php 79.jpg", "Student Meal"),
 ];
 
 const addOnItems: MainMenuSeedItem[] = [
@@ -97,7 +97,7 @@ const drinkItems: MainMenuSeedItem[] = [
   item("Bottled Water", "Chilled bottled drinking water.", "P20", "DRINKS", "Bottled Water - Php 20.00.jpg", "Bottled Drink"),
   item("C2 Apple Solo", "A single bottle of apple-flavored green tea.", "P20", "DRINKS", "C2 Apple Solo - Php 20.00.jpg", "Bottled Drink"),
   item("C2 Lemon Solo", "A single bottle of lemon-flavored green tea.", "P20", "DRINKS", "C2 Lemon Solo - Php 20.00.jpg", "Bottled Drink"),
-  item("Coffee Jelly", "A chilled creamy drink with soft coffee jelly pieces.", "P99", "DRINKS", "Coffee Jelly - Php 99.00.jpg", "Specialty Drink"),
+  item("Coffee Jelly", "A chilled creamy drink with soft coffee jelly pieces.", "P90", "DRINKS", "Coffee Jelly - Php 90.00.jpg", "Specialty Drink"),
   item("Coke 1.5L", "A 1.5-liter bottle of Coca-Cola for sharing.", "P85", "DRINKS", "Coke 1.5L - Php 85.00.jpg", "Soft Drink"),
   item("Coke Mismo", "A chilled solo bottle of Coca-Cola.", "P25", "DRINKS", "Coke Mismo - Php 25.00.jpg", "Soft Drink"),
   item("Mountain Dew", "A chilled solo bottle of Mountain Dew.", "P25", "DRINKS", "Mountain Dew - Php 25.00.jpg", "Soft Drink"),
