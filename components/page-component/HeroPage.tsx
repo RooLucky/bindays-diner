@@ -7,6 +7,7 @@ import { BINDAYS_MOTTO } from "@/lib/brand-content";
 import { cn } from "@/lib/utils";
 
 import { ParallaxLayer, Reveal } from "./MotionEffects";
+import { HeroAnimation } from "./HeroAnimation";
 
 const decorativeIngredients = [
   {
@@ -111,7 +112,7 @@ export function HeroPage() {
             className="w-full max-w-[520px] lg:max-w-[560px]"
             distance={72}
           >
-            <div className="relative isolate aspect-square w-full">
+            <HeroAnimation>
               <div className="hero-leaf-orbit absolute inset-0 z-0">
                 {decorativeIngredients.map((ingredient) => (
                   <Image
@@ -148,7 +149,7 @@ export function HeroPage() {
                 <span className="hero-steam-wisp absolute bottom-0 right-[12%] h-24 w-9 rounded-full bg-background/60 blur-xl [--steam-drift:1.75rem]" />
                 <span className="hero-steam-wisp absolute bottom-[10%] left-[32%] h-20 w-8 rounded-full bg-background/55 blur-lg [--steam-drift:-0.5rem]" />
               </div>
-            </div>
+            </HeroAnimation>
           </ParallaxLayer>
         </div>
       </div>

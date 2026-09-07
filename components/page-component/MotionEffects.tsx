@@ -1,11 +1,29 @@
 "use client";
 
 import { useRef, type ReactNode } from "react";
-import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
+import { motion, useScroll, useTransform } from "motion/react";
+import { Pause, Play } from "lucide-react";
+import { useSiteMotion } from "@/hooks/use-site-motion";
 
 import { cn } from "@/lib/utils";
 
 const smoothEase = [0.22, 1, 0.36, 1] as const;
+
+export function ParallaxToggle() {
+  const { enabled, setEnabled } = useSiteMotion();
+  return (
+    <button
+      type="button"
+      onClick={() => setEnabled(!enabled)}
+      className="inline-flex min-h-11 items-center gap-2 rounded-full border border-border bg-background/95 px-4 text-xs font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+      aria-pressed={enabled}
+      aria-label="Enable parallax animations"
+    >
+      {enabled ? <Pause className="size-4" aria-hidden="true" /> : <Play className="size-4" aria-hidden="true" />}
+      {enabled ? "Pause animations" : "Enable animations"}
+    </button>
+  );
+}
 
 export function Reveal({
   children,
@@ -108,7 +126,8 @@ export function ParallaxLayer({
   reverse?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const reduceMotion = useReducedMotion();
+  const { enabled } = useSiteMotion();
+  const reduceMotion = !enabled;
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"],

@@ -424,10 +424,15 @@
   animation-duration: 7.1s;
 }
 
+.hero-animation[data-playing="false"] :is(.hero-bowl-rotation, .hero-leaf-orbit, .hero-steam-wisp) {
+  animation-play-state: paused;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .hero-bowl-rotation,
-  .hero-leaf-orbit,
-  .hero-steam-wisp,
+  .hero-animation:not([data-playing="true"]) :is(.hero-bowl-rotation, .hero-leaf-orbit, .hero-steam-wisp) {
+    animation-play-state: paused;
+  }
+
   .menu-hologram-effect,
   .menu-hologram-effect::before,
   .menu-hologram-effect::after,

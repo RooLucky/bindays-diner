@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { CampaignFeatureStrip } from "./CampaignFeatureStrip";
 import {
   ParallaxLayer,
+  ParallaxToggle,
   Reveal,
 } from "./MotionEffects";
 import { MenuCardGrid } from "./MenuCardGrid";
@@ -340,6 +341,9 @@ export function StudentMealsShowcase({
           </>
         ) : null}
 
+        <div className="relative z-10 mx-auto mb-4 hidden max-w-5xl justify-end md:flex">
+          <ParallaxToggle />
+        </div>
         <Reveal className="relative z-10 mx-auto max-w-5xl text-center">
           {isBilaoTheme ? (
             <span className="mb-3 inline-flex rounded-full border border-[#a87432]/30 bg-[#f7e6bd]/75 px-4 py-1.5 text-[0.65rem] font-bold uppercase tracking-[0.18em] text-[#77511f] shadow-sm">
