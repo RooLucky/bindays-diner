@@ -12,7 +12,9 @@ export type LoyaltyCardResponse = {
   stampCount: number;
   stampedNumbers: number[];
   rewardReady: boolean;
-  redeemed: boolean;
+  pendingRewardCycles: number[];
+  pendingRewardCount: number;
+  redeemedRewardCount: number;
   recentStamps: Array<{
     id: string;
     stampNumber: number;
@@ -22,4 +24,3 @@ export type LoyaltyCardResponse = {
     createdAt: string;
   }>;
 };
-

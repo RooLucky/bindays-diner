@@ -17,7 +17,7 @@ const loyaltyPerks = [
   {
     icon: Trophy,
     title: "Visit Rewards",
-    description: "A simple foundation for a rewards program.",
+    description: "Complete 10 stamps to earn a reward and start a fresh card automatically.",
   },
 ];
 

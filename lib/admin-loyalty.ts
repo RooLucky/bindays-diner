@@ -8,7 +8,7 @@ import {
   loyaltyRedemptions,
   loyaltyStamps,
 } from "@/lib/db/schema";
-import { LOYALTY_REWARD_THRESHOLD } from "@/lib/loyalty";
+import { getLoyaltyProgress } from "@/lib/loyalty-progress";
 
 export type AdminLoyaltyRegistration = {
   memberCode: string;
@@ -20,7 +20,8 @@ export type AdminLoyaltyRegistration = {
   stampCount: number;
   rewardThreshold: number;
   rewardReady: boolean;
-  redeemed: boolean;
+  pendingRewardCount: number;
+  redeemedRewardCount: number;
   lastActivityAt: string | null;
 };
 
@@ -47,6 +48,7 @@ export async function listAdminLoyaltyRegistrations(): Promise<
     .select({
       memberId: loyaltyStamps.memberId,
       rewardCycle: loyaltyStamps.rewardCycle,
+      stampNumber: loyaltyStamps.stampNumber,
       createdAt: loyaltyStamps.createdAt,
     })
     .from(loyaltyStamps);
@@ -76,17 +78,6 @@ export async function listAdminLoyaltyRegistrations(): Promise<
   return members.map((member) => {
     const memberStamps = stampsByMember.get(member.id) ?? [];
     const memberRedemptions = redemptionsByMember.get(member.id) ?? [];
-    const currentCycle = Math.max(
-      1,
-      ...memberStamps.map((stamp) => stamp.rewardCycle),
-      ...memberRedemptions.map((redemption) => redemption.rewardCycle),
-    );
-    const currentStamps = memberStamps.filter(
-      (stamp) => stamp.rewardCycle === currentCycle,
-    );
-    const redeemed = memberRedemptions.some(
-      (redemption) => redemption.rewardCycle === currentCycle,
-    );
     const latestActivity = [...memberStamps, ...memberRedemptions]
       .map((activity) => activity.createdAt)
       .sort((first, second) => second.getTime() - first.getTime())[0];
@@ -97,12 +88,7 @@ export async function listAdminLoyaltyRegistrations(): Promise<
       birthday: member.birthday,
       phone: member.phone,
       createdAt: member.createdAt.toISOString(),
-      currentCycle,
-      stampCount: currentStamps.length,
-      rewardThreshold: LOYALTY_REWARD_THRESHOLD,
-      rewardReady:
-        currentStamps.length >= LOYALTY_REWARD_THRESHOLD && !redeemed,
-      redeemed,
+      ...getLoyaltyProgress(memberStamps, memberRedemptions),
       lastActivityAt: toIsoString(latestActivity),
     };
   });

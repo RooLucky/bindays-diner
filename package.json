@@ -15,6 +15,8 @@
     "db:seed:add-ons": "tsx scripts/seed-add-ons.ts",
     "db:seed:main-menu": "tsx scripts/seed-main-menu.ts",
     "db:seed-chatbot": "tsx scripts/seed-chatbot.ts",
+    "db:sync-service-knowledge": "tsx scripts/sync-service-knowledge.ts",
+    "test:loyalty": "tsx --test tests/loyalty-progress.test.ts",
     "db:fresh": "tsx scripts/reset-db.ts && drizzle-kit push --force && pnpm db:generate && pnpm db:seed",
     "db:studio": "drizzle-kit studio"
   },

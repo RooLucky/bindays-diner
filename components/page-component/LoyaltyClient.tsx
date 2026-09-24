@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import type { LoyaltyCardResponse } from "@/lib/loyalty-contracts";
+import { useLoyaltyCardRefresh } from "@/hooks/use-loyalty-card-refresh";
 
 import { LoyaltyQrCode } from "./LoyaltyQrCode";
 
@@ -72,6 +73,7 @@ export function LoyaltyClient() {
   const [card, setCard] = useState<LoyaltyCardResponse | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const hasLoadedStoredMember = useRef(false);
+  useLoyaltyCardRefresh(card?.member.memberCode, setCard);
 
   async function loadLoyaltyCard(input: StoredLoyaltyMember, requestMode: Mode) {
     setIsSubmitting(true);
@@ -231,13 +233,18 @@ export function LoyaltyClient() {
               Member: {card.member.memberCode}
             </p>
             <p className="text-muted-foreground">
-              Stamps: {card.stampCount}/{card.rewardThreshold}
+              Card {card.currentCycle} · Stamps: {card.stampCount}/{card.rewardThreshold}
             </p>
             {card.rewardReady ? (
               <p className="mt-2 font-semibold text-primary">
-                Reward ready for redemption.
+                {card.pendingRewardCount} reward{card.pendingRewardCount === 1 ? "" : "s"} ready
+                for redemption. Present your QR code to staff to claim.
               </p>
             ) : null}
+            <p className="mt-2 text-muted-foreground">
+              Every 10 stamps earns a reward and automatically resets your card
+              to 0/10. Unclaimed rewards stay available while you collect more stamps.
+            </p>
           </div>
           <LoyaltyQrCode
             data={card.qrUrl}

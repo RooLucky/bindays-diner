@@ -175,11 +175,11 @@ export function AdminLoyaltyRegistrationsClient() {
                       </span>
                       {registration.rewardReady ? (
                         <span className="rounded-full bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
-                          Reward ready
+                          {registration.pendingRewardCount} reward{registration.pendingRewardCount === 1 ? "" : "s"} ready
                         </span>
-                      ) : registration.redeemed ? (
+                      ) : registration.redeemedRewardCount > 0 ? (
                         <span className="rounded-full bg-secondary/10 px-2 py-1 text-xs font-semibold text-secondary">
-                          Redeemed
+                          {registration.redeemedRewardCount} redeemed
                         </span>
                       ) : null}
                     </div>
@@ -223,11 +223,11 @@ export function AdminLoyaltyRegistrationsClient() {
                 </div>
                 {registration.rewardReady ? (
                   <span className="rounded-full bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
-                    Reward ready
+                    {registration.pendingRewardCount} reward{registration.pendingRewardCount === 1 ? "" : "s"} ready
                   </span>
-                ) : registration.redeemed ? (
+                ) : registration.redeemedRewardCount > 0 ? (
                   <span className="rounded-full bg-secondary/10 px-2 py-1 text-xs font-semibold text-secondary">
-                    Redeemed
+                    {registration.redeemedRewardCount} redeemed
                   </span>
                 ) : null}
               </div>

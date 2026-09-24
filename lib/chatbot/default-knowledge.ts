@@ -2,6 +2,7 @@ import {
   BINDAYS_MOTTO,
   BINDAYS_STORY_ANSWER,
 } from "@/lib/brand-content";
+import { SERVICE_CHATBOT_KNOWLEDGE } from "@/lib/chatbot/service-knowledge";
 
 export const DEFAULT_CHATBOT_KNOWLEDGE = [
   {
@@ -56,15 +57,7 @@ export const DEFAULT_CHATBOT_KNOWLEDGE = [
     category: "About",
     isFeatured: true,
   },
-  {
-    question: "Where is Binday's Diner located?",
-    answer:
-      "Binday's Diner is at the corner of T. Alonzo Street, ground floor of Ranola Building, Oro Site, Legazpi City, Albay, Philippines. You may contact the restaurant at +63 992 945 0801.",
-    keywords:
-      "location located address directions map contact phone telephone legazpi albay oro site t alonzo ranola 09929450801",
-    category: "About",
-    isFeatured: true,
-  },
+  ...SERVICE_CHATBOT_KNOWLEDGE,
   {
     question: "Does Binday's Diner offer dine-in, takeout, or delivery?",
     answer:

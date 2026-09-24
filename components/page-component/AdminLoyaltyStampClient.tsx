@@ -12,20 +12,10 @@ type ApiResponse = {
   error?: string;
 };
 
-function getDisplayStampedNumbers(card: LoyaltyCardResponse) {
-  return card.redeemed ? [] : card.stampedNumbers;
-}
-
 function getNextStampNumber(card: LoyaltyCardResponse) {
-  if (card.rewardReady) {
-    return null;
-  }
-
-  const stampedNumbers = getDisplayStampedNumbers(card);
-
   return (
     Array.from({ length: card.rewardThreshold }, (_, index) => index + 1).find(
-      (stampNumber) => !stampedNumbers.includes(stampNumber),
+      (stampNumber) => !card.stampedNumbers.includes(stampNumber),
     ) ?? null
   );
 }
@@ -72,7 +62,7 @@ export function AdminLoyaltyStampClient({ memberCode }: { memberCode: string }) 
   async function submitStamp(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!selectedStamp) {
+    if (!selectedStamp || !card) {
       toast.error("Select a stamp number first.");
       return;
     }
@@ -89,6 +79,7 @@ export function AdminLoyaltyStampClient({ memberCode }: { memberCode: string }) 
         body: JSON.stringify({
           pin,
           stampNumber: selectedStamp,
+          rewardCycle: card.currentCycle,
           note,
         }),
       });
@@ -102,7 +93,9 @@ export function AdminLoyaltyStampClient({ memberCode }: { memberCode: string }) 
       setSelectedStamp(getNextStampNumber(data.card));
       toast.success("Stamp added.", {
         id: toastId,
-        description: `${data.card.stampCount}/${data.card.rewardThreshold} stamps complete.`,
+        description: data.card.currentCycle > card.currentCycle
+          ? "10 stamps complete! A reward is ready and the card has reset to 0/10."
+          : `${data.card.stampCount}/${data.card.rewardThreshold} stamps complete.`,
       });
     } catch (error) {
       toast.error("Unable to add stamp.", {
@@ -115,6 +108,9 @@ export function AdminLoyaltyStampClient({ memberCode }: { memberCode: string }) 
   }
 
   async function redeemReward() {
+    const rewardCycle = card?.pendingRewardCycles[0];
+    if (!rewardCycle) return;
+
     setIsSubmitting(true);
     const toastId = toast.loading("Redeeming reward...");
 
@@ -126,6 +122,7 @@ export function AdminLoyaltyStampClient({ memberCode }: { memberCode: string }) 
         },
         body: JSON.stringify({
           pin,
+          rewardCycle,
           note,
         }),
       });
@@ -163,7 +160,7 @@ export function AdminLoyaltyStampClient({ memberCode }: { memberCode: string }) 
           {card ? (
             <>
               {(() => {
-                const displayStampedNumbers = getDisplayStampedNumbers(card);
+                const displayStampedNumbers = card.stampedNumbers;
                 const nextStampNumber = getNextStampNumber(card);
 
                 return (
@@ -175,14 +172,15 @@ export function AdminLoyaltyStampClient({ memberCode }: { memberCode: string }) 
                 <p className="text-muted-foreground">
                   Stamps: {displayStampedNumbers.length}/{card.rewardThreshold}
                 </p>
-                {card.redeemed ? (
+                {card.currentCycle > 1 ? (
                   <p className="mt-2 font-semibold text-secondary">
-                    Previous reward redeemed. New cycle starts at stamp 1.
+                    Card {card.currentCycle}. Completed cards reset automatically.
                   </p>
                 ) : null}
                 {card.rewardReady ? (
                   <p className="mt-2 font-semibold text-primary">
-                    Reward ready. Redeem before adding more stamps.
+                    {card.pendingRewardCount} reward{card.pendingRewardCount === 1 ? "" : "s"} ready.
+                    You can keep adding stamps while rewards await redemption.
                   </p>
                 ) : null}
               </div>
@@ -238,7 +236,7 @@ export function AdminLoyaltyStampClient({ memberCode }: { memberCode: string }) 
                 <Button
                   type="submit"
                   className="h-12 rounded-sm text-xs font-semibold uppercase tracking-[0.08em]"
-                  disabled={isSubmitting || card.rewardReady || !nextStampNumber}
+                  disabled={isSubmitting || !nextStampNumber}
                 >
                   Add Stamp
                 </Button>
@@ -249,7 +247,7 @@ export function AdminLoyaltyStampClient({ memberCode }: { memberCode: string }) 
                   disabled={isSubmitting || !card.rewardReady}
                   onClick={redeemReward}
                 >
-                  Redeem Reward
+                  Redeem Reward{card.pendingRewardCount > 0 ? ` (card ${card.pendingRewardCycles[0]})` : ""}
                 </Button>
               </form>
                   </>

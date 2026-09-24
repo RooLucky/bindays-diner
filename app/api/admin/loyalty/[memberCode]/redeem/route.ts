@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq, notExists, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { getDb } from "@/lib/db";
@@ -11,6 +11,7 @@ export const dynamic = "force-dynamic";
 
 const redeemSchema = z.object({
   pin: z.string().min(1),
+  rewardCycle: z.number().int().positive(),
   note: z.string().optional(),
 });
 
@@ -44,11 +45,11 @@ export async function POST(
       );
     }
 
-    if (!card.rewardReady) {
+    if (!card.pendingRewardCycles.includes(input.rewardCycle)) {
       return Response.json(
         {
           ok: false,
-          error: "This loyalty card is not ready for redemption.",
+          error: "This reward is not available for redemption. Refresh the card.",
         },
         { status: 409 },
       );
@@ -60,12 +61,38 @@ export async function POST(
       .where(eq(loyaltyMembers.memberCode, memberCode))
       .limit(1);
 
-    await getDb().insert(loyaltyRedemptions).values({
-      memberId: member.id,
-      rewardCycle: card.currentCycle,
-      source: "admin",
-      note: input.note?.trim() || null,
-    });
+    const db = getDb();
+    // Serialize redemptions for this member in one Neon HTTP transaction.
+    // The second statement sees any redemption committed while waiting for
+    // the member lock, so concurrent requests cannot redeem the same reward.
+    const [, redemptions] = await db.batch([
+      db.update(loyaltyMembers)
+        .set({ updatedAt: new Date() })
+        .where(eq(loyaltyMembers.id, member.id)),
+      db.insert(loyaltyRedemptions).select(
+        db.select({
+          memberId: loyaltyMembers.id,
+          rewardCycle: sql<number>`${input.rewardCycle}::integer`.as("reward_cycle"),
+          source: sql`'admin'`.as("source"),
+          note: sql`${input.note?.trim() || null}::text`.as("note"),
+        }).from(loyaltyMembers).where(and(
+          eq(loyaltyMembers.id, member.id),
+          notExists(db.select({ id: loyaltyRedemptions.id })
+            .from(loyaltyRedemptions)
+            .where(and(
+              eq(loyaltyRedemptions.memberId, member.id),
+              eq(loyaltyRedemptions.rewardCycle, input.rewardCycle),
+            ))),
+        )),
+      ).returning({ id: loyaltyRedemptions.id }),
+    ]);
+
+    if (redemptions.length === 0) {
+      return Response.json(
+        { ok: false, error: "This reward was already redeemed. Refresh the card." },
+        { status: 409 },
+      );
+    }
 
     const updatedCard = await getLoyaltyCard(memberCode);
 

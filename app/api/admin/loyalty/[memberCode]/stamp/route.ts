@@ -12,6 +12,7 @@ export const dynamic = "force-dynamic";
 const stampSchema = z.object({
   pin: z.string().min(1),
   stampNumber: z.number().int().min(1).max(LOYALTY_REWARD_THRESHOLD),
+  rewardCycle: z.number().int().positive(),
   note: z.string().optional(),
 });
 
@@ -45,27 +46,26 @@ export async function POST(
       );
     }
 
-    if (card.rewardReady) {
+    if (input.rewardCycle !== card.currentCycle) {
       return Response.json(
         {
           ok: false,
-          error: "Reward is ready. Redeem this card before adding more stamps.",
+          error: "This card has started a new cycle. Refresh the card before adding a stamp.",
         },
         { status: 409 },
       );
     }
 
-    const activeStampedNumbers = card.redeemed ? [] : card.stampedNumbers;
     const nextStampNumber = Array.from(
       { length: LOYALTY_REWARD_THRESHOLD },
       (_, index) => index + 1,
-    ).find((stampNumber) => !activeStampedNumbers.includes(stampNumber));
+    ).find((stampNumber) => !card.stampedNumbers.includes(stampNumber));
 
     if (!nextStampNumber) {
       return Response.json(
         {
           ok: false,
-          error: "No available stamp number. Redeem this card before adding more stamps.",
+          error: "This card has changed. Refresh the card before adding a stamp.",
         },
         { status: 409 },
       );
@@ -87,15 +87,20 @@ export async function POST(
       .where(eq(loyaltyMembers.memberCode, memberCode))
       .limit(1);
 
-    const rewardCycle = card.redeemed ? card.currentCycle + 1 : card.currentCycle;
-
-    await getDb().insert(loyaltyStamps).values({
+    const [stamp] = await getDb().insert(loyaltyStamps).values({
       memberId: member.id,
-      rewardCycle,
+      rewardCycle: card.currentCycle,
       stampNumber: nextStampNumber,
       source: "physical",
       note: input.note?.trim() || null,
-    });
+    }).onConflictDoNothing().returning({ id: loyaltyStamps.id });
+
+    if (!stamp) {
+      return Response.json(
+        { ok: false, error: "This stamp was already added. Refresh the card." },
+        { status: 409 },
+      );
+    }
 
     const updatedCard = await getLoyaltyCard(memberCode);
 

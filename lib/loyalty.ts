@@ -2,8 +2,9 @@ import { and, asc, eq } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
 import { loyaltyMembers, loyaltyRedemptions, loyaltyStamps } from "@/lib/db/schema";
+import { getLoyaltyProgress } from "@/lib/loyalty-progress";
 
-export const LOYALTY_REWARD_THRESHOLD = 10;
+export { LOYALTY_REWARD_THRESHOLD } from "@/lib/loyalty-progress";
 export const LOYALTY_QR_BASE_URL = "https://www.bindaysdiner.com";
 
 export type LoyaltyCard = Awaited<ReturnType<typeof getLoyaltyCard>>;
@@ -57,16 +58,6 @@ export async function getLoyaltyCard(memberCode: string) {
     .where(eq(loyaltyRedemptions.memberId, member.id))
     .orderBy(asc(loyaltyRedemptions.createdAt));
 
-  const currentCycle = Math.max(
-    1,
-    ...stamps.map((stamp) => stamp.rewardCycle),
-    ...redemptions.map((redemption) => redemption.rewardCycle),
-  );
-  const currentStamps = stamps.filter((stamp) => stamp.rewardCycle === currentCycle);
-  const redeemed = redemptions.some(
-    (redemption) => redemption.rewardCycle === currentCycle,
-  );
-
   return {
     member: {
       memberCode: member.memberCode,
@@ -76,12 +67,7 @@ export async function getLoyaltyCard(memberCode: string) {
       createdAt: member.createdAt,
     },
     qrUrl: getMemberQrUrl(member.memberCode),
-    rewardThreshold: LOYALTY_REWARD_THRESHOLD,
-    currentCycle,
-    stampCount: currentStamps.length,
-    stampedNumbers: currentStamps.map((stamp) => stamp.stampNumber).sort((a, b) => a - b),
-    rewardReady: currentStamps.length >= LOYALTY_REWARD_THRESHOLD && !redeemed,
-    redeemed,
+    ...getLoyaltyProgress(stamps, redemptions),
     recentStamps: stamps
       .slice(-5)
       .reverse()

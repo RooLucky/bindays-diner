@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { MapPin, MessageSquare, Phone } from "lucide-react";
+import { Mail, MapPin, MessageSquare, Phone } from "lucide-react";
+
+import { CONCERN_CONTACT, STORE_CONTACT } from "@/lib/contact-details";
 
 const footerLinks = [
   { label: "Food Menu", href: "/menu" },
@@ -8,6 +10,7 @@ const footerLinks = [
   { label: "Drinks", href: "/drinks" },
   { label: "Loyalty Card", href: "/loyalty" },
   { label: "Delivery Order", href: "/reservations" },
+  { label: "Concerns", href: CONCERN_CONTACT.pageHref },
 ];
 
 export function Footer() {
@@ -66,18 +69,18 @@ export function Footer() {
 
         <div className="border-t border-brand-white/15 pt-7 text-left md:border-0 md:pt-0">
           <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-brand-white">
-            Contact
+            Store Contact
           </h2>
           <div className="mt-5 space-y-4">
             <a
-              href="tel:+639929450801"
+              href={STORE_CONTACT.phoneHref}
               className="group flex items-start justify-start gap-3 rounded-sm bg-brand-gold-soft/5 p-3 text-sm text-brand-white/75 transition-colors hover:bg-brand-white/10"
             >
               <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-full bg-brand-white/10 text-brand-white transition-colors group-hover:bg-brand-white group-hover:text-brand-olive">
                 <Phone className="size-4" />
               </span>
               <span className="pt-1.5 transition-colors group-hover:text-brand-white">
-                +63 992 945 0802
+                {STORE_CONTACT.phone}
               </span>
             </a>
             <div className="flex items-start justify-start gap-3 rounded-sm bg-brand-gold-soft/5 p-3 text-sm leading-6 text-brand-white/75">
@@ -88,6 +91,21 @@ export function Footer() {
                 Corner T. Alonzo St. G/F, Rañola Bldg. Oro Site, Legazpi City,
                 Philippines
               </address>
+            </div>
+          </div>
+          <div className="mt-6 border-t border-brand-white/15 pt-5">
+            <Link href={CONCERN_CONTACT.pageHref} className="text-xs font-bold uppercase tracking-[0.14em] text-brand-white underline underline-offset-4">
+              For any concern
+            </Link>
+            <div className="mt-3 grid gap-3 text-sm text-brand-white/85">
+              <a href={CONCERN_CONTACT.emailHref} className="flex min-w-0 items-start gap-3 hover:text-brand-white">
+                <Mail className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                <span className="min-w-0 break-words">{CONCERN_CONTACT.email}</span>
+              </a>
+              <a href={CONCERN_CONTACT.phoneHref} className="flex items-center gap-3 hover:text-brand-white">
+                <Phone className="size-4 shrink-0" aria-hidden="true" />
+                {CONCERN_CONTACT.phone}
+              </a>
             </div>
           </div>
           <Link
