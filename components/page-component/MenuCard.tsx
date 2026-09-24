@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { Minus, Plus, ShoppingCart, X, ZoomIn } from "lucide-react";
-import { useState, type PointerEvent } from "react";
+import { useRef, useState, type PointerEvent } from "react";
 import { motion, useReducedMotion, useSpring } from "motion/react";
 import { toast } from "sonner";
 
@@ -35,6 +35,7 @@ export function MenuCard({
   const { addItem } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [open, setOpen] = useState(false);
+  const resetQuantityAfterClose = useRef(false);
   const reduceMotion = useReducedMotion();
   const rotateX = useSpring(0, { stiffness: 220, damping: 24, mass: 0.7 });
   const rotateY = useSpring(0, { stiffness: 220, damping: 24, mass: 0.7 });
@@ -66,13 +67,22 @@ export function MenuCard({
     toast.success(
       `${quantity} ${quantity === 1 ? "order" : "orders"} of ${dish.name} added to cart.`,
     );
+    resetQuantityAfterClose.current = true;
     setOpen(false);
-    setQuantity(1);
   }
 
   return (
     <div className="relative isolate h-full">
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog
+          open={open}
+          onOpenChange={setOpen}
+          onOpenChangeComplete={(isOpen) => {
+            if (!isOpen && resetQuantityAfterClose.current) {
+              setQuantity(1);
+              resetQuantityAfterClose.current = false;
+            }
+          }}
+        >
           <DialogTrigger
             className={cn(
               "group relative z-0 h-full w-full cursor-pointer rounded-sm text-left focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/30",

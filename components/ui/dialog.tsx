@@ -33,7 +33,7 @@ function DialogBackdrop({
   return (
     <DialogPrimitive.Backdrop
       className={cn(
-        "fixed inset-0 z-50 bg-foreground/25 opacity-100 backdrop-blur-sm transition-opacity duration-200 ease-out data-[ending-style]:opacity-0 data-[starting-style]:opacity-0",
+        "fixed inset-0 z-50 bg-foreground/25 opacity-100 backdrop-blur-sm transition-opacity duration-200 ease-out data-[ending-style]:duration-300 data-[ending-style]:ease-in data-[ending-style]:opacity-0 data-[starting-style]:opacity-0 motion-reduce:transition-none",
         className,
       )}
       {...props}
@@ -45,7 +45,7 @@ function DialogPopup({ className, ...props }: DialogPrimitive.Popup.Props) {
   return (
     <DialogPrimitive.Popup
       className={cn(
-        "pointer-events-auto z-50 my-6 w-full max-w-3xl scale-100 rounded-sm border border-border bg-card p-5 opacity-100 shadow-[var(--shadow-card)] transition-all duration-200 ease-out data-[ending-style]:scale-95 data-[ending-style]:opacity-0 data-[starting-style]:scale-95 data-[starting-style]:opacity-0 sm:p-6",
+        "pointer-events-auto z-50 my-6 w-full max-w-3xl scale-100 rounded-sm border border-border bg-card p-5 opacity-100 shadow-[var(--shadow-card)] transition-[opacity,scale] duration-200 ease-out data-[ending-style]:pointer-events-none data-[ending-style]:duration-300 data-[ending-style]:ease-in data-[ending-style]:scale-95 data-[ending-style]:opacity-0 data-[starting-style]:scale-95 data-[starting-style]:opacity-0 motion-reduce:transition-none sm:p-6",
         className,
       )}
       {...props}
