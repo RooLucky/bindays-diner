@@ -23,7 +23,14 @@ const maxReviewImages = 2;
 export function CustomerReviewsClient({
   initialPayload,
 }: CustomerReviewsClientProps) {
-  const { protectedFetch, captcha: recaptcha } = useRecaptcha();
+  const {
+    protectedFetch,
+    captcha: recaptcha,
+    isVerified,
+  } = useRecaptcha({
+    size: "normal",
+    className: "grid w-full gap-2",
+  });
   const [payload, setPayload] = useState(initialPayload);
   const [rating, setRating] = useState(5);
   const [imageNames, setImageNames] = useState<string[]>([]);
@@ -246,9 +253,11 @@ export function CustomerReviewsClient({
             </label>
 
             <label className="mt-5 grid gap-2 text-sm font-semibold text-foreground">
-              Food photos{" "}
-              <span className="font-normal text-muted-foreground">
-                (optional, max 2)
+              <span className="flex flex-wrap items-baseline gap-x-2">
+                Food photos
+                <span className="text-xs font-normal text-muted-foreground">
+                  Optional · Up to 2 photos
+                </span>
               </span>
               <input
                 name="images"
@@ -284,15 +293,30 @@ export function CustomerReviewsClient({
               />
             </label>
 
-            {recaptcha}
-            <Button
-              type="submit"
-              disabled={isPending}
-              className="mt-5 h-11 w-full rounded-sm text-xs font-semibold uppercase tracking-[0.08em]"
-            >
-              <Send className="size-4" />
-              {isPending ? "Submitting..." : "Submit Review"}
-            </Button>
+            <div className="mt-6 grid gap-4 border-t border-border pt-5">
+              {recaptcha}
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <p
+                  role="status"
+                  className="max-w-xs text-xs leading-5 text-muted-foreground"
+                >
+                  {isVerified
+                    ? "Verification complete. Your review is ready to submit."
+                    : "Complete the verification above to submit your review."}
+                </p>
+                <Button
+                  type="submit"
+                  disabled={isPending}
+                  className="h-11 w-full rounded-sm px-6 text-xs font-semibold uppercase tracking-[0.08em] sm:w-auto"
+                >
+                  <Send className="size-4" />
+                  {isPending ? "Submitting..." : "Submit Review"}
+                </Button>
+              </div>
+              <p className="text-xs leading-5 text-muted-foreground">
+                Reviews appear after approval by our team.
+              </p>
+            </div>
           </form>
 
           <div className="grid min-w-0 gap-4 sm:grid-cols-2">

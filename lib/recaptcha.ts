@@ -1,3 +1,7 @@
+import {
+  hasRecaptchaSession,
+  grantRecaptchaSession,
+} from "@/lib/recaptcha-session";
 import { consumePublicFormLimit, getRequestIp } from "@/lib/chatbot/rate-limit";
 import "server-only";
 import { getServerEnv } from "@/lib/env";
@@ -8,14 +12,31 @@ export async function requireRecaptcha(
 ): Promise<Response | null> {
   const reject = (error: string, status: number) =>
     Response.json(
-      { ok: false, error },
+      { ok: false, error, captchaRequired: status === 403 },
       { status, headers: { "Cache-Control": "no-store" } },
     );
-  // Verify before reading uploads, querying the database, or sending email.
-  const token = request.headers.get("x-recaptcha-token");
-  if (!token || token.length > 4096)
-    return reject("Complete the reCAPTCHA verification and try again.", 403);
   try {
+    const pathname = new URL(request.url).pathname;
+    const limit = await consumePublicFormLimit(
+      pathname,
+      getRequestIp(request) ?? "unknown",
+      pathname.endsWith("/chatbot") ? 20 : 10,
+    );
+    if (!limit.allowed)
+      return Response.json(
+        { error: "Too many requests. Please try again later." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(limit.retryAfter),
+            "Cache-Control": "no-store",
+          },
+        },
+      );
+    if (await hasRecaptchaSession(request)) return null;
+    const token = request.headers.get("x-recaptcha-token");
+    if (!token || token.length > 4096)
+      return reject("Complete the reCAPTCHA verification and try again.", 403);
     const env = getServerEnv();
     const hostnames = (env.RECAPTCHA_ALLOWED_HOSTNAMES ?? "")
       .split(",")
@@ -44,24 +65,7 @@ export async function requireRecaptcha(
         403,
       );
     }
-    const pathname = new URL(request.url).pathname;
-    const scope = pathname.includes("/payment") ? "payment" : pathname;
-    const limit = await consumePublicFormLimit(
-      scope,
-      getRequestIp(request) ?? "unknown",
-      pathname.endsWith("/chatbot") ? 20 : 10,
-    );
-    if (!limit.allowed)
-      return Response.json(
-        { error: "Too many requests. Please try again later." },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": String(limit.retryAfter),
-            "Cache-Control": "no-store",
-          },
-        },
-      );
+    await grantRecaptchaSession(request);
     return null;
   } catch {
     return reject(
