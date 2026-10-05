@@ -2,7 +2,7 @@ import {
   PublicRequestError,
   readLimitedBody,
 } from "@/lib/public-request-error";
-import { requireRecaptcha } from "@/lib/recaptcha";
+import { requirePublicFormLimit } from "@/lib/public-form-limit";
 import { submitReservationReceipt } from "@/lib/reservations";
 
 export const runtime = "nodejs";
@@ -12,8 +12,8 @@ export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
-  const captchaError = await requireRecaptcha(request);
-  if (captchaError) return captchaError;
+  const limitError = await requirePublicFormLimit(request);
+  if (limitError) return limitError;
   try {
     const { id } = await context.params;
     const formData = await (

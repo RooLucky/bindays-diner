@@ -3,7 +3,7 @@ import {
   readLimitedBody,
 } from "@/lib/public-request-error";
 import { consumePublicFormLimit } from "@/lib/chatbot/rate-limit";
-import { requireRecaptcha } from "@/lib/recaptcha";
+import { requirePublicFormLimit } from "@/lib/public-form-limit";
 import { z } from "zod";
 
 import { createAdminSession, verifyAdminCredentials } from "@/lib/admin-auth";
@@ -17,8 +17,8 @@ const loginSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const captchaError = await requireRecaptcha(request);
-  if (captchaError) return captchaError;
+  const limitError = await requirePublicFormLimit(request);
+  if (limitError) return limitError;
   try {
     const input = loginSchema.parse(
       await (await readLimitedBody(request)).json(),

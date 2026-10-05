@@ -2,6 +2,7 @@ import { z } from "zod";
 
 const serverEnvSchema = z.object({
   RECAPTCHA_SECRET_KEY: z.string().min(1).optional(),
+  LOYALTY_ACCESS_SECRET: z.string().min(32).optional(),
   RECAPTCHA_ALLOWED_HOSTNAMES: z.string().min(1).optional(),
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required").url(),
   R2_ACCOUNT_ID: z.string().min(1, "R2_ACCOUNT_ID is required"),

@@ -2,7 +2,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Security configuration before deployment
 
-Public submissions require Google reCAPTCHA v2 checkbox verification. This covers staff login, loyalty registration/search, reviews, reservations, receipt uploads, and chatbot messages. Authenticated management forms use session authentication and origin checks instead.
+Reviews and chatbot messages require Google reCAPTCHA v2 checkbox verification. Login, loyalty registration/search, reservations, and receipt uploads use rate limits without CAPTCHA. The Concern page has email and phone links, with no submission endpoint. Authenticated management forms use session authentication and origin checks instead.
 
 1. Create a **Challenge (v2) / checkbox** website key in [Google's console](https://www.google.com/recaptcha/admin/create). Enable domain verification and register your actual production domain. Use separate keys for local development.
 2. If using Google Cloud, open the key's **Integration → Use Legacy Key** panel for its secret. This app uses `api.js` and server-side `siteverify`, not the Enterprise Assessments API. See [Google's key setup guide](https://docs.cloud.google.com/recaptcha/docs/create-key-website).
@@ -19,14 +19,16 @@ Use exact comma-separated hostnames, without schemes, ports, paths, or wildcards
 
 Missing configuration, rejected/expired/reused tokens, unexpected hostnames, or Google verification outages block submissions. There is no development or production bypass. Each submission needs a fresh checkbox verification. Saved loyalty details are prefilled but no longer trigger automatic account searches.
 
-After configuring the keys, manually verify all seven POST endpoints through their forms, including a failed login, expired CAPTCHA, retry after failure, optional review photos, and a receipt upload. Confirm that a successful review remains a draft and that staff-only mutations reject anonymous requests. The automated tests mock Google's response; they do not replace a real key/domain test.
+After configuring the keys, manually verify reviews and chatbot messages, including expired CAPTCHA and retry after failure. Also verify login, loyalty, checkout, and receipt uploads without CAPTCHA. Confirm that a successful review remains a draft and that staff-only mutations reject anonymous requests. The automated tests mock Google's response; they do not replace a real key/domain test.
+
+Loyalty cookies use `LOYALTY_ACCESS_SECRET` (at least 32 characters), falling back to the server-only database credential when unset. They do not depend on reCAPTCHA configuration. Changing the signing secret requires customers to look up their cards again.
 
 ### Additional protections and operational limits
 
-- Durable, atomic request counters use the existing `chatbot_rate_limits` table. Public forms allow 10 verified requests per IP/path per 10 minutes; chatbot messages allow 20 plus their existing session limit; login also allows 5 attempts per email per 10 minutes. No new schema migration is required. Deploy behind a trusted proxy that replaces client IP headers; do not allow direct origin access with spoofed forwarding headers.
+- Durable, atomic request counters use the existing `chatbot_rate_limits` table. Public forms allow 10 requests per IP/path per 10 minutes; chatbot messages allow 20 plus their existing session limit; login also allows 5 attempts per email per 10 minutes. No new schema migration is required. Deploy behind a trusted proxy that replaces client IP headers; do not allow direct origin access with spoofed forwarding headers.
 - Upload bodies are bounded, public images are limited to JPEG/PNG/WebP with matching signatures, and receipts also accept PDF. Signature checks are not malware scanning. Your hosting provider may enforce a smaller upload limit than the app.
 - Health diagnostics require staff authentication; API errors do not expose provider/database error text. Security headers prevent framing, MIME sniffing, and referrer leakage.
-- Loyalty refresh requires a signed, HttpOnly access cookie obtained after a verified join/search, or a staff session. Knowing a QR/member code alone no longer reveals a card through the public API. Name and birthday lookup is still not strong identity verification; use OTP/customer authentication if loyalty information requires stronger privacy guarantees.
+- Loyalty refresh requires a signed, HttpOnly access cookie obtained after a successful join/search, or a staff session. Knowing a QR/member code alone no longer reveals a card through the public API. Name and birthday lookup is still not strong identity verification; use OTP/customer authentication if loyalty information requires stronger privacy guarantees.
 - Reservation item prices and totals are checked against active database menu items. Uploading a receipt now leaves payment **pending**; staff must verify the transfer independently. There is currently no staff payment-approval screen or payment-provider webhook. Historical rows already marked paid were not changed. Receipt files still use the existing R2 storage configuration: provision private receipt storage before accepting sensitive financial documents if that bucket is publicly accessible.
 
 ### Validation and dependency findings (2026-10-05)

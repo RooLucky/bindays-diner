@@ -1,6 +1,6 @@
 "use client";
 
-import { useRecaptcha } from "@/components/Recaptcha";
+import { submitPublicForm } from "@/lib/public-form-request";
 
 import Image from "next/image";
 import { FormEvent, useState, useTransition } from "react";
@@ -19,7 +19,6 @@ export function ReservationPaymentClient({
   initialReservation: ReservationPaymentDetails;
   token: string;
 }) {
-  const { protectedFetch, captcha: recaptcha } = useRecaptcha();
   const [reservation, setReservation] = useState(initialReservation);
   const [isPending, startTransition] = useTransition();
 
@@ -38,7 +37,7 @@ export function ReservationPaymentClient({
     formData.set("token", token);
 
     startTransition(async () => {
-      const response = await protectedFetch(
+      const response = await submitPublicForm(
         `/api/reservations/${reservation.id}/payment`,
         {
           method: "POST",
@@ -204,7 +203,6 @@ export function ReservationPaymentClient({
                 Image or PDF, up to 8MB.
               </span>
             </label>
-            {recaptcha}
             <Button
               type="submit"
               disabled={isPending}

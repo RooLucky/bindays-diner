@@ -5,7 +5,8 @@ import { getServerEnv } from "@/lib/env";
 
 const name = "bd_loyalty_access";
 function sign(value: string) {
-  const secret = getServerEnv().RECAPTCHA_SECRET_KEY;
+  const env = getServerEnv();
+  const secret = env.LOYALTY_ACCESS_SECRET ?? env.DATABASE_URL;
   if (!secret) throw new Error("Loyalty access is not configured.");
   return createHmac("sha256", secret).update(`loyalty:${value}`).digest("hex");
 }

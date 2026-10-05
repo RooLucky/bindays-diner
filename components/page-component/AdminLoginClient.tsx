@@ -1,6 +1,6 @@
 "use client";
 
-import { useRecaptcha } from "@/components/Recaptcha";
+import { submitPublicForm } from "@/lib/public-form-request";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -18,7 +18,6 @@ import {
 import { Button } from "@/components/ui/button";
 
 export function AdminLoginClient() {
-  const { protectedFetch, captcha: recaptcha } = useRecaptcha();
   const router = useRouter();
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState(false);
@@ -30,7 +29,7 @@ export function AdminLoginClient() {
     setMessage("");
 
     const formData = new FormData(event.currentTarget);
-    const response = await protectedFetch("/api/admin/auth/login", {
+    const response = await submitPublicForm("/api/admin/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -164,7 +163,6 @@ export function AdminLoginClient() {
                 {message}
               </p>
             ) : null}
-            {recaptcha}
             <Button
               type="submit"
               disabled={pending}

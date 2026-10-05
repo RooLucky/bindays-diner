@@ -7,7 +7,7 @@ import {
   DELIVERY_CITY,
 } from "@/lib/order-policy";
 
-import { useRecaptcha } from "@/components/Recaptcha";
+import { submitPublicForm } from "@/lib/public-form-request";
 
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState, useTransition } from "react";
@@ -58,7 +58,6 @@ function defaultDeliverySchedule() {
 export function ReservationPage() {
   const [submitted, setSubmitted] = useState(false);
   const [minimumAlertOpen, setMinimumAlertOpen] = useState(false);
-  const { protectedFetch, captcha: recaptcha } = useRecaptcha();
   const { clearCart, getSummary, items, subtotal, totalQuantity } = useCart();
   const cartSummary = useMemo(() => getSummary(), [getSummary]);
   const [notes, setNotes] = useState("");
@@ -151,7 +150,7 @@ export function ReservationPage() {
     setFieldErrors({});
 
     startTransition(async () => {
-      const response = await protectedFetch("/api/reservations", {
+      const response = await submitPublicForm("/api/reservations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -491,7 +490,6 @@ export function ReservationPage() {
                 className="h-11 rounded-sm border border-input bg-muted px-3"
               />
             </label>
-            {recaptcha}
             <Button
               type="submit"
               onClick={(event) => {

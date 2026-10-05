@@ -1,7 +1,7 @@
 "use client";
 
 import { loyaltyRegistrationSchema } from "@/lib/loyalty-registration";
-import { useRecaptcha } from "@/components/Recaptcha";
+import { submitPublicForm } from "@/lib/public-form-request";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { HeartHandshake } from "lucide-react";
@@ -80,7 +80,6 @@ function saveStoredLoyaltyMember(member: StoredLoyaltyMember) {
 }
 
 export function LoyaltyClient() {
-  const { protectedFetch, captcha: recaptcha } = useRecaptcha();
   const [mode, setMode] = useState<Mode>("join");
   const [form, setForm] = useState(emptyForm);
   const [card, setCard] = useState<LoyaltyCardResponse | null>(null);
@@ -100,7 +99,7 @@ export function LoyaltyClient() {
     );
 
     try {
-      const response = await protectedFetch(
+      const response = await submitPublicForm(
         requestMode === "join"
           ? "/api/loyalty/register"
           : "/api/loyalty/search",
@@ -319,7 +318,6 @@ export function LoyaltyClient() {
               placeholder="Enter phone number"
             />
           </label>
-          {recaptcha}
           <Button
             type="submit"
             className="h-12 rounded-sm text-xs font-semibold uppercase tracking-[0.08em]"

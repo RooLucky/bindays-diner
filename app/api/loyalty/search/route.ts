@@ -3,7 +3,7 @@ import {
   PublicRequestError,
   readLimitedBody,
 } from "@/lib/public-request-error";
-import { requireRecaptcha } from "@/lib/recaptcha";
+import { requirePublicFormLimit } from "@/lib/public-form-limit";
 import { ZodError } from "zod";
 import { loyaltyRegistrationSchema } from "@/lib/loyalty-registration";
 
@@ -13,8 +13,8 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  const captchaError = await requireRecaptcha(request);
-  if (captchaError) return captchaError;
+  const limitError = await requirePublicFormLimit(request);
+  if (limitError) return limitError;
   try {
     const input = loyaltyRegistrationSchema.parse(
       await (await readLimitedBody(request)).json(),

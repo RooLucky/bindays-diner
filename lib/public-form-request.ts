@@ -13,10 +13,18 @@ export async function submitVerifiedForm(
       },
       { status: 403 },
     );
+  const headers = new Headers(init.headers);
+  headers.set("x-recaptcha-token", token);
+  return submitPublicForm(input, { ...init, headers }, send);
+}
+
+export async function submitPublicForm(
+  input: string,
+  init: RequestInit,
+  send: typeof fetch = fetch,
+) {
   try {
-    const headers = new Headers(init.headers);
-    headers.set("x-recaptcha-token", token);
-    const response = await send(input, { ...init, headers });
+    const response = await send(input, init);
     try {
       const data = await response.json();
       if (!data || typeof data !== "object" || Array.isArray(data))
