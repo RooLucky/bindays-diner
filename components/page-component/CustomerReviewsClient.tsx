@@ -1,7 +1,9 @@
 "use client";
 
+import { useRecaptcha } from "@/components/Recaptcha";
+
 import { ChangeEvent, FormEvent, useState, useTransition } from "react";
-import { ExternalLink, ImagePlus, Send, Star, X } from "lucide-react";
+import { ExternalLink, ImagePlus, Send, Star } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -13,32 +15,17 @@ import { cn } from "@/lib/utils";
 
 type CustomerReviewsClientProps = {
   initialPayload: PublicReviewsPayload;
-  initialCaptcha: {
-    question: string;
-    answer: number;
-  };
 };
 
 const ratingOptions = [5, 4, 3, 2, 1] as const;
 const maxReviewImages = 2;
 
-function createCaptcha() {
-  const left = Math.floor(Math.random() * 8) + 2;
-  const right = Math.floor(Math.random() * 7) + 1;
-
-  return {
-    question: `${left} + ${right}`,
-    answer: left + right,
-  };
-}
-
 export function CustomerReviewsClient({
   initialPayload,
-  initialCaptcha,
 }: CustomerReviewsClientProps) {
+  const { protectedFetch, captcha: recaptcha } = useRecaptcha();
   const [payload, setPayload] = useState(initialPayload);
   const [rating, setRating] = useState(5);
-  const [captcha, setCaptcha] = useState(initialCaptcha);
   const [imageNames, setImageNames] = useState<string[]>([]);
   const [isPending, startTransition] = useTransition();
 
@@ -52,6 +39,18 @@ export function CustomerReviewsClient({
       return;
     }
 
+    if (
+      files.some(
+        (file) =>
+          file.size > 5 * 1024 * 1024 ||
+          !["image/jpeg", "image/png", "image/webp"].includes(file.type),
+      )
+    ) {
+      toast.error("Choose JPEG, PNG, or WebP images, no larger than 5MB each.");
+      event.target.value = "";
+      setImageNames([]);
+      return;
+    }
     setImageNames(files.map((file) => file.name));
   }
 
@@ -63,9 +62,8 @@ export function CustomerReviewsClient({
 
     startTransition(async () => {
       formData.set("rating", String(rating));
-      formData.set("captchaExpected", String(captcha.answer));
 
-      const response = await fetch("/api/reviews", {
+      const response = await protectedFetch("/api/reviews", {
         method: "POST",
         body: formData,
       });
@@ -88,7 +86,6 @@ export function CustomerReviewsClient({
       form.reset();
       setImageNames([]);
       setRating(5);
-      setCaptcha(createCaptcha());
       toast.success(
         `${createdReview.fullName}, your review was submitted for admin approval.`,
       );
@@ -256,7 +253,7 @@ export function CustomerReviewsClient({
               <input
                 name="images"
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
                 multiple
                 onChange={handleImageChange}
                 className="rounded-sm border border-border bg-background px-3 py-3 text-sm font-normal"
@@ -287,27 +284,7 @@ export function CustomerReviewsClient({
               />
             </label>
 
-            <label className="mt-5 grid gap-2 text-sm font-semibold text-foreground">
-              Anti-bot check: What is {captcha.question}?
-              <div className="flex gap-2">
-                <input
-                  name="captchaAnswer"
-                  required
-                  inputMode="numeric"
-                  className="h-11 min-w-0 flex-1 rounded-sm border border-border bg-background px-3 text-sm font-normal outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
-                  placeholder="Answer"
-                />
-                <button
-                  type="button"
-                  onClick={() => setCaptcha(createCaptcha())}
-                  className="inline-flex h-11 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-semibold text-foreground hover:bg-muted"
-                  aria-label="Refresh anti-bot question"
-                >
-                  <X className="size-4 rotate-45" />
-                </button>
-              </div>
-            </label>
-
+            {recaptcha}
             <Button
               type="submit"
               disabled={isPending}

@@ -4,6 +4,27 @@
 
 @custom-variant dark (&:is(.dark *));
 
+.admin-theme {
+  --background: var(--brand-white);
+  --card: var(--brand-white);
+  --popover: var(--brand-white);
+  --muted: var(--brand-cream);
+  --secondary: var(--brand-linen);
+  --secondary-foreground: var(--brand-olive);
+  --accent: var(--brand-linen);
+  --accent-foreground: var(--foreground);
+  --sidebar: var(--brand-cream);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--brand-red);
+  --sidebar-primary-foreground: var(--brand-white);
+  --sidebar-accent: var(--brand-gold-soft);
+  --sidebar-accent-foreground: var(--brand-olive);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--brand-olive);
+  --ring: var(--brand-olive);
+  --shadow-card: 0 1px 3px rgb(83 62 35 / 4%);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

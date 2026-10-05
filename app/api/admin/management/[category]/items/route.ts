@@ -1,3 +1,4 @@
+import { deleteR2Object } from "@/lib/r2";
 import { eq } from "drizzle-orm";
 
 import { requireAdminApiSession } from "@/lib/admin-auth";
@@ -41,6 +42,8 @@ export async function POST(
     return unauthorized();
   }
 
+  let uploadedKey: string | undefined;
+  let saved = false;
   try {
     const categorySlug = await getCategoryFromContext(context);
     const formData = await request.formData();
@@ -62,7 +65,9 @@ export async function POST(
       category: categorySlug,
       file: getSingleImageFile(formData, "image"),
     });
-    const imageUrl = image?.url ?? category?.heroImageUrl ?? fallback.heroImageUrl;
+    uploadedKey = image?.key;
+    const imageUrl =
+      image?.url ?? category?.heroImageUrl ?? fallback.heroImageUrl;
 
     const [item] = await db
       .insert(managementItems)
@@ -80,14 +85,23 @@ export async function POST(
       })
       .returning();
 
+    saved = true;
     await notifyPublicMenuContentUpdated(categorySlug);
     await trySyncChatbotMenuKnowledgeForCategory(categorySlug);
 
-    return Response.json({ item: toManagementItemResponse(item) }, { status: 201 });
+    return Response.json(
+      { item: toManagementItemResponse(item) },
+      { status: 201 },
+    );
   } catch (error) {
+    if (uploadedKey && !saved)
+      await deleteR2Object(uploadedKey).catch(() =>
+        console.warn("Unused menu image cleanup deferred."),
+      );
     return Response.json(
       {
-        error: error instanceof Error ? error.message : "Unable to create item.",
+        error:
+          error instanceof Error ? error.message : "Unable to create item.",
       },
       { status: 400 },
     );

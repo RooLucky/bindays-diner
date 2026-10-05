@@ -1,5 +1,9 @@
 "use client";
 
+import { Input } from "@/components/ui/input";
+
+import { AdminPanel } from "@/components/admin/AdminPanel";
+
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { Camera, RefreshCw, ScanLine } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -51,7 +55,9 @@ export function AdminLoyaltyScanner() {
   const [isStarting, setIsStarting] = useState(false);
   const [message, setMessage] = useState("");
   const [manualValue, setManualValue] = useState("");
-  const [isScannerSupported, setIsScannerSupported] = useState<boolean | null>(null);
+  const [isScannerSupported, setIsScannerSupported] = useState<boolean | null>(
+    null,
+  );
 
   function stopCamera() {
     if (intervalRef.current !== null) {
@@ -97,7 +103,9 @@ export function AdminLoyaltyScanner() {
         setMessage("This QR code is not a Binday's Diner loyalty card.");
       }
     } catch {
-      setMessage("The camera could not read that QR code. Hold the card steady and try again.");
+      setMessage(
+        "The camera could not read that QR code. Hold the card steady and try again.",
+      );
     } finally {
       isDetectingRef.current = false;
     }
@@ -140,7 +148,10 @@ export function AdminLoyaltyScanner() {
         void detectQrCode(detector);
       }, 350);
     } catch (error) {
-      const detail = error instanceof Error ? error.message : "Please allow camera access and try again.";
+      const detail =
+        error instanceof Error
+          ? error.message
+          : "Please allow camera access and try again.";
       setMessage(`Unable to start the camera. ${detail}`);
       stopCamera();
     } finally {
@@ -154,7 +165,9 @@ export function AdminLoyaltyScanner() {
     const memberCode = getMemberCode(manualValue);
 
     if (!memberCode) {
-      setMessage("Enter a loyalty member code such as BD-123ABC or paste the loyalty QR link.");
+      setMessage(
+        "Enter a loyalty member code such as BD-123ABC or paste the loyalty QR link.",
+      );
       return;
     }
 
@@ -162,30 +175,34 @@ export function AdminLoyaltyScanner() {
   }
 
   return (
-    <section className="rounded-sm border border-border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
+    <AdminPanel className="rounded-xl border border-border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
         <div>
-          <p className="font-serif text-2xl italic text-brand-script">Staff tool</p>
-          <h2 className="mt-2 font-serif text-[clamp(2rem,5vw,3rem)] leading-tight text-foreground">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
             Scan Loyalty QR
           </h2>
           <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
-            Scan a customer&apos;s loyalty card to open their stamp screen automatically.
+            Scan a customer&apos;s loyalty card to open their stamp screen
+            automatically.
           </p>
         </div>
         <Button
           type="button"
           variant={isCameraActive ? "outline" : "default"}
-          className="rounded-sm"
+          className="rounded-lg"
           disabled={isStarting}
           onClick={() => (isCameraActive ? stopCamera() : void startCamera())}
         >
-          {isCameraActive ? <RefreshCw className="size-4" /> : <Camera className="size-4" />}
+          {isCameraActive ? (
+            <RefreshCw className="size-4" />
+          ) : (
+            <Camera className="size-4" />
+          )}
           {isCameraActive ? "Stop camera" : "Open camera"}
         </Button>
       </div>
 
-      <div className="mt-5 overflow-hidden rounded-sm border border-border bg-muted/30">
+      <div className="mt-5 max-w-xl overflow-hidden rounded-lg border border-border bg-muted/30">
         <div className="relative aspect-video bg-foreground/95">
           <video
             ref={videoRef}
@@ -198,7 +215,9 @@ export function AdminLoyaltyScanner() {
             <div className="absolute inset-0 grid place-items-center p-6 text-center text-background">
               <div>
                 <ScanLine className="mx-auto size-10 opacity-80" />
-                <p className="mt-3 text-sm font-semibold">Point the camera at a customer&apos;s QR card.</p>
+                <p className="mt-3 text-sm font-semibold">
+                  Point the camera at a customer&apos;s QR card.
+                </p>
                 <p className="mt-1 text-xs text-background/70">
                   {isScannerSupported === false
                     ? "Use the manual entry below when QR scanning is unavailable."
@@ -208,32 +227,35 @@ export function AdminLoyaltyScanner() {
             </div>
           ) : (
             <div className="pointer-events-none absolute inset-0 grid place-items-center">
-              <span className="h-40 w-40 rounded-sm border-2 border-background/90 shadow-[0_0_0_999px_rgba(0,0,0,0.18)]" />
+              <span className="h-40 w-40 rounded-lg border-2 border-background/90 shadow-[0_0_0_999px_rgba(0,0,0,0.18)]" />
             </div>
           )}
         </div>
       </div>
 
       {message ? (
-        <p className="mt-4 rounded-sm border border-primary/25 bg-primary/5 px-3 py-2 text-sm leading-6 text-foreground">
+        <p className="mt-4 rounded-lg border border-primary/25 bg-primary/5 px-3 py-2 text-sm leading-6 text-foreground">
           {message}
         </p>
       ) : null}
 
-      <form className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto]" onSubmit={submitManualValue}>
+      <form
+        className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto]"
+        onSubmit={submitManualValue}
+      >
         <label className="grid gap-1.5 text-sm font-medium text-foreground">
           Member code or QR link
-          <input
+          <Input
             value={manualValue}
             onChange={(event) => setManualValue(event.target.value)}
-            className="h-11 rounded-sm border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
+            className="h-11 rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
             placeholder="BD-XXXXXXXXXXXX"
           />
         </label>
-        <Button type="submit" className="mt-auto h-11 rounded-sm">
+        <Button type="submit" className="mt-auto h-11 rounded-lg">
           Open loyalty card
         </Button>
       </form>
-    </section>
+    </AdminPanel>
   );
 }

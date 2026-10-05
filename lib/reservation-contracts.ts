@@ -13,7 +13,10 @@ export type ReservationPaymentDetails = {
   deliveryTime: string;
   items: ReservationItem[];
   subtotal: number;
+  deliveryFee: number;
+  total: number;
   paymentStatus: ReservationPaymentStatus;
   paymentLinkExpiresAt: string;
   paidAt: string | null;
+  receiptSubmitted: boolean;
 };

@@ -1,4 +1,6 @@
+import { PublicRequestError } from "@/lib/public-request-error";
 import "server-only";
+import { validateUploadSignature } from "@/lib/upload-validation";
 
 import { and, desc, eq } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
@@ -32,8 +34,6 @@ const customerReviewFieldsSchema = z.object({
     .max(120)
     .optional()
     .transform((value) => (value ? value : null)),
-  captchaExpected: z.coerce.number().int().min(0).max(50),
-  captchaAnswer: z.coerce.number().int().min(0).max(50),
   company: z.string().optional(),
 });
 
@@ -127,16 +127,16 @@ function getReviewImageFiles(formData: FormData) {
     .filter((value): value is File => value instanceof File && value.size > 0);
 
   if (files.length > MAX_REVIEW_IMAGES) {
-    throw new Error("Upload only up to 2 review images.");
+    throw new PublicRequestError("Upload only up to 2 review images.");
   }
 
   for (const file of files) {
-    if (!file.type.startsWith("image/")) {
-      throw new Error("Review uploads must be image files.");
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      throw new PublicRequestError("Review uploads must be image files.");
     }
 
     if (file.size > MAX_REVIEW_IMAGE_SIZE) {
-      throw new Error("Each review image must be 5MB or smaller.");
+      throw new PublicRequestError("Each review image must be 5MB or smaller.");
     }
   }
 
@@ -145,22 +145,35 @@ function getReviewImageFiles(formData: FormData) {
 
 async function uploadReviewImages(files: File[]) {
   const uploadedImages: Array<{ key: string; url: string }> = [];
-
+  const validated = [];
   for (const file of files) {
-    const key = `reviews/${randomUUID()}-${safeFilename(file.name)}`;
-    const url = await uploadR2Object({
-      key,
-      body: Buffer.from(await file.arrayBuffer()),
-      contentType: file.type || "application/octet-stream",
-    });
-
-    uploadedImages.push({ key, url });
+    const body = Buffer.from(await file.arrayBuffer());
+    validateUploadSignature(body, file.type);
+    validated.push({ file, body });
   }
+  try {
+    for (const { file, body } of validated) {
+      const key = `reviews/${randomUUID()}-${safeFilename(file.name)}`;
+      const url = await uploadR2Object({
+        key,
+        body,
+        contentType: file.type || "application/octet-stream",
+      });
 
-  return uploadedImages;
+      uploadedImages.push({ key, url });
+    }
+    return uploadedImages;
+  } catch (error) {
+    await Promise.allSettled(
+      uploadedImages.map((image) => deleteR2Object(image.key)),
+    );
+    throw error;
+  }
 }
 
-function toWebsiteReview(row: typeof customerReviews.$inferSelect): WebsiteReview {
+function toWebsiteReview(
+  row: typeof customerReviews.$inferSelect,
+): WebsiteReview {
   return {
     id: row.id,
     fullName: row.fullName,
@@ -224,7 +237,7 @@ async function refreshGoogleReviewSummary() {
   );
 
   if (!response.ok) {
-    throw new Error("Unable to fetch Google review summary.");
+    throw new PublicRequestError("Unable to fetch Google review summary.");
   }
 
   const place = (await response.json()) as GooglePlaceResponse;
@@ -235,8 +248,7 @@ async function refreshGoogleReviewSummary() {
     .insert(googleReviewCache)
     .values({
       placeId: env.GOOGLE_PLACE_ID,
-      rating:
-        typeof place.rating === "number" ? place.rating.toFixed(1) : null,
+      rating: typeof place.rating === "number" ? place.rating.toFixed(1) : null,
       userRatingCount: place.userRatingCount ?? null,
       googleMapsUrl: place.googleMapsUri ?? getGoogleReviewUrl(),
       reviewsJson: JSON.stringify(reviews),
@@ -282,8 +294,7 @@ export async function getGoogleReviewSummary(): Promise<GoogleReviewSummary> {
       .limit(1);
 
     const isFresh =
-      cached &&
-      Date.now() - cached.fetchedAt.getTime() < GOOGLE_CACHE_TTL_MS;
+      cached && Date.now() - cached.fetchedAt.getTime() < GOOGLE_CACHE_TTL_MS;
     const summary = isFresh ? cached : await refreshGoogleReviewSummary();
     const source = summary ?? cached;
 
@@ -364,17 +375,11 @@ export async function createCustomerReview(formData: FormData) {
     rating: getOptionalString(formData, "rating"),
     comment: getOptionalString(formData, "comment"),
     favoriteItem: getOptionalString(formData, "favoriteItem"),
-    captchaExpected: getOptionalString(formData, "captchaExpected"),
-    captchaAnswer: getOptionalString(formData, "captchaAnswer"),
     company: getOptionalString(formData, "company") ?? "",
   });
 
   if (parsed.company) {
-    throw new Error("Unable to submit this review.");
-  }
-
-  if (parsed.captchaAnswer !== parsed.captchaExpected) {
-    throw new Error("Please answer the anti-bot question correctly.");
+    throw new PublicRequestError("Unable to submit this review.");
   }
 
   const [recentDuplicate] = await getDb()
@@ -389,10 +394,12 @@ export async function createCustomerReview(formData: FormData) {
     .limit(1);
 
   if (recentDuplicate) {
-    throw new Error("This review has already been submitted.");
+    throw new PublicRequestError("This review has already been submitted.");
   }
 
-  const uploadedImages = await uploadReviewImages(getReviewImageFiles(formData));
+  const uploadedImages = await uploadReviewImages(
+    getReviewImageFiles(formData),
+  );
 
   try {
     const [created] = await getDb()
@@ -404,20 +411,14 @@ export async function createCustomerReview(formData: FormData) {
         favoriteItem: parsed.favoriteItem,
         status: "draft",
         isApproved: false,
-        imageKeysJson: JSON.stringify(
-          uploadedImages.map((image) => image.key),
-        ),
-        imageUrlsJson: JSON.stringify(
-          uploadedImages.map((image) => image.url),
-        ),
+        imageKeysJson: JSON.stringify(uploadedImages.map((image) => image.key)),
+        imageUrlsJson: JSON.stringify(uploadedImages.map((image) => image.url)),
       })
       .returning();
 
     return toWebsiteReview(created);
   } catch (error) {
-    await Promise.all(
-      uploadedImages.map((image) => deleteR2Object(image.key)),
-    );
+    await Promise.all(uploadedImages.map((image) => deleteR2Object(image.key)));
     throw error;
   }
 }
@@ -447,7 +448,7 @@ export async function updateCustomerReviewStatus(input: {
     .returning();
 
   if (!updated) {
-    throw new Error("Review not found.");
+    throw new PublicRequestError("Review not found.");
   }
 
   return toWebsiteReview(updated);
@@ -461,7 +462,7 @@ export async function deleteCustomerReview(id: string) {
     .limit(1);
 
   if (!review) {
-    throw new Error("Review not found.");
+    throw new PublicRequestError("Review not found.");
   }
 
   await Promise.all(

@@ -3,14 +3,13 @@ import { z } from "zod";
 
 import { getDb } from "@/lib/db";
 import { loyaltyMembers, loyaltyRedemptions } from "@/lib/db/schema";
-import { verifyLoyaltyStampPin } from "@/lib/admin-settings";
+import { requireAdminApiSession } from "@/lib/admin-auth";
 import { getLoyaltyCard } from "@/lib/loyalty";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const redeemSchema = z.object({
-  pin: z.string().min(1),
   rewardCycle: z.number().int().positive(),
   note: z.string().optional(),
 });
@@ -20,18 +19,18 @@ export async function POST(
   context: { params: Promise<{ memberCode: string }> },
 ) {
   try {
-    const { memberCode } = await context.params;
-    const input = redeemSchema.parse(await request.json());
-
-    if (!(await verifyLoyaltyStampPin(input.pin))) {
+    if (!(await requireAdminApiSession())) {
       return Response.json(
         {
           ok: false,
-          error: "Invalid admin PIN.",
+          error: "Please log in to manage loyalty cards.",
         },
         { status: 401 },
       );
     }
+
+    const { memberCode } = await context.params;
+    const input = redeemSchema.parse(await request.json());
 
     const card = await getLoyaltyCard(memberCode);
 

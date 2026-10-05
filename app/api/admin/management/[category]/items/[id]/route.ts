@@ -40,7 +40,12 @@ async function findItem(categorySlug: string, id: string) {
   const [item] = await getDb()
     .select()
     .from(managementItems)
-    .where(and(eq(managementItems.categorySlug, categorySlug), eq(managementItems.id, id)))
+    .where(
+      and(
+        eq(managementItems.categorySlug, categorySlug),
+        eq(managementItems.id, id),
+      ),
+    )
     .limit(1);
 
   return item ?? null;
@@ -54,6 +59,8 @@ export async function PATCH(
     return unauthorized();
   }
 
+  let uploadedKey: string | undefined;
+  let saved = false;
   try {
     const { categorySlug, id } = await getParams(context);
     const current = await findItem(categorySlug, id);
@@ -69,6 +76,7 @@ export async function PATCH(
       file: getSingleImageFile(formData, "image"),
       previousKey: current.imageKey,
     });
+    uploadedKey = image?.key;
     const [item] = await getDb()
       .update(managementItems)
       .set({
@@ -79,21 +87,38 @@ export async function PATCH(
         imageKey: image?.key ?? current.imageKey,
         imageUrl: image?.url ?? current.imageUrl,
         imageAlt: getOptionalString(formData, "imageAlt") ?? name,
-        sortOrder: getOptionalInteger(formData, "sortOrder") ?? current.sortOrder,
+        sortOrder:
+          getOptionalInteger(formData, "sortOrder") ?? current.sortOrder,
         isActive: getOptionalBoolean(formData, "isActive") ?? current.isActive,
         updatedAt: new Date(),
       })
-      .where(and(eq(managementItems.categorySlug, categorySlug), eq(managementItems.id, id)))
+      .where(
+        and(
+          eq(managementItems.categorySlug, categorySlug),
+          eq(managementItems.id, id),
+        ),
+      )
       .returning();
 
+    if (!item) throw new Error("Item no longer exists. Refresh and try again.");
+    saved = true;
+    if (image && current.imageKey)
+      await deleteR2Object(current.imageKey).catch(() =>
+        console.warn("Old menu image cleanup deferred."),
+      );
     await notifyPublicMenuContentUpdated(categorySlug);
     await trySyncChatbotMenuKnowledgeForCategory(categorySlug);
 
     return Response.json({ item: toManagementItemResponse(item) });
   } catch (error) {
+    if (uploadedKey && !saved)
+      await deleteR2Object(uploadedKey).catch(() =>
+        console.warn("Unused menu image cleanup deferred."),
+      );
     return Response.json(
       {
-        error: error instanceof Error ? error.message : "Unable to update item.",
+        error:
+          error instanceof Error ? error.message : "Unable to update item.",
       },
       { status: 400 },
     );
@@ -116,11 +141,18 @@ export async function DELETE(
       return Response.json({ error: "Item not found." }, { status: 404 });
     }
 
-    await deleteR2Object(current.imageKey);
     await getDb()
       .delete(managementItems)
-      .where(and(eq(managementItems.categorySlug, categorySlug), eq(managementItems.id, id)));
+      .where(
+        and(
+          eq(managementItems.categorySlug, categorySlug),
+          eq(managementItems.id, id),
+        ),
+      );
 
+    await deleteR2Object(current.imageKey).catch(() =>
+      console.warn("Deleted menu image cleanup deferred."),
+    );
     await notifyPublicMenuContentUpdated(categorySlug);
     await trySyncChatbotMenuKnowledgeForCategory(categorySlug);
 
@@ -128,7 +160,8 @@ export async function DELETE(
   } catch (error) {
     return Response.json(
       {
-        error: error instanceof Error ? error.message : "Unable to delete item.",
+        error:
+          error instanceof Error ? error.message : "Unable to delete item.",
       },
       { status: 400 },
     );

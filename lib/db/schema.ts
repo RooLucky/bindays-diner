@@ -47,8 +47,12 @@ export const adminAccounts = pgTable(
     passwordHash: text("password_hash").notNull(),
     fullName: varchar("full_name", { length: 160 }).notNull(),
     role: adminAccountRole("role").default("admin").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [uniqueIndex("admin_accounts_email_idx").on(table.email)],
 );
@@ -59,8 +63,12 @@ export const adminSettings = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     key: varchar("key", { length: 120 }).notNull(),
     valueHash: text("value_hash").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [uniqueIndex("admin_settings_key_idx").on(table.key)],
 );
@@ -74,29 +82,32 @@ export const adminSessions = pgTable(
       .references(() => adminAccounts.id, { onDelete: "cascade" }),
     tokenHash: text("token_hash").notNull(),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [uniqueIndex("admin_sessions_token_hash_idx").on(table.tokenHash)],
 );
 
-export const managementCategories = pgTable(
-  "management_categories",
-  {
-    slug: varchar("slug", { length: 80 }).primaryKey(),
-    eyebrow: varchar("eyebrow", { length: 120 }).notNull(),
-    title: varchar("title", { length: 220 }).notNull(),
-    description: text("description").notNull(),
-    ctaLabel: varchar("cta_label", { length: 120 }).notNull(),
-    ctaHref: varchar("cta_href", { length: 220 }).notNull(),
-    heroImageKey: text("hero_image_key"),
-    heroImageUrl: text("hero_image_url").notNull(),
-    heroAlt: varchar("hero_alt", { length: 220 }).notNull(),
-    badge: varchar("badge", { length: 80 }),
-    isHeaderActive: boolean("is_header_active").default(true).notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
-  },
-);
+export const managementCategories = pgTable("management_categories", {
+  slug: varchar("slug", { length: 80 }).primaryKey(),
+  eyebrow: varchar("eyebrow", { length: 120 }).notNull(),
+  title: varchar("title", { length: 220 }).notNull(),
+  description: text("description").notNull(),
+  ctaLabel: varchar("cta_label", { length: 120 }).notNull(),
+  ctaHref: varchar("cta_href", { length: 220 }).notNull(),
+  heroImageKey: text("hero_image_key"),
+  heroImageUrl: text("hero_image_url").notNull(),
+  heroAlt: varchar("hero_alt", { length: 220 }).notNull(),
+  badge: varchar("badge", { length: 80 }),
+  isHeaderActive: boolean("is_header_active").default(true).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
 
 export const managementItems = pgTable(
   "management_items",
@@ -114,8 +125,12 @@ export const managementItems = pgTable(
     imageAlt: varchar("image_alt", { length: 220 }).notNull(),
     sortOrder: integer("sort_order").default(0).notNull(),
     isActive: boolean("is_active").default(true).notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     uniqueIndex("management_items_category_name_idx").on(
@@ -130,10 +145,16 @@ export const managementItemCategories = pgTable(
   {
     id: uuid("id").defaultRandom().primaryKey(),
     name: varchar("name", { length: 80 }).notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
   },
-  (table) => [uniqueIndex("management_item_categories_name_idx").on(table.name)],
+  (table) => [
+    uniqueIndex("management_item_categories_name_idx").on(table.name),
+  ],
 );
 
 export const loyaltyMembers = pgTable(
@@ -147,8 +168,12 @@ export const loyaltyMembers = pgTable(
     birthday: varchar("birthday", { length: 10 }).notNull(),
     phone: varchar("phone", { length: 40 }),
     normalizedPhone: varchar("normalized_phone", { length: 40 }),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     uniqueIndex("loyalty_members_member_code_idx").on(table.memberCode),
@@ -172,7 +197,9 @@ export const loyaltyStamps = pgTable(
     stampNumber: integer("stamp_number").notNull(),
     source: loyaltyStampSource("source").default("physical").notNull(),
     note: text("note"),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     uniqueIndex("loyalty_stamps_member_cycle_number_idx").on(
@@ -191,7 +218,9 @@ export const loyaltyRedemptions = pgTable("loyalty_redemptions", {
   rewardCycle: integer("reward_cycle").default(1).notNull(),
   source: loyaltyRedemptionSource("source").default("admin").notNull(),
   note: text("note"),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
 });
 
 export const chatbotKnowledgeEntries = pgTable(
@@ -204,8 +233,12 @@ export const chatbotKnowledgeEntries = pgTable(
     category: varchar("category", { length: 80 }).default("General").notNull(),
     isActive: boolean("is_active").default(true).notNull(),
     isFeatured: boolean("is_featured").default(false).notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     uniqueIndex("chatbot_knowledge_question_idx").on(table.question),
@@ -219,7 +252,9 @@ export const chatbotRateLimits = pgTable("chatbot_rate_limits", {
   windowStartedAt: timestamp("window_started_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
 });
 
 export const customerReviews = pgTable(
@@ -234,8 +269,12 @@ export const customerReviews = pgTable(
     isApproved: boolean("is_approved").default(false).notNull(),
     imageKeysJson: text("image_keys_json").default("[]").notNull(),
     imageUrlsJson: text("image_urls_json").default("[]").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     index("customer_reviews_approved_created_idx").on(
@@ -251,8 +290,12 @@ export const googleReviewCache = pgTable("google_review_cache", {
   userRatingCount: integer("user_rating_count"),
   googleMapsUrl: text("google_maps_url"),
   reviewsJson: text("reviews_json").default("[]").notNull(),
-  fetchedAt: timestamp("fetched_at", { withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  fetchedAt: timestamp("fetched_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
 });
 
 export const reservations = pgTable(
@@ -263,6 +306,8 @@ export const reservations = pgTable(
     email: varchar("email", { length: 255 }).notNull(),
     phone: varchar("phone", { length: 40 }).notNull(),
     deliveryAddress: text("delivery_address").notNull(),
+    deliveryCity: varchar("delivery_city", { length: 80 }),
+    deliveryFee: integer("delivery_fee").default(0).notNull(),
     landmark: text("landmark"),
     deliveryDate: varchar("delivery_date", { length: 10 }).notNull(),
     deliveryTime: varchar("delivery_time", { length: 5 }).notNull(),
@@ -279,8 +324,12 @@ export const reservations = pgTable(
     receiptKey: text("receipt_key"),
     receiptUrl: text("receipt_url"),
     paidAt: timestamp("paid_at", { withTimezone: true }),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     uniqueIndex("reservations_payment_token_idx").on(table.paymentToken),

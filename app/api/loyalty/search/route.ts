@@ -1,19 +1,24 @@
-import { z } from "zod";
+import { grantLoyaltyAccess } from "@/lib/loyalty-access";
+import {
+  PublicRequestError,
+  readLimitedBody,
+} from "@/lib/public-request-error";
+import { requireRecaptcha } from "@/lib/recaptcha";
+import { ZodError } from "zod";
+import { loyaltyRegistrationSchema } from "@/lib/loyalty-registration";
 
 import { findExistingMember, getLoyaltyCard } from "@/lib/loyalty";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const searchSchema = z.object({
-  fullName: z.string().min(2),
-  birthday: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  phone: z.string().optional(),
-});
-
 export async function POST(request: Request) {
+  const captchaError = await requireRecaptcha(request);
+  if (captchaError) return captchaError;
   try {
-    const input = searchSchema.parse(await request.json());
+    const input = loyaltyRegistrationSchema.parse(
+      await (await readLimitedBody(request)).json(),
+    );
     const member = await findExistingMember(input);
 
     if (!member) {
@@ -27,19 +32,27 @@ export async function POST(request: Request) {
     }
 
     const card = await getLoyaltyCard(member.memberCode);
+    await grantLoyaltyAccess(member.memberCode);
 
     return Response.json({
       ok: true,
       card,
     });
   } catch (error) {
+    if (error instanceof ZodError)
+      return Response.json(
+        {
+          ok: false,
+          error: error.issues[0]?.message ?? "Check your registration details.",
+        },
+        { status: 400 },
+      );
     return Response.json(
       {
         ok: false,
-        error: error instanceof Error ? error.message : "Unable to search loyalty member.",
+        error: "Unable to search loyalty member.",
       },
       { status: 400 },
     );
   }
 }
-

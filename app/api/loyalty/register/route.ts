@@ -1,4 +1,11 @@
-import { z } from "zod";
+import { grantLoyaltyAccess } from "@/lib/loyalty-access";
+import {
+  PublicRequestError,
+  readLimitedBody,
+} from "@/lib/public-request-error";
+import { requireRecaptcha } from "@/lib/recaptcha";
+import { ZodError } from "zod";
+import { loyaltyRegistrationSchema } from "@/lib/loyalty-registration";
 
 import { getDb } from "@/lib/db";
 import { loyaltyMembers } from "@/lib/db/schema";
@@ -14,19 +21,18 @@ import {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const registerSchema = z.object({
-  fullName: z.string().min(2),
-  birthday: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  phone: z.string().optional(),
-});
-
 export async function POST(request: Request) {
+  const captchaError = await requireRecaptcha(request);
+  if (captchaError) return captchaError;
   try {
-    const input = registerSchema.parse(await request.json());
+    const input = loyaltyRegistrationSchema.parse(
+      await (await readLimitedBody(request)).json(),
+    );
     const existing = await findExistingMember(input);
 
     if (existing) {
       const card = await getLoyaltyCard(existing.memberCode);
+      await grantLoyaltyAccess(existing.memberCode);
 
       return Response.json({
         ok: true,
@@ -54,6 +60,7 @@ export async function POST(request: Request) {
 
       if (existingAfterConflict) {
         const card = await getLoyaltyCard(existingAfterConflict.memberCode);
+        await grantLoyaltyAccess(existingAfterConflict.memberCode);
 
         return Response.json({
           ok: true,
@@ -72,6 +79,7 @@ export async function POST(request: Request) {
     }
 
     const card = await getLoyaltyCard(member.memberCode);
+    await grantLoyaltyAccess(member.memberCode);
 
     return Response.json({
       ok: true,
@@ -79,10 +87,18 @@ export async function POST(request: Request) {
       card,
     });
   } catch (error) {
+    if (error instanceof ZodError)
+      return Response.json(
+        {
+          ok: false,
+          error: error.issues[0]?.message ?? "Check your registration details.",
+        },
+        { status: 400 },
+      );
     return Response.json(
       {
         ok: false,
-        error: error instanceof Error ? error.message : "Unable to register loyalty member.",
+        error: "Unable to register loyalty member.",
       },
       { status: 400 },
     );

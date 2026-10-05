@@ -2,6 +2,21 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
+import Link from "next/link";
+import { ArrowLeft, Check, Gift, Plus, X } from "lucide-react";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { AdminPanel } from "@/components/admin/AdminPanel";
+import { AdminDialogPopup } from "@/components/admin/AdminDialog";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogBackdrop,
+  DialogClose,
+  DialogDescription,
+  DialogPortal,
+  DialogTitle,
+  DialogViewport,
+} from "@/components/ui/dialog";
 
 import { Button } from "@/components/ui/button";
 import type { LoyaltyCardResponse } from "@/lib/loyalty-contracts";
@@ -20,13 +35,18 @@ function getNextStampNumber(card: LoyaltyCardResponse) {
   );
 }
 
-export function AdminLoyaltyStampClient({ memberCode }: { memberCode: string }) {
+export function AdminLoyaltyStampClient({
+  memberCode,
+}: {
+  memberCode: string;
+}) {
   const [card, setCard] = useState<LoyaltyCardResponse | null>(null);
-  const [pin, setPin] = useState("");
   const [note, setNote] = useState("");
   const [selectedStamp, setSelectedStamp] = useState<number | null>(null);
   const [isLoadingCard, setIsLoadingCard] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [action, setAction] = useState<"stamp" | "redeem">("stamp");
 
   useEffect(() => {
     async function loadCard() {
@@ -49,7 +69,8 @@ export function AdminLoyaltyStampClient({ memberCode }: { memberCode: string }) 
       } catch (error) {
         toast.error("Unable to retrieve loyalty card.", {
           id: toastId,
-          description: error instanceof Error ? error.message : "Something went wrong.",
+          description:
+            error instanceof Error ? error.message : "Something went wrong.",
         });
       } finally {
         setIsLoadingCard(false);
@@ -77,7 +98,6 @@ export function AdminLoyaltyStampClient({ memberCode }: { memberCode: string }) 
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          pin,
           stampNumber: selectedStamp,
           rewardCycle: card.currentCycle,
           note,
@@ -91,16 +111,19 @@ export function AdminLoyaltyStampClient({ memberCode }: { memberCode: string }) 
 
       setCard(data.card);
       setSelectedStamp(getNextStampNumber(data.card));
+      setFormOpen(false);
       toast.success("Stamp added.", {
         id: toastId,
-        description: data.card.currentCycle > card.currentCycle
-          ? "10 stamps complete! A reward is ready and the card has reset to 0/10."
-          : `${data.card.stampCount}/${data.card.rewardThreshold} stamps complete.`,
+        description:
+          data.card.currentCycle > card.currentCycle
+            ? "10 stamps complete! A reward is ready and the card has reset to 0/10."
+            : `${data.card.stampCount}/${data.card.rewardThreshold} stamps complete.`,
       });
     } catch (error) {
       toast.error("Unable to add stamp.", {
         id: toastId,
-        description: error instanceof Error ? error.message : "Something went wrong.",
+        description:
+          error instanceof Error ? error.message : "Something went wrong.",
       });
     } finally {
       setIsSubmitting(false);
@@ -121,7 +144,6 @@ export function AdminLoyaltyStampClient({ memberCode }: { memberCode: string }) 
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          pin,
           rewardCycle,
           note,
         }),
@@ -134,6 +156,7 @@ export function AdminLoyaltyStampClient({ memberCode }: { memberCode: string }) 
 
       setCard(data.card);
       setSelectedStamp(getNextStampNumber(data.card));
+      setFormOpen(false);
       toast.success("Reward redeemed.", {
         id: toastId,
         description: "The loyalty card history was updated.",
@@ -141,126 +164,210 @@ export function AdminLoyaltyStampClient({ memberCode }: { memberCode: string }) 
     } catch (error) {
       toast.error("Unable to redeem reward.", {
         id: toastId,
-        description: error instanceof Error ? error.message : "Something went wrong.",
+        description:
+          error instanceof Error ? error.message : "Something went wrong.",
       });
     } finally {
       setIsSubmitting(false);
     }
   }
 
+  function openAction(nextAction: "stamp" | "redeem") {
+    setAction(nextAction);
+    setFormOpen(true);
+  }
+
   return (
-    <section className="min-h-screen bg-background py-10">
-      <div className="mx-auto max-w-[98dvw] px-4 md:max-w-[720px]">
-        <div className="rounded-sm border border-border bg-card p-6 shadow-[var(--shadow-card)] md:p-8">
-          <p className="font-serif text-2xl italic text-brand-script">Admin Scan</p>
-          <h1 className="mt-2 font-serif text-4xl leading-tight text-foreground">
-            Loyalty Stamp
-          </h1>
-
-          {card ? (
-            <>
-              {(() => {
-                const displayStampedNumbers = card.stampedNumbers;
-                const nextStampNumber = getNextStampNumber(card);
-
-                return (
-                  <>
-              <div className="mt-6 rounded-sm border border-border bg-background p-4 text-sm leading-7">
-                <p className="font-semibold text-foreground">{card.member.fullName}</p>
-                <p className="text-muted-foreground">Birthday: {card.member.birthday}</p>
-                <p className="text-muted-foreground">Member: {card.member.memberCode}</p>
-                <p className="text-muted-foreground">
-                  Stamps: {displayStampedNumbers.length}/{card.rewardThreshold}
-                </p>
-                {card.currentCycle > 1 ? (
-                  <p className="mt-2 font-semibold text-secondary">
-                    Card {card.currentCycle}. Completed cards reset automatically.
-                  </p>
-                ) : null}
-                {card.rewardReady ? (
-                  <p className="mt-2 font-semibold text-primary">
-                    {card.pendingRewardCount} reward{card.pendingRewardCount === 1 ? "" : "s"} ready.
-                    You can keep adding stamps while rewards await redemption.
-                  </p>
-                ) : null}
-              </div>
-
-              <form className="mt-6 grid gap-4" onSubmit={submitStamp}>
-                <div className="grid grid-cols-5 gap-3">
-                  {Array.from({ length: card.rewardThreshold }, (_, index) => {
-                    const stampNumber = index + 1;
-                    const stamped = displayStampedNumbers.includes(stampNumber);
-                    const isNextStamp = stampNumber === nextStampNumber;
-
-                    return (
-                      <button
-                        key={stampNumber}
-                        type="button"
-                        disabled={!isNextStamp}
-                        className={`grid aspect-square place-items-center rounded-full border text-sm font-semibold ${
-                          stamped
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : isNextStamp
-                              ? "border-secondary bg-brand-gold-soft text-foreground"
-                              : "border-primary/35 text-foreground"
-                        } disabled:opacity-60`}
-                        onClick={() => setSelectedStamp(stampNumber)}
-                      >
-                        {stampNumber}
-                      </button>
-                    );
-                  })}
+    <div className="grid gap-6">
+      <AdminPageHeader
+        title="Loyalty card"
+        description="Record a customer's visit or redeem an earned reward."
+      >
+        <Button
+          variant="outline"
+          className="rounded-lg"
+          render={<Link href="/management/loyalty" />}
+          nativeButton={false}
+        >
+          <ArrowLeft />
+          All members
+        </Button>
+      </AdminPageHeader>
+      {card ? (
+        <AdminPanel className="max-w-3xl p-5 sm:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4 border-b pb-5">
+            <div>
+              <h2 className="text-lg font-semibold">{card.member.fullName}</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {card.member.memberCode}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Birthday: {card.member.birthday}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-2xl font-semibold tabular-nums">
+                {card.stampCount}
+                <span className="text-base text-muted-foreground">
+                  {" "}
+                  / {card.rewardThreshold}
+                </span>
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Card {card.currentCycle}
+              </p>
+            </div>
+          </div>
+          <div className="my-6 grid grid-cols-5 gap-3">
+            {Array.from({ length: card.rewardThreshold }, (_, index) => {
+              const stampNumber = index + 1;
+              const stamped = card.stampedNumbers.includes(stampNumber);
+              const isNext = stampNumber === getNextStampNumber(card);
+              return (
+                <Button
+                  key={stampNumber}
+                  variant="outline"
+                  disabled={!isNext}
+                  aria-label={
+                    stamped
+                      ? `Stamp ${stampNumber} completed`
+                      : `Add stamp ${stampNumber}`
+                  }
+                  className={`aspect-square h-auto rounded-xl border text-sm font-semibold ${stamped ? "border-brand-olive/30 bg-brand-gold-soft text-brand-olive disabled:opacity-100" : isNext ? "border-primary/40 bg-primary/5 text-primary" : "border-dashed text-muted-foreground"}`}
+                  onClick={() => openAction("stamp")}
+                >
+                  {stamped ? <Check className="size-5" /> : stampNumber}
+                </Button>
+              );
+            })}
+          </div>
+          <p className="text-sm leading-6 text-muted-foreground">
+            Each completed card earns a reward and automatically resets for the
+            next 10 stamps.
+          </p>
+          {card.rewardReady && (
+            <div className="mt-4 flex items-center gap-2 rounded-lg bg-brand-gold-soft p-3 text-sm text-brand-olive">
+              <Gift className="size-4" />
+              {card.pendingRewardCount} reward
+              {card.pendingRewardCount === 1 ? "" : "s"} ready to redeem
+            </div>
+          )}
+          <div className="mt-6 flex flex-wrap gap-2">
+            <Button
+              className="rounded-lg"
+              disabled={isSubmitting || !getNextStampNumber(card)}
+              onClick={() => openAction("stamp")}
+            >
+              <Plus />
+              Add stamp
+            </Button>
+            <Button
+              variant="outline"
+              className="rounded-lg"
+              disabled={isSubmitting || !card.rewardReady}
+              onClick={() => openAction("redeem")}
+            >
+              <Gift />
+              Redeem reward
+            </Button>
+          </div>
+        </AdminPanel>
+      ) : (
+        <AdminPanel className="p-6">
+          <p className="text-sm text-muted-foreground">
+            {isLoadingCard
+              ? "Retrieving loyalty card…"
+              : "Loyalty card unavailable."}
+          </p>
+        </AdminPanel>
+      )}
+      <Dialog
+        open={formOpen}
+        onOpenChange={(open) => {
+          if (!isSubmitting) setFormOpen(open);
+        }}
+        onOpenChangeComplete={(open) => {
+          if (!open) {
+            setNote("");
+          }
+        }}
+      >
+        <DialogPortal>
+          <DialogBackdrop />
+          <DialogViewport>
+            <AdminDialogPopup className="max-w-md">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <DialogTitle className="text-lg font-semibold">
+                    {action === "stamp" ? "Add loyalty stamp" : "Redeem reward"}
+                  </DialogTitle>
+                  <DialogDescription className="mt-1 text-sm leading-6 text-muted-foreground">
+                    {action === "stamp"
+                      ? "Confirm this customer's visit to add the next stamp."
+                      : "Confirm that the customer is receiving their earned reward."}
+                  </DialogDescription>
                 </div>
-
-                <label className="grid gap-2 text-sm font-medium text-foreground">
-                  Admin PIN
-                  <input
-                    required
-                    type="password"
-                    value={pin}
-                    onChange={(event) => setPin(event.target.value)}
-                    className="h-11 rounded-sm border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
-                    placeholder="Enter stamp PIN"
-                  />
-                </label>
-                <label className="grid gap-2 text-sm font-medium text-foreground">
-                  Receipt or Note
-                  <input
+                <DialogClose
+                  render={
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      disabled={isSubmitting}
+                    />
+                  }
+                  aria-label="Close loyalty dialog"
+                >
+                  <X />
+                </DialogClose>
+              </div>
+              <form
+                className="mt-6 grid gap-4"
+                onSubmit={(event) => {
+                  if (action === "stamp") void submitStamp(event);
+                  else {
+                    event.preventDefault();
+                    void redeemReward();
+                  }
+                }}
+              >
+                <label className="grid gap-2 text-sm font-medium">
+                  Receipt or note
+                  <Input
                     value={note}
                     onChange={(event) => setNote(event.target.value)}
-                    className="h-11 rounded-sm border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
+                    className="rounded-lg border-border bg-background"
                     placeholder="Receipt number or order note"
                   />
                 </label>
-
-                <Button
-                  type="submit"
-                  className="h-12 rounded-sm text-xs font-semibold uppercase tracking-[0.08em]"
-                  disabled={isSubmitting || !nextStampNumber}
-                >
-                  Add Stamp
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="h-12 rounded-sm bg-transparent text-xs font-semibold uppercase tracking-[0.08em]"
-                  disabled={isSubmitting || !card.rewardReady}
-                  onClick={redeemReward}
-                >
-                  Redeem Reward{card.pendingRewardCount > 0 ? ` (card ${card.pendingRewardCycles[0]})` : ""}
-                </Button>
+                <div className="mt-2 flex justify-end gap-2">
+                  <DialogClose
+                    render={
+                      <Button
+                        variant="outline"
+                        className="rounded-lg"
+                        disabled={isSubmitting}
+                      />
+                    }
+                  >
+                    Cancel
+                  </DialogClose>
+                  <Button
+                    type="submit"
+                    className="rounded-lg"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting
+                      ? "Saving…"
+                      : action === "stamp"
+                        ? "Add stamp"
+                        : "Redeem reward"}
+                  </Button>
+                </div>
               </form>
-                  </>
-                );
-              })()}
-            </>
-          ) : (
-            <p className="mt-6 text-sm text-muted-foreground">
-              {isLoadingCard ? "Retrieving loyalty card..." : "Loyalty card unavailable."}
-            </p>
-          )}
-        </div>
-      </div>
-    </section>
+            </AdminDialogPopup>
+          </DialogViewport>
+        </DialogPortal>
+      </Dialog>
+    </div>
   );
 }

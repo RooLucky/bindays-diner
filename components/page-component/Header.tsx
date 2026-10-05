@@ -1,8 +1,18 @@
 "use client";
+import { MinimumOrderAlert } from "./MinimumOrderAlert";
+import { meetsMinimumOrder, DELIVERY_FEE_PESOS } from "@/lib/order-policy";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LogIn, Menu, Minus, Plus, ShoppingCart, Trash2, X } from "lucide-react";
+import {
+  LogIn,
+  Menu,
+  Minus,
+  Plus,
+  ShoppingCart,
+  Trash2,
+  X,
+} from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import Ably from "ably";
@@ -98,11 +108,11 @@ export function Header({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [liveNavigationVisibility, setLiveNavigationVisibility] = useState(
-    navigationVisibility,
-  );
+  const [liveNavigationVisibility, setLiveNavigationVisibility] =
+    useState(navigationVisibility);
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [minimumAlertOpen, setMinimumAlertOpen] = useState(false);
   const {
     clearCart,
     decrementItem,
@@ -119,8 +129,7 @@ export function Header({
   }, [pathname]);
   const visibleNavItems = navItems.filter(
     (item) =>
-      !item.managedCategory ||
-      liveNavigationVisibility[item.managedCategory],
+      !item.managedCategory || liveNavigationVisibility[item.managedCategory],
   );
 
   useEffect(() => {
@@ -356,6 +365,7 @@ export function Header({
                                   </span>
                                   <button
                                     type="button"
+                                    disabled={item.quantity >= 50}
                                     onClick={() => incrementItem(item.id)}
                                     className="inline-flex size-8 items-center justify-center rounded-sm border border-border bg-card text-foreground hover:bg-muted"
                                     aria-label={`Increase ${item.name} quantity`}
@@ -377,10 +387,36 @@ export function Header({
                           P{subtotal.toLocaleString("en-PH")}
                         </span>
                       </div>
+                      <p className="mt-3 text-sm text-muted-foreground">
+                        Minimum food subtotal: ₱500. Delivery: ₱50 within
+                        Legazpi City only. Smaller orders are available through
+                        Foodpanda.
+                      </p>
+                      <div className="mt-3 flex justify-between text-sm">
+                        <span>Delivery fee</span>
+                        <span>₱{DELIVERY_FEE_PESOS}</span>
+                      </div>
+                      <div className="mt-2 flex justify-between font-semibold">
+                        <span>Total with delivery</span>
+                        <span>
+                          ₱
+                          {(subtotal + DELIVERY_FEE_PESOS).toLocaleString(
+                            "en-PH",
+                          )}
+                        </span>
+                      </div>
                       <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto]">
                         <Link
                           href="/reservations"
-                          onClick={() => setCartOpen(false)}
+                          onClick={(event) => {
+                            if (!meetsMinimumOrder(subtotal)) {
+                              event.preventDefault();
+                              setCartOpen(false);
+                              setMinimumAlertOpen(true);
+                            } else {
+                              setCartOpen(false);
+                            }
+                          }}
                           className={cn(
                             buttonVariants(),
                             "h-12 rounded-sm text-xs font-semibold uppercase tracking-[0.08em] shadow-[var(--shadow-header-button)]",
@@ -504,6 +540,10 @@ export function Header({
           </Drawer>
         </div>
       </div>
+      <MinimumOrderAlert
+        open={minimumAlertOpen}
+        onOpenChange={setMinimumAlertOpen}
+      />
     </header>
   );
 }

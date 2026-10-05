@@ -14,16 +14,12 @@ import type { Dish } from "@/lib/menu-campaigns";
 
 export const CART_STORAGE_KEY = "bindays-diner-cart";
 
-export type CartItem = {
-  id: string;
-  name: string;
-  description: string;
-  price: string;
-  image: string;
-  tag?: string;
-  quantity: number;
-  source: string;
-};
+export type { CartItem } from "@/lib/cart-data";
+import {
+  type CartItem,
+  normalizeCartQuantity,
+  parseStoredCart,
+} from "@/lib/cart-data";
 
 type CartContextValue = {
   items: CartItem[];
@@ -64,7 +60,7 @@ function readStoredCart() {
     }
 
     const parsed = JSON.parse(storedCart);
-    return Array.isArray(parsed) ? (parsed as CartItem[]) : [];
+    return parseStoredCart(parsed);
   } catch {
     return [];
   }
@@ -84,7 +80,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+    try {
+      window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+    } catch {
+      /* Keep the in-memory cart usable when browser storage is unavailable. */
+    }
   }, [hydrated, items]);
 
   useEffect(() => {
@@ -100,7 +100,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addItem = useCallback((dish: Dish, source: string, quantity = 1) => {
     const id = createCartItemId(dish, source);
-    const safeQuantity = Math.max(1, quantity);
+    const safeQuantity = normalizeCartQuantity(quantity);
 
     setItems((currentItems) => {
       const existingItem = currentItems.find((item) => item.id === id);
@@ -108,7 +108,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (existingItem) {
         return currentItems.map((item) =>
           item.id === id
-            ? { ...item, quantity: item.quantity + safeQuantity }
+            ? {
+                ...item,
+                quantity: normalizeCartQuantity(item.quantity + safeQuantity),
+              }
             : item,
         );
       }
@@ -132,7 +135,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const incrementItem = useCallback((id: string) => {
     setItems((currentItems) =>
       currentItems.map((item) =>
-        item.id === id ? { ...item, quantity: item.quantity + 1 } : item,
+        item.id === id
+          ? { ...item, quantity: normalizeCartQuantity(item.quantity + 1) }
+          : item,
       ),
     );
   }, []);
@@ -150,9 +155,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const removeItem = useCallback((id: string) => {
-    setItems((currentItems) =>
-      currentItems.filter((item) => item.id !== id),
-    );
+    setItems((currentItems) => currentItems.filter((item) => item.id !== id));
   }, []);
 
   const clearCart = useCallback(() => {

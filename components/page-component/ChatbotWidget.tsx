@@ -1,5 +1,7 @@
 "use client";
 
+import { useRecaptcha } from "@/components/Recaptcha";
+
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -89,6 +91,7 @@ function isStoredMessage(value: unknown): value is ChatMessage {
 }
 
 export function ChatbotWidget() {
+  const { protectedFetch, captcha: recaptcha } = useRecaptcha();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     createWelcomeMessage(),
@@ -103,9 +106,14 @@ export function ChatbotWidget() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    const storedSession = window.sessionStorage.getItem(SESSION_STORAGE_KEY);
-    const nextSession = storedSession || crypto.randomUUID();
-    window.sessionStorage.setItem(SESSION_STORAGE_KEY, nextSession);
+    let nextSession = crypto.randomUUID() as string;
+    try {
+      nextSession =
+        window.sessionStorage.getItem(SESSION_STORAGE_KEY) || nextSession;
+      window.sessionStorage.setItem(SESSION_STORAGE_KEY, nextSession);
+    } catch {
+      /* Continue with an in-memory session. */
+    }
     setSessionId(nextSession);
 
     try {
@@ -125,7 +133,11 @@ export function ChatbotWidget() {
         }
       }
     } catch {
-      window.sessionStorage.removeItem(MESSAGE_STORAGE_KEY);
+      try {
+        window.sessionStorage.removeItem(MESSAGE_STORAGE_KEY);
+      } catch {
+        /* Storage is optional. */
+      }
     }
 
     setHydrated(true);
@@ -136,10 +148,14 @@ export function ChatbotWidget() {
       return;
     }
 
-    window.sessionStorage.setItem(
-      MESSAGE_STORAGE_KEY,
-      JSON.stringify(messages),
-    );
+    try {
+      window.sessionStorage.setItem(
+        MESSAGE_STORAGE_KEY,
+        JSON.stringify(messages),
+      );
+    } catch {
+      /* Keep the conversation usable without persistence. */
+    }
   }, [hydrated, messages]);
 
   useEffect(() => {
@@ -207,7 +223,7 @@ export function ChatbotWidget() {
     setPending(true);
 
     try {
-      const response = await fetch("/api/chatbot", {
+      const response = await protectedFetch("/api/chatbot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -250,6 +266,10 @@ export function ChatbotWidget() {
           : Math.max(0, remaining - 1),
       );
     } catch (error) {
+      setMessage(trimmed);
+      setMessages((current) =>
+        current.filter((item) => item.id !== userMessage.id),
+      );
       const errorMessage =
         error instanceof Error
           ? error.message
@@ -482,6 +502,7 @@ export function ChatbotWidget() {
                 </span>
                 <span>{remaining} questions remaining</span>
               </div>
+              {recaptcha}
             </form>
           </motion.section>
         ) : null}

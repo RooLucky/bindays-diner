@@ -3,7 +3,7 @@ import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 
 import { and, eq, gt, lt } from "drizzle-orm";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { getDb } from "@/lib/db";
@@ -48,11 +48,13 @@ export async function createAdminSession(adminAccountId: string) {
   const token = randomBytes(32).toString("base64url");
   const expiresAt = getSessionExpiry();
 
-  await getDb().insert(adminSessions).values({
-    adminAccountId,
-    tokenHash: hashToken(token),
-    expiresAt,
-  });
+  await getDb()
+    .insert(adminSessions)
+    .values({
+      adminAccountId,
+      tokenHash: hashToken(token),
+      expiresAt,
+    });
 
   const cookieStore = await cookies();
   cookieStore.set(ADMIN_SESSION_COOKIE, token, {
@@ -85,7 +87,9 @@ export async function getAdminSessionUser() {
     return null;
   }
 
-  await getDb().delete(adminSessions).where(lt(adminSessions.expiresAt, new Date()));
+  await getDb()
+    .delete(adminSessions)
+    .where(lt(adminSessions.expiresAt, new Date()));
 
   const [row] = await getDb()
     .select({
@@ -121,6 +125,16 @@ export async function requireAdminSession() {
 }
 
 export async function requireAdminApiSession() {
+  const requestHeaders = await headers();
+  if (requestHeaders.get("sec-fetch-site") === "cross-site") return null;
+  const origin = requestHeaders.get("origin");
+  if (origin) {
+    try {
+      if (new URL(origin).host !== requestHeaders.get("host")) return null;
+    } catch {
+      return null;
+    }
+  }
   const user = await getAdminSessionUser();
 
   if (!user) {

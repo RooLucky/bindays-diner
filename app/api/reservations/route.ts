@@ -1,3 +1,8 @@
+import {
+  PublicRequestError,
+  readLimitedBody,
+} from "@/lib/public-request-error";
+import { requireRecaptcha } from "@/lib/recaptcha";
 import { ZodError } from "zod";
 
 import { createReservation } from "@/lib/reservations";
@@ -6,14 +11,18 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
+  const captchaError = await requireRecaptcha(request);
+  if (captchaError) return captchaError;
   try {
     const reservation = await createReservation(
-      await request.json(),
+      await (await readLimitedBody(request)).json(),
       new URL(request.url).origin,
     );
 
     return Response.json({ reservation }, { status: 201 });
   } catch (error) {
+    if (error instanceof PublicRequestError)
+      return Response.json({ error: error.message }, { status: 400 });
     if (error instanceof ZodError) {
       return Response.json(
         { error: "Please complete all required delivery details correctly." },
@@ -24,7 +33,8 @@ export async function POST(request: Request) {
     return Response.json(
       {
         error:
-          error instanceof Error && error.message === "Reservation email is not configured."
+          error instanceof Error &&
+          error.message === "Reservation email is not configured."
             ? "Email delivery is not configured. Please contact the diner."
             : "Unable to send your delivery request. Please try again.",
       },

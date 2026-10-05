@@ -1,4 +1,13 @@
 "use client";
+import { isValidDeliverySchedule } from "@/lib/delivery-schedule";
+import { MinimumOrderAlert } from "./MinimumOrderAlert";
+import {
+  meetsMinimumOrder,
+  DELIVERY_FEE_PESOS,
+  DELIVERY_CITY,
+} from "@/lib/order-policy";
+
+import { useRecaptcha } from "@/components/Recaptcha";
 
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState, useTransition } from "react";
@@ -26,7 +35,8 @@ const deliveryBenefits = [
   {
     icon: Phone,
     title: "Secure Payment Link",
-    description: "Your request stays pending until payment is confirmed from the emailed link.",
+    description:
+      "Your request stays pending until payment is confirmed from the emailed link.",
   },
 ];
 
@@ -46,6 +56,9 @@ function defaultDeliverySchedule() {
 }
 
 export function ReservationPage() {
+  const [submitted, setSubmitted] = useState(false);
+  const [minimumAlertOpen, setMinimumAlertOpen] = useState(false);
+  const { protectedFetch, captcha: recaptcha } = useRecaptcha();
   const { clearCart, getSummary, items, subtotal, totalQuantity } = useCart();
   const cartSummary = useMemo(() => getSummary(), [getSummary]);
   const [notes, setNotes] = useState("");
@@ -94,13 +107,21 @@ export function ReservationPage() {
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!meetsMinimumOrder(subtotal)) {
+      setMinimumAlertOpen(true);
+      return;
+    }
     const form = event.currentTarget;
     const formData = new FormData(form);
     const fullName = String(formData.get("fullName") ?? "").trim();
     const phone = String(formData.get("phone") ?? "").trim();
     const email = String(formData.get("email") ?? "").trim();
-    const deliveryAddress = String(formData.get("deliveryAddress") ?? "").trim();
-    const selectedDeliveryTime = String(formData.get("deliveryTime") ?? "").trim();
+    const deliveryAddress = String(
+      formData.get("deliveryAddress") ?? "",
+    ).trim();
+    const selectedDeliveryTime = String(
+      formData.get("deliveryTime") ?? "",
+    ).trim();
     const errors: Record<string, string> = {};
 
     if (fullName.length < 2) errors.fullName = "Enter your full name.";
@@ -109,10 +130,17 @@ export function ReservationPage() {
       errors.email = "Enter a valid contact email.";
     }
     if (deliveryAddress.length < 8) {
-      errors.deliveryAddress = "Enter your house number, street, barangay, and city.";
+      errors.deliveryAddress =
+        "Enter your house number, street, barangay, and city.";
     }
     if (!deliveryDate) errors.deliveryDate = "Choose a delivery date.";
     if (!selectedDeliveryTime) errors.deliveryTime = "Choose a preferred time.";
+    else if (
+      deliveryDate &&
+      !isValidDeliverySchedule(deliveryDate, selectedDeliveryTime)
+    )
+      errors.deliveryTime =
+        "Choose a future delivery date and time (Legazpi City).";
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
@@ -123,7 +151,7 @@ export function ReservationPage() {
     setFieldErrors({});
 
     startTransition(async () => {
-      const response = await fetch("/api/reservations", {
+      const response = await protectedFetch("/api/reservations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -131,6 +159,7 @@ export function ReservationPage() {
           email: formData.get("email"),
           phone: formData.get("phone"),
           deliveryAddress: formData.get("deliveryAddress"),
+          deliveryCity: DELIVERY_CITY,
           landmark: formData.get("landmark"),
           deliveryDate,
           deliveryTime: formData.get("deliveryTime"),
@@ -150,15 +179,33 @@ export function ReservationPage() {
         return;
       }
 
+      setSubmitted(true);
       clearCart();
       form.reset();
       setDeliveryDate("");
       setDeliveryTime("");
       setNotes("");
       setNotesEdited(false);
-      toast.success("Reservation request sent. Check your email for the payment link.");
+      toast.success(
+        "Reservation request sent. Check your email for the payment link.",
+      );
     });
   }
+
+  if (submitted)
+    return (
+      <section className="mx-auto max-w-2xl px-6 py-20 text-center">
+        <h1 className="font-serif text-3xl">Your delivery request was sent</h1>
+        <p className="mt-4 text-muted-foreground">
+          Check your email for the payment link. Complete payment and submit
+          your receipt within 30 minutes. Staff will verify the transfer before
+          confirming your order.
+        </p>
+        <Link className={cn(buttonVariants(), "mt-6")} href="/menu">
+          Return to menu
+        </Link>
+      </section>
+    );
 
   if (items.length === 0) {
     return (
@@ -187,6 +234,10 @@ export function ReservationPage() {
             Browse the Menu
           </Link>
         </div>
+        <MinimumOrderAlert
+          open={minimumAlertOpen}
+          onOpenChange={setMinimumAlertOpen}
+        />
       </section>
     );
   }
@@ -210,181 +261,251 @@ export function ReservationPage() {
 
           <StaggerContainer className="mt-7 grid gap-3 sm:grid-cols-3 lg:mt-10 lg:grid-cols-1 lg:gap-5">
             <StaggerItem>
-            <p className="flex items-start gap-3 rounded-sm border border-border bg-card/60 p-4 text-left text-sm leading-6 text-muted-foreground transition-transform duration-500 hover:-translate-y-1 lg:border-transparent lg:bg-transparent lg:p-0">
-              <Phone className="mt-1 size-4 shrink-0 text-primary" />
-              <span>
-                <strong className="block text-foreground">Phone</strong>
-                +1 (555) 123-4567
-              </span>
-            </p>
+              <p className="flex items-start gap-3 rounded-sm border border-border bg-card/60 p-4 text-left text-sm leading-6 text-muted-foreground transition-transform duration-500 hover:-translate-y-1 lg:border-transparent lg:bg-transparent lg:p-0">
+                <Phone className="mt-1 size-4 shrink-0 text-primary" />
+                <span>
+                  <strong className="block text-foreground">Phone</strong>
+                  +1 (555) 123-4567
+                </span>
+              </p>
             </StaggerItem>
             <StaggerItem>
-            <p className="flex items-start gap-3 rounded-sm border border-border bg-card/60 p-4 text-left text-sm leading-6 text-muted-foreground transition-transform duration-500 hover:-translate-y-1 lg:border-transparent lg:bg-transparent lg:p-0">
-              <Mail className="mt-1 size-4 shrink-0 text-primary" />
-              <span>
-                <strong className="block text-foreground">Email</strong>
-                info@bindaysdiner.com
-              </span>
-            </p>
+              <p className="flex items-start gap-3 rounded-sm border border-border bg-card/60 p-4 text-left text-sm leading-6 text-muted-foreground transition-transform duration-500 hover:-translate-y-1 lg:border-transparent lg:bg-transparent lg:p-0">
+                <Mail className="mt-1 size-4 shrink-0 text-primary" />
+                <span>
+                  <strong className="block text-foreground">Email</strong>
+                  info@bindaysdiner.com
+                </span>
+              </p>
             </StaggerItem>
             <StaggerItem>
-            <p className="flex items-start gap-3 rounded-sm border border-border bg-card/60 p-4 text-left text-sm leading-6 text-muted-foreground transition-transform duration-500 hover:-translate-y-1 lg:border-transparent lg:bg-transparent lg:p-0">
-              <MapPin className="mt-1 size-4 shrink-0 text-primary" />
-              <span>
-                <strong className="block text-foreground">Address</strong>
-                Legazpi City, Albay
-              </span>
-            </p>
+              <p className="flex items-start gap-3 rounded-sm border border-border bg-card/60 p-4 text-left text-sm leading-6 text-muted-foreground transition-transform duration-500 hover:-translate-y-1 lg:border-transparent lg:bg-transparent lg:p-0">
+                <MapPin className="mt-1 size-4 shrink-0 text-primary" />
+                <span>
+                  <strong className="block text-foreground">Address</strong>
+                  Legazpi City, Albay
+                </span>
+              </p>
             </StaggerItem>
           </StaggerContainer>
         </div>
 
         <Reveal className="mx-auto w-full max-w-2xl lg:max-w-none" y={34}>
-        <form noValidate onSubmit={handleSubmit} className="rounded-sm border border-border bg-card p-4 shadow-[var(--shadow-card)] sm:p-5 md:p-6 xl:p-8">
-          <h2 className="font-serif text-[clamp(1.8rem,5vw,2.5rem)] text-foreground">
-            Delivery Details
-          </h2>
-          <div className="mt-5 grid gap-4 sm:mt-6">
-            <label className="grid gap-2 text-sm font-medium text-foreground">
-              Full Name
-              <input
-                name="fullName"
-                required
-                aria-invalid={Boolean(fieldErrors.fullName)}
-                onChange={() => clearFieldError("fullName")}
-                className={inputClassName("fullName")}
-                placeholder="Enter your full name"
-              />
-              {fieldErrors.fullName ? <span className="text-xs font-normal text-destructive">{fieldErrors.fullName}</span> : null}
-            </label>
-            <label className="grid gap-2 text-sm font-medium text-foreground">
-              Phone
-              <input
-                name="phone"
-                required
-                aria-invalid={Boolean(fieldErrors.phone)}
-                onChange={() => clearFieldError("phone")}
-                className={inputClassName("phone")}
-                placeholder="Enter your phone number"
-              />
-              {fieldErrors.phone ? <span className="text-xs font-normal text-destructive">{fieldErrors.phone}</span> : null}
-            </label>
-            <label className="grid gap-2 text-sm font-medium text-foreground">
-              Contact Email
-              <input
-                name="email"
-                type="email"
-                required
-                autoComplete="email"
-                aria-invalid={Boolean(fieldErrors.email)}
-                onChange={() => clearFieldError("email")}
-                className={inputClassName("email")}
-                placeholder="you@example.com"
-              />
-              {fieldErrors.email ? <span className="text-xs font-normal text-destructive">{fieldErrors.email}</span> : null}
-              <span className="text-xs font-normal text-muted-foreground">We&apos;ll email your 30-minute payment link here.</span>
-            </label>
-            <label className="grid gap-2 text-sm font-medium text-foreground">
-              Delivery Address
-              <input
-                name="deliveryAddress"
-                required
-                aria-invalid={Boolean(fieldErrors.deliveryAddress)}
-                onChange={() => clearFieldError("deliveryAddress")}
-                className={inputClassName("deliveryAddress")}
-                placeholder="House number, street, barangay, city"
-              />
-              {fieldErrors.deliveryAddress ? <span className="text-xs font-normal text-destructive">{fieldErrors.deliveryAddress}</span> : null}
-            </label>
-            <label className="grid gap-2 text-sm font-medium text-foreground">
-              Landmark or Delivery Notes
-              <input
-                name="landmark"
-                className="h-11 w-full rounded-sm border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
-                placeholder="Nearby landmark, gate color, or rider instructions"
-              />
-            </label>
-            <div className="grid gap-4 sm:grid-cols-2">
+          <form
+            noValidate
+            onSubmit={handleSubmit}
+            className="rounded-sm border border-border bg-card p-4 shadow-[var(--shadow-card)] sm:p-5 md:p-6 xl:p-8"
+          >
+            <h2 className="font-serif text-[clamp(1.8rem,5vw,2.5rem)] text-foreground">
+              Delivery Details
+            </h2>
+            <div className="mt-5 grid gap-4 sm:mt-6">
               <label className="grid gap-2 text-sm font-medium text-foreground">
-                Delivery Date
-                <DatePicker
-                  value={deliveryDate}
-                  onChange={(value) => {
-                    setDeliveryDate(value);
-                    clearFieldError("deliveryDate");
-                  }}
-                  placeholder="Select delivery date"
-                  disabledDates={{ before: today }}
-                  startMonth={today}
-                  className={fieldErrors.deliveryDate ? "border-destructive ring-1 ring-destructive/30" : undefined}
+                Full Name
+                <input
+                  name="fullName"
+                  required
+                  aria-invalid={Boolean(fieldErrors.fullName)}
+                  onChange={() => clearFieldError("fullName")}
+                  className={inputClassName("fullName")}
+                  placeholder="Enter your full name"
                 />
-                {fieldErrors.deliveryDate ? <span className="text-xs font-normal text-destructive">{fieldErrors.deliveryDate}</span> : null}
+                {fieldErrors.fullName ? (
+                  <span className="text-xs font-normal text-destructive">
+                    {fieldErrors.fullName}
+                  </span>
+                ) : null}
               </label>
               <label className="grid gap-2 text-sm font-medium text-foreground">
-                Preferred Time
+                Phone
                 <input
-                  name="deliveryTime"
-                  type="time"
+                  name="phone"
                   required
-                  value={deliveryTime}
-                  aria-invalid={Boolean(fieldErrors.deliveryTime)}
-                  onChange={(event) => {
-                    setDeliveryTime(event.target.value);
-                    clearFieldError("deliveryTime");
-                  }}
-                  className={inputClassName("deliveryTime")}
+                  aria-invalid={Boolean(fieldErrors.phone)}
+                  onChange={() => clearFieldError("phone")}
+                  className={inputClassName("phone")}
+                  placeholder="Enter your phone number"
                 />
-                {fieldErrors.deliveryTime ? <span className="text-xs font-normal text-destructive">{fieldErrors.deliveryTime}</span> : null}
+                {fieldErrors.phone ? (
+                  <span className="text-xs font-normal text-destructive">
+                    {fieldErrors.phone}
+                  </span>
+                ) : null}
+              </label>
+              <label className="grid gap-2 text-sm font-medium text-foreground">
+                Contact Email
+                <input
+                  name="email"
+                  type="email"
+                  required
+                  autoComplete="email"
+                  aria-invalid={Boolean(fieldErrors.email)}
+                  onChange={() => clearFieldError("email")}
+                  className={inputClassName("email")}
+                  placeholder="you@example.com"
+                />
+                {fieldErrors.email ? (
+                  <span className="text-xs font-normal text-destructive">
+                    {fieldErrors.email}
+                  </span>
+                ) : null}
+                <span className="text-xs font-normal text-muted-foreground">
+                  We&apos;ll email your 30-minute payment link here.
+                </span>
+              </label>
+              <label className="grid gap-2 text-sm font-medium text-foreground">
+                Delivery address (Legazpi City only)
+                <input
+                  name="deliveryAddress"
+                  required
+                  aria-invalid={Boolean(fieldErrors.deliveryAddress)}
+                  onChange={() => clearFieldError("deliveryAddress")}
+                  className={inputClassName("deliveryAddress")}
+                  placeholder="House number, street, barangay"
+                />
+                {fieldErrors.deliveryAddress ? (
+                  <span className="text-xs font-normal text-destructive">
+                    {fieldErrors.deliveryAddress}
+                  </span>
+                ) : null}
+              </label>
+              <label className="grid gap-2 text-sm font-medium text-foreground">
+                Landmark or Delivery Notes
+                <input
+                  name="landmark"
+                  className="h-11 w-full rounded-sm border border-input bg-background px-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
+                  placeholder="Nearby landmark, gate color, or rider instructions"
+                />
+              </label>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="grid gap-2 text-sm font-medium text-foreground">
+                  Delivery Date
+                  <DatePicker
+                    value={deliveryDate}
+                    onChange={(value) => {
+                      setDeliveryDate(value);
+                      clearFieldError("deliveryDate");
+                    }}
+                    placeholder="Select delivery date"
+                    disabledDates={{ before: today }}
+                    startMonth={today}
+                    className={
+                      fieldErrors.deliveryDate
+                        ? "border-destructive ring-1 ring-destructive/30"
+                        : undefined
+                    }
+                  />
+                  {fieldErrors.deliveryDate ? (
+                    <span className="text-xs font-normal text-destructive">
+                      {fieldErrors.deliveryDate}
+                    </span>
+                  ) : null}
+                </label>
+                <label className="grid gap-2 text-sm font-medium text-foreground">
+                  Preferred Time
+                  <input
+                    name="deliveryTime"
+                    type="time"
+                    required
+                    value={deliveryTime}
+                    aria-invalid={Boolean(fieldErrors.deliveryTime)}
+                    onChange={(event) => {
+                      setDeliveryTime(event.target.value);
+                      clearFieldError("deliveryTime");
+                    }}
+                    className={inputClassName("deliveryTime")}
+                  />
+                  {fieldErrors.deliveryTime ? (
+                    <span className="text-xs font-normal text-destructive">
+                      {fieldErrors.deliveryTime}
+                    </span>
+                  ) : null}
+                </label>
+              </div>
+              <label className="grid gap-2 text-sm font-medium text-foreground">
+                Food or Delivery Notes
+                {items.length > 0 ? (
+                  <div className="rounded-sm border border-border bg-background p-3 sm:p-4">
+                    <p className="text-xs font-bold uppercase tracking-[0.08em] text-primary">
+                      Selected meals
+                    </p>
+                    <div className="mt-3 space-y-2">
+                      {items.map((item) => (
+                        <div
+                          key={item.id}
+                          className="grid grid-cols-[1fr_auto] items-start gap-3 text-sm"
+                        >
+                          <span className="min-w-0 text-muted-foreground">
+                            {item.quantity}x {item.name}
+                          </span>
+                          <span className="shrink-0 font-semibold text-foreground">
+                            {item.price}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
+                      <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                        {totalQuantity} item{totalQuantity === 1 ? "" : "s"}
+                      </span>
+                      <span className="font-serif text-2xl text-foreground">
+                        P{subtotal.toLocaleString("en-PH")}
+                      </span>
+                    </div>
+                    <div className="mt-2 flex justify-between text-sm">
+                      <span>Delivery fee (Legazpi City)</span>
+                      <span>₱{DELIVERY_FEE_PESOS}</span>
+                    </div>
+                    <div className="mt-2 flex justify-between font-semibold">
+                      <span>Total to pay</span>
+                      <span>
+                        ₱
+                        {(subtotal + DELIVERY_FEE_PESOS).toLocaleString(
+                          "en-PH",
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                ) : null}
+                <textarea
+                  name="notes"
+                  value={notes}
+                  onChange={(event) => {
+                    setNotes(event.target.value);
+                    setNotesEdited(true);
+                  }}
+                  className="min-h-32 w-full rounded-sm border border-input bg-background px-3 py-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
+                  placeholder="Any food request, delivery timing note, or special instruction?"
+                />
               </label>
             </div>
-            <label className="grid gap-2 text-sm font-medium text-foreground">
-              Food or Delivery Notes
-              {items.length > 0 ? (
-                <div className="rounded-sm border border-border bg-background p-3 sm:p-4">
-                  <p className="text-xs font-bold uppercase tracking-[0.08em] text-primary">
-                    Selected meals
-                  </p>
-                  <div className="mt-3 space-y-2">
-                    {items.map((item) => (
-                      <div
-                        key={item.id}
-                        className="grid grid-cols-[1fr_auto] items-start gap-3 text-sm"
-                      >
-                        <span className="min-w-0 text-muted-foreground">
-                          {item.quantity}x {item.name}
-                        </span>
-                        <span className="shrink-0 font-semibold text-foreground">
-                          {item.price}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
-                    <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-                      {totalQuantity} item{totalQuantity === 1 ? "" : "s"}
-                    </span>
-                    <span className="font-serif text-2xl text-foreground">
-                      P{subtotal.toLocaleString("en-PH")}
-                    </span>
-                  </div>
-                </div>
-              ) : null}
-              <textarea
-                name="notes"
-                value={notes}
-                onChange={(event) => {
-                  setNotes(event.target.value);
-                  setNotesEdited(true);
-                }}
-                className="min-h-32 w-full rounded-sm border border-input bg-background px-3 py-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
-                placeholder="Any food request, delivery timing note, or special instruction?"
+            <p className="mt-4 text-sm text-muted-foreground">
+              Minimum food subtotal: ₱500, plus ₱50 delivery within Legazpi City
+              only. For smaller orders, use Foodpanda.
+            </p>
+            <label className="mt-4 grid gap-2 text-sm font-semibold">
+              Delivery city
+              <input
+                readOnly
+                value={DELIVERY_CITY}
+                className="h-11 rounded-sm border border-input bg-muted px-3"
               />
             </label>
-          </div>
-          <Button type="submit" disabled={isPending} className="mt-6 min-h-12 w-full whitespace-normal rounded-sm px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em]">
-            {isPending ? "Sending request..." : "Send Delivery Request"}
-          </Button>
-        </form>
+            {recaptcha}
+            <Button
+              type="submit"
+              onClick={(event) => {
+                if (!meetsMinimumOrder(subtotal)) {
+                  event.preventDefault();
+                  setMinimumAlertOpen(true);
+                }
+              }}
+              disabled={isPending}
+              className="mt-6 min-h-12 w-full whitespace-normal rounded-sm px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em]"
+            >
+              {isPending ? "Sending request..." : "Send Delivery Request"}
+            </Button>
+          </form>
         </Reveal>
       </div>
 
@@ -394,25 +515,27 @@ export function ReservationPage() {
 
           return (
             <StaggerItem key={benefit.title}>
-            <div
-              className="flex flex-col items-center gap-4 py-6 text-center md:px-5 xl:flex-row xl:text-left"
-            >
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-brand-gold-soft text-secondary">
-                <Icon className="size-6" />
-              </span>
-              <div className="min-w-0">
-                <h2 className="text-sm font-bold uppercase tracking-[0.08em] text-foreground">
-                  {benefit.title}
-                </h2>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  {benefit.description}
-                </p>
+              <div className="flex flex-col items-center gap-4 py-6 text-center md:px-5 xl:flex-row xl:text-left">
+                <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-brand-gold-soft text-secondary">
+                  <Icon className="size-6" />
+                </span>
+                <div className="min-w-0">
+                  <h2 className="text-sm font-bold uppercase tracking-[0.08em] text-foreground">
+                    {benefit.title}
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {benefit.description}
+                  </p>
+                </div>
               </div>
-            </div>
             </StaggerItem>
           );
         })}
       </StaggerContainer>
+      <MinimumOrderAlert
+        open={minimumAlertOpen}
+        onOpenChange={setMinimumAlertOpen}
+      />
     </section>
   );
 }

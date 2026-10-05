@@ -18,7 +18,9 @@
     "db:sync-service-knowledge": "tsx scripts/sync-service-knowledge.ts",
     "test:loyalty": "tsx --test tests/loyalty-progress.test.ts",
     "db:fresh": "tsx scripts/reset-db.ts && drizzle-kit push --force && pnpm db:generate && pnpm db:seed",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "test:security": "tsx --test tests/security.test.ts",
+    "db:migrate:delivery": "tsx scripts/migrate-delivery-fee.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1079.0",
@@ -32,17 +34,18 @@
     "drizzle-orm": "1.0.0-rc.4",
     "lucide-react": "^1.23.0",
     "motion": "^12.42.2",
-    "next": "16.2.10",
-    "nodemailer": "^9.0.5",
+    "next": "16.3.6",
+    "nodemailer": "^10.0.14",
     "openai": "^6.46.0",
     "qr-code-styling": "1.7.1",
     "react": "19.2.4",
     "react-day-picker": "^10.0.1",
     "react-dom": "19.2.4",
-    "shadcn": "^4.13.0",
+    "sharp": "0.35.4",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.6.0",
     "tw-animate-css": "^1.4.0",
+    "write-excel-file": "^4.1.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -52,6 +55,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "drizzle-kit": "1.0.0-rc.4",
+    "shadcn": "4.13.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.0",
     "typescript": "^5"

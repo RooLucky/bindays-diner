@@ -1,5 +1,27 @@
 "use client";
 
+import { Textarea } from "@/components/ui/textarea";
+
+import { Input } from "@/components/ui/input";
+
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
+
+import { AdminPanel } from "@/components/admin/AdminPanel";
+
+import { AdminDialogPopup as DialogPopup } from "@/components/admin/AdminDialog";
+
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { DeleteConfirmationDialog } from "@/components/admin/DeleteConfirmationDialog";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
   Check,
@@ -12,6 +34,7 @@ import {
   Plus,
   RefreshCcw,
   Save,
+  Search,
   Trash2,
   X,
 } from "lucide-react";
@@ -23,7 +46,6 @@ import {
   DialogBackdrop,
   DialogClose,
   DialogDescription,
-  DialogPopup,
   DialogPortal,
   DialogTitle,
   DialogViewport,
@@ -81,6 +103,11 @@ export function ManagementTable({
   const [pageSize, setPageSize] = useState(10);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState("");
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] =
+    useState<ManagementItemResponse | null>(null);
 
   const endpoint = useMemo(
     () => `/api/admin/management/${category}`,
@@ -88,39 +115,47 @@ export function ManagementTable({
   );
 
   async function loadData() {
-    setPending(true);
-    setMessage("");
+    try {
+      setPending(true);
+      setMessage("");
 
-    const response = await fetch(endpoint);
-    const data = (await response.json()) as ManagementPayload & {
-      error?: string;
-    };
+      const response = await fetch(endpoint);
+      const data = (await response.json()) as ManagementPayload & {
+        error?: string;
+      };
 
-    setPending(false);
+      if (!response.ok) {
+        setMessage(data.error ?? "Unable to load management data.");
+        return;
+      }
 
-    if (!response.ok) {
-      setMessage(data.error ?? "Unable to load management data.");
-      return;
+      setPayload(data);
+      setCategoryForm(data.category);
+      setCurrentPage(1);
+    } catch {
+      setMessage("Unable to load management data. Please try again.");
+    } finally {
+      setPending(false);
     }
-
-    setPayload(data);
-    setCategoryForm(data.category);
-    setCurrentPage(1);
   }
 
   async function loadItemCategories() {
+    try {
       const response = await fetch("/api/admin/management/item-categories");
       const data = (await response.json()) as {
-      categories?: ManagementItemCategoryResponse[];
-      error?: string;
-    };
+        categories?: ManagementItemCategoryResponse[];
+        error?: string;
+      };
 
-    if (!response.ok || !data.categories) {
-      toast.error(data.error ?? "Unable to load item categories.");
-      return;
+      if (!response.ok || !data.categories) {
+        toast.error(data.error ?? "Unable to load item categories.");
+        return;
+      }
+
+      setItemCategories(data.categories);
+    } catch {
+      toast.error("Unable to load item categories. Please try again.");
     }
-
-    setItemCategories(data.categories);
   }
 
   useEffect(() => {
@@ -129,17 +164,29 @@ export function ManagementTable({
   }, [endpoint]);
 
   const allItems = payload?.items ?? [];
-  const totalItems = allItems.length;
+  const filteredItems = allItems.filter((item) => {
+    const matchesSearch = `${item.name} ${item.description} ${item.tag ?? ""}`
+      .toLowerCase()
+      .includes(query.trim().toLowerCase());
+    return (
+      matchesSearch &&
+      (statusFilter === "all" ||
+        (statusFilter === "active" ? item.isActive : !item.isActive))
+    );
+  });
+  const totalItems = filteredItems.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   const pageStartIndex = totalItems === 0 ? 0 : (currentPage - 1) * pageSize;
   const pageEndIndex = Math.min(pageStartIndex + pageSize, totalItems);
   const paginatedItems = useMemo(
-    () => allItems.slice(pageStartIndex, pageEndIndex),
-    [allItems, pageEndIndex, pageStartIndex],
+    () => filteredItems.slice(pageStartIndex, pageEndIndex),
+    [filteredItems, pageEndIndex, pageStartIndex],
   );
   const selectedTagIsCustom =
     itemForm.tag.length > 0 &&
-    !itemCategories.some((categoryOption) => categoryOption.name === itemForm.tag);
+    !itemCategories.some(
+      (categoryOption) => categoryOption.name === itemForm.tag,
+    );
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -185,125 +232,126 @@ export function ManagementTable({
   }
 
   async function saveCategory(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+    try {
+      event.preventDefault();
 
-    if (!categoryForm) {
-      return;
-    }
+      if (!categoryForm) {
+        return;
+      }
 
-    const form = event.currentTarget;
-    const formData = new FormData(form);
+      const form = event.currentTarget;
+      const formData = new FormData(form);
 
-    for (const key of [
-      "eyebrow",
-      "title",
-      "description",
-      "ctaLabel",
-      "ctaHref",
-      "heroAlt",
-      "badge",
-    ]) {
-      formData.set(
-        key,
-        String(categoryForm[key as keyof ManagementCategoryResponse] ?? ""),
+      for (const key of [
+        "eyebrow",
+        "title",
+        "description",
+        "ctaLabel",
+        "ctaHref",
+        "heroAlt",
+        "badge",
+      ]) {
+        formData.set(
+          key,
+          String(categoryForm[key as keyof ManagementCategoryResponse] ?? ""),
+        );
+      }
+
+      setPending(true);
+      const response = await fetch(endpoint, {
+        method: "PATCH",
+        body: formData,
+      });
+      const data = (await response.json()) as {
+        category?: ManagementCategoryResponse;
+        error?: string;
+      };
+
+      if (!response.ok || !data.category) {
+        toast.error(data.error ?? "Unable to save page content.");
+        return;
+      }
+
+      setPayload((current) =>
+        current ? { ...current, category: data.category! } : current,
       );
+      setCategoryForm(data.category);
+      form.reset();
+      setPageContentOpen(false);
+      toast.success("Page content saved.");
+    } catch {
+      toast.error("Unable to save page content. Please try again.");
+    } finally {
+      setPending(false);
     }
-
-    setPending(true);
-    const response = await fetch(endpoint, {
-      method: "PATCH",
-      body: formData,
-    });
-    const data = (await response.json()) as {
-      category?: ManagementCategoryResponse;
-      error?: string;
-    };
-    setPending(false);
-
-    if (!response.ok || !data.category) {
-      toast.error(data.error ?? "Unable to save page content.");
-      return;
-    }
-
-    setPayload((current) =>
-      current ? { ...current, category: data.category! } : current,
-    );
-    setCategoryForm(data.category);
-    form.reset();
-    setPageContentOpen(false);
-    toast.success("Page content saved.");
   }
 
   async function saveItem(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+    try {
+      event.preventDefault();
 
-    const form = event.currentTarget;
-    const formData = new FormData(form);
+      const form = event.currentTarget;
+      const formData = new FormData(form);
 
-    Object.entries(itemForm).forEach(([key, value]) => {
-      formData.set(key, String(value));
-    });
+      Object.entries(itemForm).forEach(([key, value]) => {
+        formData.set(key, String(value));
+      });
 
-    const url = editingItem
-      ? `${endpoint}/items/${editingItem.id}`
-      : `${endpoint}/items`;
+      const url = editingItem
+        ? `${endpoint}/items/${editingItem.id}`
+        : `${endpoint}/items`;
 
-    setPending(true);
-    const response = await fetch(url, {
-      method: editingItem ? "PATCH" : "POST",
-      body: formData,
-    });
-    const data = (await response.json()) as {
-      item?: ManagementItemResponse;
-      error?: string;
-    };
-    setPending(false);
+      setPending(true);
+      const response = await fetch(url, {
+        method: editingItem ? "PATCH" : "POST",
+        body: formData,
+      });
+      const data = (await response.json()) as {
+        item?: ManagementItemResponse;
+        error?: string;
+      };
 
-    if (!response.ok || !data.item) {
-      toast.error(data.error ?? "Unable to save item.");
-      return;
-    }
-
-    setPayload((current) => {
-      if (!current) {
-        return current;
+      if (!response.ok || !data.item) {
+        toast.error(data.error ?? "Unable to save item.");
+        return;
       }
 
-      const items = editingItem
-        ? current.items.map((item) =>
-            item.id === data.item!.id ? data.item! : item,
-          )
-        : [...current.items, data.item!];
+      setPayload((current) => {
+        if (!current) {
+          return current;
+        }
 
-      return {
-        ...current,
-        items: items.sort((a, b) => a.sortOrder - b.sortOrder),
-      };
-    });
+        const items = editingItem
+          ? current.items.map((item) =>
+              item.id === data.item!.id ? data.item! : item,
+            )
+          : [...current.items, data.item!];
 
-    form.reset();
-    resetItemForm();
-    setItemModalOpen(false);
-    toast.success(editingItem ? "Item updated." : "Item created.");
+        return {
+          ...current,
+          items: items.sort((a, b) => a.sortOrder - b.sortOrder),
+        };
+      });
+
+      form.reset();
+      setItemModalOpen(false);
+      toast.success(editingItem ? "Item updated." : "Item created.");
+    } catch {
+      toast.error("Unable to save this item. Please try again.");
+    } finally {
+      setPending(false);
+    }
   }
 
   async function deleteItem(item: ManagementItemResponse) {
-    const confirmed = window.confirm(`Delete ${item.name}?`);
-
-    if (!confirmed) {
-      return;
-    }
-
-    setPending(true);
     const response = await fetch(`${endpoint}/items/${item.id}`, {
       method: "DELETE",
     });
     const data = (await response.json()) as { error?: string };
-    setPending(false);
 
     if (!response.ok) {
       toast.error(data.error ?? "Unable to delete item.");
-      return;
+      return false;
     }
 
     setPayload((current) =>
@@ -317,20 +365,15 @@ export function ManagementTable({
         : current,
     );
     toast.success("Item deleted.");
+    return true;
   }
 
   return (
-    <div className="grid gap-8">
-      <section className="flex items-start justify-between gap-4">
-        <div>
-          <p className="font-serif text-2xl italic text-brand-script">
-            Management
-          </p>
-          <h1 className="mt-2 font-serif text-[clamp(2.25rem,7vw,3.75rem)] text-foreground">{title}</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Edit the public page copy and manage the rows shown on this section.
-          </p>
-        </div>
+    <div className="grid gap-6">
+      <AdminPageHeader
+        title={title}
+        description="Manage menu items, pricing, and the content guests see on this page."
+      >
         <div>
           <Popover open={actionsMenuOpen} onOpenChange={setActionsMenuOpen}>
             <PopoverTrigger
@@ -339,7 +382,7 @@ export function ManagementTable({
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="rounded-sm bg-transparent sm:hidden"
+                  className="rounded-lg bg-transparent sm:hidden"
                   aria-label="Open page actions"
                 />
               }
@@ -353,7 +396,7 @@ export function ManagementTable({
                     <Button
                       type="button"
                       variant="ghost"
-                      className="w-full justify-start rounded-sm"
+                      className="w-full justify-start rounded-lg"
                       disabled={pending}
                       onClick={() => {
                         setActionsMenuOpen(false);
@@ -366,7 +409,7 @@ export function ManagementTable({
                     <Button
                       type="button"
                       variant="ghost"
-                      className="w-full justify-start rounded-sm"
+                      className="w-full justify-start rounded-lg"
                       disabled={pending || !categoryForm}
                       onClick={() => {
                         setActionsMenuOpen(false);
@@ -378,7 +421,7 @@ export function ManagementTable({
                     </Button>
                     <Button
                       type="button"
-                      className="w-full justify-start rounded-sm"
+                      className="w-full justify-start rounded-lg"
                       disabled={pending}
                       onClick={() => {
                         setActionsMenuOpen(false);
@@ -394,53 +437,58 @@ export function ManagementTable({
             </PopoverPortal>
           </Popover>
           <div className="hidden gap-2 sm:flex">
-          <Button
-            type="button"
-            variant="outline"
-            className="rounded-sm bg-transparent"
-            disabled={pending}
-            onClick={() => void loadData()}
-          >
-            <RefreshCcw className="size-4" />
-            Refresh
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="rounded-sm bg-transparent"
-            disabled={pending || !categoryForm}
-            onClick={() => setPageContentOpen(true)}
-          >
-            <Edit3 className="size-4" />
-            Page Content
-          </Button>
-          <Button
-            type="button"
-            className="rounded-sm"
-            disabled={pending}
-            onClick={openCreateItem}
-          >
-            <Plus className="size-4" />
-            Add Item
-          </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-lg bg-transparent"
+              disabled={pending}
+              onClick={() => void loadData()}
+            >
+              <RefreshCcw className="size-4" />
+              Refresh
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-lg bg-transparent"
+              disabled={pending || !categoryForm}
+              onClick={() => setPageContentOpen(true)}
+            >
+              <Edit3 className="size-4" />
+              Page Content
+            </Button>
+            <Button
+              type="button"
+              className="rounded-lg"
+              disabled={pending}
+              onClick={openCreateItem}
+            >
+              <Plus className="size-4" />
+              Add Item
+            </Button>
           </div>
         </div>
-      </section>
+      </AdminPageHeader>
 
       {message ? (
-        <p className="rounded-sm border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {message}
         </p>
       ) : null}
 
-      <Dialog open={pageContentOpen} onOpenChange={setPageContentOpen}>
+      <Dialog
+        open={pageContentOpen}
+        onOpenChange={(open) => {
+          if (!pending) setPageContentOpen(open);
+        }}
+      >
         <DialogPortal>
           <DialogBackdrop />
           <DialogViewport>
             <DialogPopup className="max-w-4xl">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <DialogTitle className="font-serif text-3xl text-foreground">
+                  <DialogTitle className="text-lg font-semibold tracking-tight text-foreground">
                     Page Content
                   </DialogTitle>
                   <DialogDescription className="mt-1 text-sm text-muted-foreground">
@@ -448,7 +496,7 @@ export function ManagementTable({
                   </DialogDescription>
                 </div>
                 <DialogClose
-                  className="inline-flex size-9 shrink-0 items-center justify-center rounded-sm border border-border bg-background text-foreground"
+                  className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-border bg-background text-foreground"
                   aria-label="Close page content modal"
                 >
                   <X className="size-4" />
@@ -460,93 +508,90 @@ export function ManagementTable({
                   <div className="grid gap-4 md:grid-cols-2">
                     <label className="grid gap-2 text-sm font-medium text-foreground">
                       Eyebrow
-                      <input
+                      <Input
                         value={categoryForm.eyebrow}
                         onChange={(event) =>
                           updateCategoryField("eyebrow", event.target.value)
                         }
-                        className="h-10 rounded-sm border border-border bg-background px-3 text-sm outline-none focus:border-primary"
+                        className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-primary"
                       />
                     </label>
                     <label className="grid gap-2 text-sm font-medium text-foreground">
                       Title
-                      <input
+                      <Input
                         value={categoryForm.title}
                         onChange={(event) =>
                           updateCategoryField("title", event.target.value)
                         }
-                        className="h-10 rounded-sm border border-border bg-background px-3 text-sm outline-none focus:border-primary"
+                        className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-primary"
                       />
                     </label>
                     <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
                       Description
-                      <textarea
+                      <Textarea
                         value={categoryForm.description}
                         onChange={(event) =>
-                          updateCategoryField(
-                            "description",
-                            event.target.value,
-                          )
+                          updateCategoryField("description", event.target.value)
                         }
                         rows={3}
-                        className="rounded-sm border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+                        className="rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
                       />
                     </label>
                     <label className="grid gap-2 text-sm font-medium text-foreground">
                       CTA Label
-                      <input
+                      <Input
                         value={categoryForm.ctaLabel}
                         onChange={(event) =>
                           updateCategoryField("ctaLabel", event.target.value)
                         }
-                        className="h-10 rounded-sm border border-border bg-background px-3 text-sm outline-none focus:border-primary"
+                        className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-primary"
                       />
                     </label>
                     <label className="grid gap-2 text-sm font-medium text-foreground">
                       CTA Link
-                      <input
+                      <Input
                         value={categoryForm.ctaHref}
                         onChange={(event) =>
                           updateCategoryField("ctaHref", event.target.value)
                         }
-                        className="h-10 rounded-sm border border-border bg-background px-3 text-sm outline-none focus:border-primary"
+                        className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-primary"
                       />
                     </label>
                     <label className="grid gap-2 text-sm font-medium text-foreground">
                       Hero Alt Text
-                      <input
+                      <Input
                         value={categoryForm.heroAlt}
                         onChange={(event) =>
                           updateCategoryField("heroAlt", event.target.value)
                         }
-                        className="h-10 rounded-sm border border-border bg-background px-3 text-sm outline-none focus:border-primary"
+                        className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-primary"
                       />
                     </label>
                     <label className="grid gap-2 text-sm font-medium text-foreground">
                       Badge
-                      <input
+                      <Input
                         value={categoryForm.badge ?? ""}
                         onChange={(event) =>
                           updateCategoryField("badge", event.target.value)
                         }
-                        className="h-10 rounded-sm border border-border bg-background px-3 text-sm outline-none focus:border-primary"
+                        className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-primary"
                       />
                     </label>
                     <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
                       Replace Hero Image
-                      <input
+                      <Input
                         name="heroImage"
                         type="file"
                         accept="image/*"
-                        className="rounded-sm border border-border bg-background px-3 py-2 text-sm"
+                        className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
                       />
                     </label>
                   </div>
-                  <div className="flex flex-col gap-4 rounded-sm border border-border bg-background p-3 sm:flex-row sm:items-center">
+                  <div className="flex flex-col gap-4 rounded-lg border border-border bg-background p-3 sm:flex-row sm:items-center">
                     <img
                       src={categoryForm.heroImageUrl}
                       alt={categoryForm.heroAlt}
-                      className="aspect-[1.7/1] w-full rounded-sm object-cover sm:w-36"
+                      className="aspect-[1.7/1] w-full rounded-lg object-cover sm:w-36"
                     />
                     <p className="break-all text-xs text-muted-foreground">
                       {categoryForm.heroImageUrl}
@@ -555,11 +600,15 @@ export function ManagementTable({
                   <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                     <DialogClose
                       type="button"
-                      className="inline-flex h-10 items-center justify-center rounded-sm border border-border bg-background px-4 text-sm font-medium text-foreground hover:bg-muted"
+                      className="inline-flex h-10 items-center justify-center rounded-lg border border-border bg-background px-4 text-sm font-medium text-foreground hover:bg-muted"
                     >
                       Cancel
                     </DialogClose>
-                    <Button type="submit" disabled={pending} className="rounded-sm">
+                    <Button
+                      type="submit"
+                      disabled={pending}
+                      className="rounded-lg"
+                    >
                       <Save className="size-4" />
                       Save Page
                     </Button>
@@ -574,10 +623,10 @@ export function ManagementTable({
       <Dialog
         open={itemModalOpen}
         onOpenChange={(open) => {
-          setItemModalOpen(open);
-          if (!open) {
-            resetItemForm();
-          }
+          if (!pending) setItemModalOpen(open);
+        }}
+        onOpenChangeComplete={(open) => {
+          if (!open) resetItemForm();
         }}
       >
         <DialogPortal>
@@ -586,7 +635,7 @@ export function ManagementTable({
             <DialogPopup>
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <DialogTitle className="font-serif text-3xl text-foreground">
+                  <DialogTitle className="text-lg font-semibold tracking-tight text-foreground">
                     {editingItem ? "Edit Item" : "Create Item"}
                   </DialogTitle>
                   <DialogDescription className="mt-1 text-sm text-muted-foreground">
@@ -594,34 +643,37 @@ export function ManagementTable({
                   </DialogDescription>
                 </div>
                 <DialogClose
-                  className="inline-flex size-9 shrink-0 items-center justify-center rounded-sm border border-border bg-background text-foreground"
+                  className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-border bg-background text-foreground"
                   aria-label="Close item modal"
                 >
                   <X className="size-4" />
                 </DialogClose>
               </div>
 
-              <form onSubmit={saveItem} className="mt-6 grid gap-4 md:grid-cols-6">
+              <form
+                onSubmit={saveItem}
+                className="mt-6 grid gap-4 md:grid-cols-6"
+              >
                 <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-3">
                   Name
-                  <input
+                  <Input
                     value={itemForm.name}
                     required
                     onChange={(event) =>
                       updateItemField("name", event.target.value)
                     }
-                    className="h-10 rounded-sm border border-border bg-background px-3 text-sm outline-none focus:border-primary"
+                    className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-primary"
                   />
                 </label>
                 <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-3">
                   Price
-                  <input
+                  <Input
                     value={itemForm.price}
                     required
                     onChange={(event) =>
                       updateItemField("price", event.target.value)
                     }
-                    className="h-10 rounded-sm border border-border bg-background px-3 text-sm outline-none focus:border-primary"
+                    className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-primary"
                   />
                 </label>
                 <div className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
@@ -640,7 +692,7 @@ export function ManagementTable({
                         <Button
                           type="button"
                           variant="outline"
-                          className="h-10 w-full justify-between rounded-sm bg-background px-3 text-left text-sm font-normal hover:bg-muted"
+                          className="h-10 w-full justify-between rounded-lg bg-background px-3 text-left text-sm font-normal hover:bg-muted"
                         />
                       }
                     >
@@ -652,7 +704,13 @@ export function ManagementTable({
                     <PopoverPortal>
                       <PopoverPositioner side="bottom" align="start">
                         <PopoverPopup className="w-[min(22rem,calc(100vw-3rem))] max-h-64 overflow-y-auto p-1">
-                          {["", ...(selectedTagIsCustom ? [itemForm.tag] : []), ...itemCategories.map((categoryOption) => categoryOption.name)].map((categoryName) => {
+                          {[
+                            "",
+                            ...(selectedTagIsCustom ? [itemForm.tag] : []),
+                            ...itemCategories.map(
+                              (categoryOption) => categoryOption.name,
+                            ),
+                          ].map((categoryName) => {
                             const isSelected = itemForm.tag === categoryName;
                             const label = categoryName || "No category";
 
@@ -664,10 +722,12 @@ export function ManagementTable({
                                   updateItemField("tag", categoryName);
                                   setCategoryPickerOpen(false);
                                 }}
-                                className="flex w-full items-center justify-between gap-3 rounded-sm px-3 py-2.5 text-left text-sm text-foreground outline-none transition-colors hover:bg-muted focus-visible:bg-muted"
+                                className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-foreground outline-none transition-colors hover:bg-muted focus-visible:bg-muted"
                               >
                                 <span className="truncate">{label}</span>
-                                {isSelected ? <Check className="size-4 shrink-0 text-primary" /> : null}
+                                {isSelected ? (
+                                  <Check className="size-4 shrink-0 text-primary" />
+                                ) : null}
                               </button>
                             );
                           })}
@@ -678,65 +738,68 @@ export function ManagementTable({
                 </div>
                 <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
                   Sort
-                  <input
+                  <Input
                     value={itemForm.sortOrder}
                     type="number"
                     onChange={(event) =>
                       updateItemField("sortOrder", event.target.value)
                     }
-                    className="h-10 rounded-sm border border-border bg-background px-3 text-sm outline-none focus:border-primary"
+                    className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-primary"
                   />
                 </label>
-                <label className="flex items-center gap-2 self-end rounded-sm border border-border bg-background px-3 py-2 text-sm font-medium text-foreground md:col-span-2">
-                  <input
-                    type="checkbox"
+                <label className="flex items-center gap-2 self-end rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground md:col-span-2">
+                  <Switch
                     checked={itemForm.isActive}
-                    onChange={(event) =>
-                      updateItemField("isActive", event.target.checked)
+                    onCheckedChange={(checked) =>
+                      updateItemField("isActive", checked)
                     }
-                    className="size-4"
+                    size="sm"
                   />
                   Active
                 </label>
                 <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-6">
                   Description
-                  <textarea
+                  <Textarea
                     value={itemForm.description}
                     required
                     rows={4}
                     onChange={(event) =>
                       updateItemField("description", event.target.value)
                     }
-                    className="rounded-sm border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+                    className="rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
                   />
                 </label>
                 <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-3">
                   Image Alt Text
-                  <input
+                  <Input
                     value={itemForm.imageAlt}
                     onChange={(event) =>
                       updateItemField("imageAlt", event.target.value)
                     }
-                    className="h-10 rounded-sm border border-border bg-background px-3 text-sm outline-none focus:border-primary"
+                    className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-primary"
                   />
                 </label>
                 <label className="grid gap-2 text-sm font-medium text-foreground md:col-span-3">
                   Image
-                  <input
+                  <Input
                     name="image"
                     type="file"
                     accept="image/*"
-                    className="rounded-sm border border-border bg-background px-3 py-2 text-sm"
+                    className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
                   />
                 </label>
                 <div className="flex flex-col-reverse gap-3 md:col-span-6 sm:flex-row sm:justify-end">
                   <DialogClose
                     type="button"
-                    className="inline-flex h-10 items-center justify-center rounded-sm border border-border bg-background px-4 text-sm font-medium text-foreground hover:bg-muted"
+                    className="inline-flex h-10 items-center justify-center rounded-lg border border-border bg-background px-4 text-sm font-medium text-foreground hover:bg-muted"
                   >
                     Cancel
                   </DialogClose>
-                  <Button type="submit" disabled={pending} className="h-10 rounded-sm">
+                  <Button
+                    type="submit"
+                    disabled={pending}
+                    className="h-10 rounded-lg"
+                  >
                     {editingItem ? (
                       <Save className="size-4" />
                     ) : (
@@ -751,13 +814,28 @@ export function ManagementTable({
         </DialogPortal>
       </Dialog>
 
-      <section className="overflow-hidden rounded-sm border border-border bg-card shadow-[var(--shadow-card)]">
+      <DeleteConfirmationDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title={`Delete ${deleteTarget?.name ?? "item"}?`}
+        description="This item will be removed from the menu. This action cannot be undone."
+        onConfirm={() =>
+          deleteTarget ? deleteItem(deleteTarget) : Promise.resolve(false)
+        }
+      />
+
+      <AdminPanel className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--shadow-card)]">
         <div className="flex flex-col justify-between gap-4 border-b border-border px-5 py-4 md:flex-row md:items-center">
           <div>
-            <h2 className="font-serif text-3xl text-foreground">Items</h2>
+            <h2 className="flex items-center gap-2 text-base font-semibold text-foreground">
+              Menu items{" "}
+              <Badge variant="secondary" className="rounded-md">
+                {allItems.length}
+              </Badge>
+            </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Showing {totalItems === 0 ? 0 : pageStartIndex + 1}-{pageEndIndex} of{" "}
-              {totalItems} fetched rows
+              Showing {totalItems === 0 ? 0 : pageStartIndex + 1}-{pageEndIndex}{" "}
+              of {totalItems} items
             </p>
           </div>
           <label className="flex items-center gap-2 text-sm font-medium text-foreground">
@@ -768,7 +846,7 @@ export function ManagementTable({
                 setPageSize(Number(event.target.value));
                 setCurrentPage(1);
               }}
-              className="h-10 rounded-sm border border-border bg-background px-3 text-sm outline-none focus:border-primary"
+              className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-primary"
             >
               {pageSizeOptions.map((option) => (
                 <option key={option} value={option}>
@@ -778,56 +856,98 @@ export function ManagementTable({
             </select>
           </label>
         </div>
+        <div className="flex flex-col gap-3 border-b px-5 py-3 sm:flex-row sm:items-center">
+          <label className="relative flex-1 sm:max-w-sm">
+            <span className="sr-only">Search menu items</span>
+            <Search className="pointer-events-none absolute left-3 top-1/2 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(event) => {
+                setQuery(event.target.value);
+                setCurrentPage(1);
+              }}
+              placeholder="Search name or category…"
+              className="rounded-lg border-border bg-background pl-9"
+            />
+          </label>
+          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+            Status
+            <select
+              value={statusFilter}
+              onChange={(event) => {
+                setStatusFilter(event.target.value);
+                setCurrentPage(1);
+              }}
+              className="h-9 rounded-lg border bg-background px-3 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <option value="all">All items</option>
+              <option value="active">Active</option>
+              <option value="hidden">Hidden</option>
+            </select>
+          </label>
+        </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[860px] border-collapse text-sm">
-            <thead className="bg-muted/60 text-left text-xs uppercase tracking-[0.08em] text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3">Image</th>
-                <th className="px-4 py-3">Name</th>
-                <th className="px-4 py-3">Price</th>
-                <th className="px-4 py-3">Category</th>
-                <th className="px-4 py-3">Sort</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table className="w-full min-w-[860px] border-collapse text-sm">
+            <TableHeader className="bg-muted/60 text-left text-xs font-medium text-muted-foreground">
+              <TableRow>
+                <TableHead className="px-4 py-3">Image</TableHead>
+                <TableHead className="px-4 py-3">Name</TableHead>
+                <TableHead className="px-4 py-3">Price</TableHead>
+                <TableHead className="px-4 py-3">Category</TableHead>
+                <TableHead className="px-4 py-3">Sort</TableHead>
+                <TableHead className="px-4 py-3">Status</TableHead>
+                <TableHead className="px-4 py-3 text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {totalItems ? (
                 paginatedItems.map((item) => (
-                  <tr key={item.id} className="border-t border-border">
-                    <td className="px-4 py-3">
+                  <TableRow key={item.id} className="border-t border-border">
+                    <TableCell className="px-4 py-3">
                       <img
                         src={item.imageUrl}
                         alt={item.imageAlt}
-                        className="aspect-[1.6/1] w-24 rounded-sm object-cover"
+                        className="aspect-[1.6/1] w-24 rounded-lg object-cover"
                       />
-                    </td>
-                    <td className="max-w-xs px-4 py-3">
+                    </TableCell>
+                    <TableCell className="max-w-xs whitespace-normal px-4 py-3">
                       <p className="font-semibold text-foreground">
                         {item.name}
                       </p>
                       <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">
                         {item.description}
                       </p>
-                    </td>
-                    <td className="px-4 py-3 font-semibold text-foreground">
+                    </TableCell>
+                    <TableCell className="px-4 py-3 font-semibold text-foreground">
                       {item.price}
-                    </td>
-                    <td className="px-4 py-3">{item.tag ?? "-"}</td>
-                    <td className="px-4 py-3">{item.sortOrder}</td>
-                    <td className="px-4 py-3">
-                      <span className="rounded-full bg-muted px-3 py-1 text-xs font-semibold text-foreground">
+                    </TableCell>
+                    <TableCell className="px-4 py-3">
+                      {item.tag ?? "-"}
+                    </TableCell>
+                    <TableCell className="px-4 py-3">
+                      {item.sortOrder}
+                    </TableCell>
+                    <TableCell className="px-4 py-3">
+                      <Badge
+                        variant="secondary"
+                        className={
+                          item.isActive
+                            ? "rounded-md bg-brand-gold-soft text-brand-olive"
+                            : "rounded-md bg-muted text-muted-foreground"
+                        }
+                      >
                         {item.isActive ? "Active" : "Hidden"}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="px-4 py-3">
                       <div className="flex justify-end gap-2">
                         <Button
                           type="button"
                           variant="outline"
                           size="icon-sm"
-                          className="rounded-sm bg-transparent"
+                          className="rounded-lg bg-transparent"
                           onClick={() => startEdit(item)}
+                          aria-label={`Edit ${item.name}`}
                           title="Edit item"
                         >
                           <Edit3 className="size-4" />
@@ -836,29 +956,37 @@ export function ManagementTable({
                           type="button"
                           variant="destructive"
                           size="icon-sm"
-                          className="rounded-sm"
-                          onClick={() => void deleteItem(item)}
+                          className="rounded-lg"
+                          onClick={() => {
+                            setDeleteTarget(item);
+                            setDeleteOpen(true);
+                          }}
+                          aria-label={`Delete ${item.name}`}
                           title="Delete item"
                         >
                           <Trash2 className="size-4" />
                         </Button>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))
               ) : (
-                <tr>
-                  <td
+                <TableRow>
+                  <TableCell
                     colSpan={7}
                     className="px-4 py-14 text-center text-muted-foreground"
                   >
                     <ImagePlus className="mx-auto mb-3 size-8" />
-                    No items yet.
-                  </td>
-                </tr>
+                    {pending && !payload
+                      ? "Loading menu items…"
+                      : allItems.length
+                        ? "No items match your search."
+                        : "No items yet. Add your first menu item to get started."}
+                  </TableCell>
+                </TableRow>
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
         <div className="flex flex-col gap-3 border-t border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-muted-foreground">
@@ -870,7 +998,7 @@ export function ManagementTable({
               type="button"
               variant="outline"
               size="sm"
-              className="rounded-sm bg-transparent"
+              className="rounded-lg bg-transparent"
               disabled={currentPage <= 1 || totalItems === 0}
               onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
             >
@@ -881,7 +1009,7 @@ export function ManagementTable({
               type="button"
               variant="outline"
               size="sm"
-              className="rounded-sm bg-transparent"
+              className="rounded-lg bg-transparent"
               disabled={currentPage >= totalPages || totalItems === 0}
               onClick={() =>
                 setCurrentPage((page) => Math.min(totalPages, page + 1))
@@ -892,7 +1020,7 @@ export function ManagementTable({
             </Button>
           </div>
         </div>
-      </section>
+      </AdminPanel>
     </div>
   );
 }

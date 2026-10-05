@@ -1,14 +1,24 @@
 "use client";
 
+import { useRecaptcha } from "@/components/Recaptcha";
+
 import Image from "next/image";
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Eye, EyeOff, LockKeyhole, LogIn, ShieldCheck } from "lucide-react";
+import {
+  ArrowLeft,
+  Eye,
+  EyeOff,
+  LockKeyhole,
+  LogIn,
+  ShieldCheck,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
 export function AdminLoginClient() {
+  const { protectedFetch, captcha: recaptcha } = useRecaptcha();
   const router = useRouter();
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState(false);
@@ -20,7 +30,7 @@ export function AdminLoginClient() {
     setMessage("");
 
     const formData = new FormData(event.currentTarget);
-    const response = await fetch("/api/admin/auth/login", {
+    const response = await protectedFetch("/api/admin/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -37,7 +47,7 @@ export function AdminLoginClient() {
       return;
     }
 
-    router.push("/management/meal-of-the-day");
+    router.push("/management");
     router.refresh();
   }
 
@@ -132,10 +142,16 @@ export function AdminLoginClient() {
                     type="button"
                     onClick={() => setShowPassword((current) => !current)}
                     className="absolute inset-y-0 right-0 inline-flex w-12 items-center justify-center text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:text-primary"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
                     aria-pressed={showPassword}
                   >
-                    {showPassword ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
+                    {showPassword ? (
+                      <EyeOff className="size-5" />
+                    ) : (
+                      <Eye className="size-5" />
+                    )}
                   </button>
                 </span>
               </label>
@@ -148,6 +164,7 @@ export function AdminLoginClient() {
                 {message}
               </p>
             ) : null}
+            {recaptcha}
             <Button
               type="submit"
               disabled={pending}

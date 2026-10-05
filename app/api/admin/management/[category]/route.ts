@@ -1,3 +1,4 @@
+import { deleteR2Object } from "@/lib/r2";
 import { eq } from "drizzle-orm";
 
 import { requireAdminApiSession } from "@/lib/admin-auth";
@@ -72,6 +73,8 @@ export async function PATCH(
     return unauthorized();
   }
 
+  let uploadedKey: string | undefined;
+  let saved = false;
   try {
     const slug = await getCategoryFromContext(context);
     const formData = await request.formData();
@@ -88,6 +91,7 @@ export async function PATCH(
       previousKey: current?.heroImageKey,
     });
 
+    uploadedKey = heroImage?.key;
     const values = {
       slug,
       eyebrow: getRequiredString(formData, "eyebrow"),
@@ -95,8 +99,10 @@ export async function PATCH(
       description: getRequiredString(formData, "description"),
       ctaLabel: getRequiredString(formData, "ctaLabel"),
       ctaHref: getRequiredString(formData, "ctaHref"),
-      heroImageKey: heroImage?.key ?? current?.heroImageKey ?? fallback.heroImageKey,
-      heroImageUrl: heroImage?.url ?? current?.heroImageUrl ?? fallback.heroImageUrl,
+      heroImageKey:
+        heroImage?.key ?? current?.heroImageKey ?? fallback.heroImageKey,
+      heroImageUrl:
+        heroImage?.url ?? current?.heroImageUrl ?? fallback.heroImageUrl,
       heroAlt: getRequiredString(formData, "heroAlt"),
       badge: parseBadge(formData),
       isHeaderActive: current?.isHeaderActive ?? fallback.isHeaderActive,
@@ -112,11 +118,20 @@ export async function PATCH(
       })
       .returning();
 
+    saved = true;
+    if (heroImage && current?.heroImageKey)
+      await deleteR2Object(current.heroImageKey).catch(() =>
+        console.warn("Old hero image cleanup deferred."),
+      );
     await notifyPublicMenuContentUpdated(slug);
     await trySyncChatbotMenuKnowledgeForCategory(slug);
 
     return Response.json({ category: toManagementCategoryResponse(category) });
   } catch (error) {
+    if (uploadedKey && !saved)
+      await deleteR2Object(uploadedKey).catch(() =>
+        console.warn("Unused hero image cleanup deferred."),
+      );
     return Response.json(
       {
         error:

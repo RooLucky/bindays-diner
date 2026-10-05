@@ -1,10 +1,15 @@
 "use client";
 
+import { AdminPanel } from "@/components/admin/AdminPanel";
+
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+
 import { Eye, EyeOff, RefreshCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import {
   HEADER_MANAGED_CATEGORIES,
   type HeaderManagedCategorySlug,
@@ -101,34 +106,26 @@ export function HeaderNavigationManager() {
   }
 
   return (
-    <div className="grid gap-8">
-      <section className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
-        <div>
-          <p className="font-serif text-2xl italic text-brand-script">
-            Website Settings
-          </p>
-          <h1 className="mt-2 font-serif text-[clamp(2.25rem,7vw,3.75rem)] text-foreground">
-            Header Navigation
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Choose which menu links customers can see in the website header.
-          </p>
-        </div>
+    <div className="grid gap-6">
+      <AdminPageHeader
+        title="Header navigation"
+        description="Choose which menu links appear in your website header."
+      >
         <Button
           type="button"
           variant="outline"
-          className="rounded-sm bg-transparent"
+          className="rounded-lg bg-transparent"
           disabled={loading || pendingCategory !== null}
           onClick={() => void loadVisibility()}
         >
           <RefreshCcw className="size-4" />
           Refresh
         </Button>
-      </section>
+      </AdminPageHeader>
 
-      <section className="overflow-hidden rounded-sm border border-border bg-card shadow-[var(--shadow-card)]">
+      <AdminPanel className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--shadow-card)]">
         <div className="border-b border-border px-5 py-4 sm:px-6">
-          <h2 className="font-serif text-3xl text-foreground">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
             Customer-facing links
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -151,7 +148,7 @@ export function HeaderNavigationManager() {
                     className={cn(
                       "grid size-10 shrink-0 place-items-center rounded-full",
                       isActive
-                        ? "bg-brand-gold-soft text-secondary"
+                        ? "bg-brand-gold-soft text-brand-olive"
                         : "bg-muted text-muted-foreground",
                     )}
                   >
@@ -168,32 +165,17 @@ export function HeaderNavigationManager() {
                     </p>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={isActive}
+                <Switch
+                  checked={isActive}
                   aria-label={`Show ${navigationLabels[category]} in the public header`}
                   disabled={loading || pending}
-                  onClick={() => void updateVisibility(category)}
-                  className={cn(
-                    "relative h-7 w-12 shrink-0 rounded-full border transition-colors disabled:cursor-not-allowed disabled:opacity-50",
-                    isActive
-                      ? "border-primary bg-primary"
-                      : "border-border bg-slate-400",
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "absolute left-1 top-1 size-[1.125rem] rounded-full bg-background shadow-sm transition-transform",
-                      isActive ? "translate-x-5" : "translate-x-0",
-                    )}
-                  />
-                </button>
+                  onCheckedChange={() => void updateVisibility(category)}
+                />
               </div>
             );
           })}
         </div>
-      </section>
+      </AdminPanel>
     </div>
   );
 }

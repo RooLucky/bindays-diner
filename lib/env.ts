@@ -1,6 +1,8 @@
 import { z } from "zod";
 
 const serverEnvSchema = z.object({
+  RECAPTCHA_SECRET_KEY: z.string().min(1).optional(),
+  RECAPTCHA_ALLOWED_HOSTNAMES: z.string().min(1).optional(),
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required").url(),
   R2_ACCOUNT_ID: z.string().min(1, "R2_ACCOUNT_ID is required"),
   R2_ACCESS_KEY_ID: z.string().min(1, "R2_ACCESS_KEY_ID is required"),
@@ -33,7 +35,12 @@ const serverEnvSchema = z.object({
   OLLAMA_CHATBOT_GEMINI: z.string().min(1).optional(),
   OLLAMA_CHATBOT_COGITO: z.string().min(1).optional(),
   OLLAMA_CHATBOT_GEMMA: z.string().min(1).optional(),
-  OLLAMA_CHATBOT_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(16).default(4),
+  OLLAMA_CHATBOT_MAX_ATTEMPTS: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(16)
+    .default(4),
   CHATBOT_RATE_LIMIT_SALT: z.string().min(16).optional(),
   ABLY_API_KEY: z.string().min(1).optional(),
   GOOGLE_MAPS_API_KEY: z.string().min(1).optional(),
@@ -57,7 +64,9 @@ export type ServerEnv = z.infer<typeof serverEnvSchema> & {
 
 export function getServerEnv(): ServerEnv {
   if (typeof window !== "undefined") {
-    throw new Error("Server environment variables cannot be read in the browser.");
+    throw new Error(
+      "Server environment variables cannot be read in the browser.",
+    );
   }
 
   const parsed = serverEnvSchema.parse(process.env);
@@ -84,6 +93,7 @@ export function formatEnvError(error: unknown) {
   }
 
   return {
-    message: error instanceof Error ? error.message : "Unexpected server error.",
+    message:
+      error instanceof Error ? error.message : "Unexpected server error.",
   };
 }

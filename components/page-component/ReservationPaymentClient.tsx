@@ -1,5 +1,7 @@
 "use client";
 
+import { useRecaptcha } from "@/components/Recaptcha";
+
 import Image from "next/image";
 import { FormEvent, useState, useTransition } from "react";
 import { CheckCircle2, Copy, CreditCard, Upload } from "lucide-react";
@@ -17,6 +19,7 @@ export function ReservationPaymentClient({
   initialReservation: ReservationPaymentDetails;
   token: string;
 }) {
+  const { protectedFetch, captcha: recaptcha } = useRecaptcha();
   const [reservation, setReservation] = useState(initialReservation);
   const [isPending, startTransition] = useTransition();
 
@@ -35,10 +38,13 @@ export function ReservationPaymentClient({
     formData.set("token", token);
 
     startTransition(async () => {
-      const response = await fetch(`/api/reservations/${reservation.id}/payment`, {
-        method: "POST",
-        body: formData,
-      });
+      const response = await protectedFetch(
+        `/api/reservations/${reservation.id}/payment`,
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
       const data = (await response.json()) as {
         reservation?: ReservationPaymentDetails;
         error?: string;
@@ -55,6 +61,7 @@ export function ReservationPaymentClient({
   }
 
   const isPaid = reservation.paymentStatus === "paid";
+  const receiptReceived = reservation.receiptSubmitted || isPaid;
   const isExpired = reservation.paymentStatus === "unpaid";
 
   return (
@@ -64,15 +71,15 @@ export function ReservationPaymentClient({
           Binday&apos;s Diner Reservation
         </p>
         <h1 className="mt-3 font-serif text-[clamp(2.2rem,7vw,3rem)] text-foreground">
-          {isPaid
-            ? "Payment received"
+          {receiptReceived
+            ? "Receipt received"
             : isExpired
               ? "Payment link expired"
               : "Complete your payment"}
         </h1>
         <p className="mt-4 text-sm leading-7 text-muted-foreground sm:text-base">
-          {isPaid
-            ? "Your receipt was sent to Binday's Diner. Your reservation is marked paid."
+          {receiptReceived
+            ? "Your receipt was sent to Binday's Diner. Staff must verify the payment before confirming your reservation."
             : isExpired
               ? "No payment was submitted within 30 minutes, so this reservation is now unpaid."
               : "Pay through Maya or GCash, then upload your receipt below within 30 minutes."}
@@ -84,7 +91,10 @@ export function ReservationPaymentClient({
               <p className="text-xs font-bold uppercase tracking-[0.08em] text-muted-foreground">
                 Payment number
               </p>
-              <p id="payment-number" className="mt-1 font-serif text-3xl text-foreground">
+              <p
+                id="payment-number"
+                className="mt-1 font-serif text-3xl text-foreground"
+              >
                 {paymentNumber}
               </p>
             </div>
@@ -98,10 +108,13 @@ export function ReservationPaymentClient({
           </p>
         </div>
 
-        {!isPaid && !isExpired ? (
+        {!receiptReceived && !isExpired ? (
           <section className="mt-6" aria-labelledby="payment-qr-title">
             <div className="mb-3">
-              <p id="payment-qr-title" className="text-sm font-semibold text-foreground">
+              <p
+                id="payment-qr-title"
+                className="text-sm font-semibold text-foreground"
+              >
                 Scan to pay
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
@@ -139,23 +152,42 @@ export function ReservationPaymentClient({
 
         <div className="mt-6 border-y border-border py-4">
           {reservation.items.map((item) => (
-            <div key={`${item.name}-${item.price}`} className="flex justify-between gap-4 py-1 text-sm">
+            <div
+              key={`${item.name}-${item.price}`}
+              className="flex justify-between gap-4 py-1 text-sm"
+            >
               <span className="min-w-0 text-muted-foreground">
                 {item.quantity}× {item.name}
               </span>
-              <span className="shrink-0 font-semibold text-foreground">{item.price}</span>
+              <span className="shrink-0 font-semibold text-foreground">
+                {item.price}
+              </span>
             </div>
           ))}
+          <div className="mt-3 flex justify-between text-sm">
+            <span>Food subtotal</span>
+            <span>₱{reservation.subtotal.toLocaleString("en-PH")}</span>
+          </div>
+          <div className="mt-2 flex justify-between text-sm">
+            <span>Delivery fee</span>
+            <span>₱{reservation.deliveryFee.toLocaleString("en-PH")}</span>
+          </div>
           <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
-            <span className="text-sm font-semibold uppercase tracking-[0.08em] text-muted-foreground">Total</span>
-            <span className="font-serif text-2xl text-foreground">P{reservation.subtotal.toLocaleString("en-PH")}</span>
+            <span className="text-sm font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+              Total
+            </span>
+            <span className="font-serif text-2xl text-foreground">
+              P{reservation.total.toLocaleString("en-PH")}
+            </span>
           </div>
         </div>
 
-        {isPaid ? (
+        {receiptReceived ? (
           <div className="mt-7 flex items-center gap-3 rounded-sm bg-secondary px-4 py-4 text-secondary-foreground">
             <CheckCircle2 className="size-6 shrink-0" />
-            <p className="text-sm font-semibold">Receipt received and sent to the diner.</p>
+            <p className="text-sm font-semibold">
+              Receipt received and sent to the diner.
+            </p>
           </div>
         ) : isExpired ? null : (
           <form onSubmit={handleSubmit} className="mt-7">
@@ -165,24 +197,31 @@ export function ReservationPaymentClient({
                 name="receipt"
                 type="file"
                 required
-                accept="image/*,application/pdf"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
                 className="rounded-sm border border-input bg-background px-3 py-3 text-sm font-normal"
               />
               <span className="text-xs font-normal text-muted-foreground">
                 Image or PDF, up to 8MB.
               </span>
             </label>
-            <Button type="submit" disabled={isPending} className="mt-5 h-12 w-full rounded-sm text-xs font-semibold uppercase tracking-[0.08em]">
+            {recaptcha}
+            <Button
+              type="submit"
+              disabled={isPending}
+              className="mt-5 h-12 w-full rounded-sm text-xs font-semibold uppercase tracking-[0.08em]"
+            >
               <Upload className="size-4" />
               {isPending ? "Sending receipt..." : "Submit payment receipt"}
             </Button>
           </form>
         )}
 
-        {!isPaid && !isExpired ? (
+        {!receiptReceived && !isExpired ? (
           <p className="mt-5 flex items-center gap-2 text-xs text-muted-foreground">
             <CreditCard className="size-4" />
-            Link expires {new Date(reservation.paymentLinkExpiresAt).toLocaleString("en-PH")}.
+            Link expires{" "}
+            {new Date(reservation.paymentLinkExpiresAt).toLocaleString("en-PH")}
+            .
           </p>
         ) : null}
       </div>

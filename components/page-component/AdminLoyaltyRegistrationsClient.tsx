@@ -1,5 +1,18 @@
 "use client";
 
+import { Input } from "@/components/ui/input";
+
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
+
+import { AdminPanel } from "@/components/admin/AdminPanel";
+
 import { useEffect, useMemo, useState } from "react";
 import { ExternalLink, RefreshCcw, Search, Users } from "lucide-react";
 import Link from "next/link";
@@ -31,9 +44,9 @@ function formatDateTime(value: string | null) {
 }
 
 export function AdminLoyaltyRegistrationsClient() {
-  const [registrations, setRegistrations] = useState<AdminLoyaltyRegistration[]>(
-    [],
-  );
+  const [registrations, setRegistrations] = useState<
+    AdminLoyaltyRegistration[]
+  >([]);
   const [query, setQuery] = useState("");
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState("");
@@ -85,13 +98,10 @@ export function AdminLoyaltyRegistrationsClient() {
   }, []);
 
   return (
-    <section className="rounded-sm border border-border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
+    <AdminPanel className="rounded-xl border border-border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
         <div>
-          <p className="font-serif text-2xl italic text-brand-script">
-            Member directory
-          </p>
-          <h2 className="mt-2 font-serif text-[clamp(2rem,5vw,3rem)] leading-tight text-foreground">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
             Loyalty Registrations
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
@@ -102,7 +112,7 @@ export function AdminLoyaltyRegistrationsClient() {
         <Button
           type="button"
           variant="outline"
-          className="rounded-sm bg-transparent"
+          className="rounded-lg bg-transparent"
           disabled={pending}
           onClick={() => void loadRegistrations()}
         >
@@ -111,9 +121,9 @@ export function AdminLoyaltyRegistrationsClient() {
         </Button>
       </div>
 
-      <div className="mt-6 flex flex-col justify-between gap-3 rounded-sm border border-border bg-background p-3 sm:flex-row sm:items-center">
+      <div className="mt-6 flex flex-col justify-between gap-3 rounded-lg border border-border bg-background p-3 sm:flex-row sm:items-center">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Users className="size-4 text-secondary" />
+          <Users className="size-4 text-brand-olive" />
           <span>
             {registrations.length} registered member
             {registrations.length === 1 ? "" : "s"}
@@ -122,63 +132,68 @@ export function AdminLoyaltyRegistrationsClient() {
         <label className="relative block sm:w-72">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <span className="sr-only">Search loyalty members</span>
-          <input
+          <Input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            className="h-10 w-full rounded-sm border border-input bg-card pl-9 pr-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
+            className="h-10 w-full rounded-lg border border-input bg-card pl-9 pr-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
             placeholder="Search name, code, or phone"
           />
         </label>
       </div>
 
       {message ? (
-        <p className="mt-4 rounded-sm border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        <p className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {message}
         </p>
       ) : null}
 
-      <div className="mt-4 overflow-hidden rounded-sm border border-border">
+      <div className="mt-4 overflow-hidden rounded-lg border border-border">
         <div className="hidden overflow-x-auto md:block">
-          <table className="w-full min-w-[52rem] text-left text-sm">
-            <thead className="border-b border-border bg-muted/40 text-xs font-bold uppercase tracking-[0.08em] text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3">Member</th>
-                <th className="px-4 py-3">Contact</th>
-                <th className="px-4 py-3">Joined</th>
-                <th className="px-4 py-3">Current card</th>
-                <th className="px-4 py-3">Last activity</th>
-                <th className="px-4 py-3 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border bg-card">
+          <Table className="w-full min-w-[52rem] text-left text-sm">
+            <TableHeader className="border-b border-border bg-muted/40 text-xs font-bold uppercase tracking-[0.08em] text-muted-foreground">
+              <TableRow>
+                <TableHead className="px-4 py-3">Member</TableHead>
+                <TableHead className="px-4 py-3">Contact</TableHead>
+                <TableHead className="px-4 py-3">Joined</TableHead>
+                <TableHead className="px-4 py-3">Current card</TableHead>
+                <TableHead className="px-4 py-3">Last activity</TableHead>
+                <TableHead className="px-4 py-3 text-right">Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody className="divide-y divide-border bg-card">
               {filteredRegistrations.map((registration) => (
-                <tr key={registration.memberCode}>
-                  <td className="px-4 py-4">
+                <TableRow key={registration.memberCode}>
+                  <TableCell className="px-4 py-4">
                     <p className="font-semibold text-foreground">
                       {registration.fullName}
                     </p>
                     <p className="mt-1 font-mono text-xs text-muted-foreground">
                       {registration.memberCode}
                     </p>
-                  </td>
-                  <td className="px-4 py-4 text-muted-foreground">
+                  </TableCell>
+                  <TableCell className="px-4 py-4 text-muted-foreground">
                     <p>{registration.phone ?? "No phone supplied"}</p>
-                    <p className="mt-1 text-xs">Birthday: {registration.birthday}</p>
-                  </td>
-                  <td className="px-4 py-4 text-muted-foreground">
+                    <p className="mt-1 text-xs">
+                      Birthday: {registration.birthday}
+                    </p>
+                  </TableCell>
+                  <TableCell className="px-4 py-4 text-muted-foreground">
                     {formatDate(registration.createdAt)}
-                  </td>
-                  <td className="px-4 py-4">
+                  </TableCell>
+                  <TableCell className="px-4 py-4">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-semibold text-foreground">
-                        {registration.stampCount}/{registration.rewardThreshold} stamps
+                        {registration.stampCount}/{registration.rewardThreshold}{" "}
+                        stamps
                       </span>
                       {registration.rewardReady ? (
                         <span className="rounded-full bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
-                          {registration.pendingRewardCount} reward{registration.pendingRewardCount === 1 ? "" : "s"} ready
+                          {registration.pendingRewardCount} reward
+                          {registration.pendingRewardCount === 1 ? "" : "s"}{" "}
+                          ready
                         </span>
                       ) : registration.redeemedRewardCount > 0 ? (
-                        <span className="rounded-full bg-secondary/10 px-2 py-1 text-xs font-semibold text-secondary">
+                        <span className="rounded-full bg-secondary/10 px-2 py-1 text-xs font-semibold text-brand-olive">
                           {registration.redeemedRewardCount} redeemed
                         </span>
                       ) : null}
@@ -186,27 +201,27 @@ export function AdminLoyaltyRegistrationsClient() {
                     <p className="mt-1 text-xs text-muted-foreground">
                       Cycle {registration.currentCycle}
                     </p>
-                  </td>
-                  <td className="px-4 py-4 text-muted-foreground">
+                  </TableCell>
+                  <TableCell className="px-4 py-4 text-muted-foreground">
                     {formatDateTime(registration.lastActivityAt)}
-                  </td>
-                  <td className="px-4 py-4 text-right">
+                  </TableCell>
+                  <TableCell className="px-4 py-4 text-right">
                     <Link
                       href={`/admin/loyalty/scan/${encodeURIComponent(registration.memberCode)}`}
                       className={buttonVariants({
                         variant: "outline",
                         size: "sm",
-                        className: "rounded-sm bg-transparent",
+                        className: "rounded-lg bg-transparent",
                       })}
                     >
                       Open card
                       <ExternalLink className="size-3.5" />
                     </Link>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
 
         <div className="grid divide-y divide-border md:hidden">
@@ -223,10 +238,11 @@ export function AdminLoyaltyRegistrationsClient() {
                 </div>
                 {registration.rewardReady ? (
                   <span className="rounded-full bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
-                    {registration.pendingRewardCount} reward{registration.pendingRewardCount === 1 ? "" : "s"} ready
+                    {registration.pendingRewardCount} reward
+                    {registration.pendingRewardCount === 1 ? "" : "s"} ready
                   </span>
                 ) : registration.redeemedRewardCount > 0 ? (
-                  <span className="rounded-full bg-secondary/10 px-2 py-1 text-xs font-semibold text-secondary">
+                  <span className="rounded-full bg-secondary/10 px-2 py-1 text-xs font-semibold text-brand-olive">
                     {registration.redeemedRewardCount} redeemed
                   </span>
                 ) : null}
@@ -238,7 +254,8 @@ export function AdminLoyaltyRegistrationsClient() {
                     Card
                   </dt>
                   <dd className="mt-1 text-foreground">
-                    {registration.stampCount}/{registration.rewardThreshold} stamps
+                    {registration.stampCount}/{registration.rewardThreshold}{" "}
+                    stamps
                   </dd>
                 </div>
                 <div>
@@ -271,7 +288,7 @@ export function AdminLoyaltyRegistrationsClient() {
                 href={`/admin/loyalty/scan/${encodeURIComponent(registration.memberCode)}`}
                 className={buttonVariants({
                   variant: "outline",
-                  className: "w-full rounded-sm bg-transparent",
+                  className: "w-full rounded-lg bg-transparent",
                 })}
               >
                 Open loyalty card
@@ -289,6 +306,6 @@ export function AdminLoyaltyRegistrationsClient() {
           </div>
         ) : null}
       </div>
-    </section>
+    </AdminPanel>
   );
 }

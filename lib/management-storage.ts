@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { deleteR2Object, uploadR2Object } from "@/lib/r2";
+import { uploadR2Object } from "@/lib/r2";
 import type { ManagementCategorySlug } from "@/lib/management";
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
@@ -95,15 +95,10 @@ export async function replaceManagementImage(input: {
   }
 
   const prefix =
-    input.category === "add-ons"
-      ? "add-ons"
-      : `management/${input.category}`;
-  const key = `${prefix}/${randomUUID()}-${safeFilename(
-    input.file.name,
-  )}`;
+    input.category === "add-ons" ? "add-ons" : `management/${input.category}`;
+  const key = `${prefix}/${randomUUID()}-${safeFilename(input.file.name)}`;
   const body = Buffer.from(await input.file.arrayBuffer());
 
-  await deleteR2Object(input.previousKey);
   const url = await uploadR2Object({
     key,
     body,

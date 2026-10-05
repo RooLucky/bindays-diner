@@ -1,5 +1,8 @@
 "use client";
 
+import { loyaltyRegistrationSchema } from "@/lib/loyalty-registration";
+import { useRecaptcha } from "@/components/Recaptcha";
+
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { HeartHandshake } from "lucide-react";
 import { toast } from "sonner";
@@ -42,14 +45,19 @@ function getStoredLoyaltyMember() {
 
     const parsed = JSON.parse(stored) as Partial<StoredLoyaltyMember>;
 
-    if (!parsed.fullName || !parsed.birthday) {
+    if (
+      typeof parsed.fullName !== "string" ||
+      typeof parsed.birthday !== "string" ||
+      !parsed.fullName ||
+      !parsed.birthday
+    ) {
       return null;
     }
 
     return {
       fullName: parsed.fullName,
       birthday: parsed.birthday,
-      phone: parsed.phone ?? "",
+      phone: typeof parsed.phone === "string" ? parsed.phone : "",
     };
   } catch {
     return null;
@@ -57,17 +65,22 @@ function getStoredLoyaltyMember() {
 }
 
 function saveStoredLoyaltyMember(member: StoredLoyaltyMember) {
-  window.localStorage.setItem(
-    loyaltyStorageKey,
-    JSON.stringify({
-      fullName: member.fullName.trim(),
-      birthday: member.birthday,
-      phone: member.phone.trim(),
-    }),
-  );
+  try {
+    window.localStorage.setItem(
+      loyaltyStorageKey,
+      JSON.stringify({
+        fullName: member.fullName.trim(),
+        birthday: member.birthday,
+        phone: member.phone.trim(),
+      }),
+    );
+  } catch {
+    /* A valid loyalty card stays available when browser storage is blocked. */
+  }
 }
 
 export function LoyaltyClient() {
+  const { protectedFetch, captcha: recaptcha } = useRecaptcha();
   const [mode, setMode] = useState<Mode>("join");
   const [form, setForm] = useState(emptyForm);
   const [card, setCard] = useState<LoyaltyCardResponse | null>(null);
@@ -75,7 +88,10 @@ export function LoyaltyClient() {
   const hasLoadedStoredMember = useRef(false);
   useLoyaltyCardRefresh(card?.member.memberCode, setCard);
 
-  async function loadLoyaltyCard(input: StoredLoyaltyMember, requestMode: Mode) {
+  async function loadLoyaltyCard(
+    input: StoredLoyaltyMember,
+    requestMode: Mode,
+  ) {
     setIsSubmitting(true);
     const toastId = toast.loading(
       requestMode === "join"
@@ -84,8 +100,10 @@ export function LoyaltyClient() {
     );
 
     try {
-      const response = await fetch(
-        requestMode === "join" ? "/api/loyalty/register" : "/api/loyalty/search",
+      const response = await protectedFetch(
+        requestMode === "join"
+          ? "/api/loyalty/register"
+          : "/api/loyalty/search",
         {
           method: "POST",
           headers: {
@@ -140,7 +158,7 @@ export function LoyaltyClient() {
 
     setMode("search");
     setForm(storedMember);
-    void loadLoyaltyCard(storedMember, "search");
+    // Restore details only; searching requires a fresh human verification.
   }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -152,8 +170,9 @@ export function LoyaltyClient() {
       phone: form.phone.trim(),
     };
 
-    if (!input.fullName || !input.birthday) {
-      toast.error("Name and birthday are required.");
+    const validation = loyaltyRegistrationSchema.safeParse(input);
+    if (!validation.success) {
+      toast.error(validation.error.issues[0]?.message ?? "Check your details.");
       return;
     }
 
@@ -198,7 +217,9 @@ export function LoyaltyClient() {
         <p className="mt-3 text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
           Binday's Diner
         </p>
-        <h2 className="mt-2 font-serif text-[clamp(2rem,6vw,3rem)] text-primary">Loyalty Card</h2>
+        <h2 className="mt-2 font-serif text-[clamp(2rem,6vw,3rem)] text-primary">
+          Loyalty Card
+        </h2>
         <div className="mt-6 grid grid-cols-5 gap-3">
           {Array.from({ length: card?.rewardThreshold ?? 10 }, (_, index) => {
             const stampNumber = index + 1;
@@ -233,17 +254,20 @@ export function LoyaltyClient() {
               Member: {card.member.memberCode}
             </p>
             <p className="text-muted-foreground">
-              Card {card.currentCycle} · Stamps: {card.stampCount}/{card.rewardThreshold}
+              Card {card.currentCycle} · Stamps: {card.stampCount}/
+              {card.rewardThreshold}
             </p>
             {card.rewardReady ? (
               <p className="mt-2 font-semibold text-primary">
-                {card.pendingRewardCount} reward{card.pendingRewardCount === 1 ? "" : "s"} ready
-                for redemption. Present your QR code to staff to claim.
+                {card.pendingRewardCount} reward
+                {card.pendingRewardCount === 1 ? "" : "s"} ready for redemption.
+                Present your QR code to staff to claim.
               </p>
             ) : null}
             <p className="mt-2 text-muted-foreground">
               Every 10 stamps earns a reward and automatically resets your card
-              to 0/10. Unclaimed rewards stay available while you collect more stamps.
+              to 0/10. Unclaimed rewards stay available while you collect more
+              stamps.
             </p>
           </div>
           <LoyaltyQrCode
@@ -257,6 +281,7 @@ export function LoyaltyClient() {
             Full Name
             <input
               required
+              maxLength={160}
               value={form.fullName}
               onChange={(event) =>
                 setForm((value) => ({ ...value, fullName: event.target.value }))
@@ -285,6 +310,7 @@ export function LoyaltyClient() {
               (optional)
             </span>
             <input
+              maxLength={40}
               value={form.phone}
               onChange={(event) =>
                 setForm((value) => ({ ...value, phone: event.target.value }))
@@ -293,6 +319,7 @@ export function LoyaltyClient() {
               placeholder="Enter phone number"
             />
           </label>
+          {recaptcha}
           <Button
             type="submit"
             className="h-12 rounded-sm text-xs font-semibold uppercase tracking-[0.08em]"

@@ -1,3 +1,8 @@
+import {
+  PublicRequestError,
+  readLimitedBody,
+} from "@/lib/public-request-error";
+import { requireRecaptcha } from "@/lib/recaptcha";
 import { submitReservationReceipt } from "@/lib/reservations";
 
 export const runtime = "nodejs";
@@ -7,9 +12,13 @@ export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
+  const captchaError = await requireRecaptcha(request);
+  if (captchaError) return captchaError;
   try {
     const { id } = await context.params;
-    const formData = await request.formData();
+    const formData = await (
+      await readLimitedBody(request, 12 * 1024 * 1024)
+    ).formData();
     const token = formData.get("token");
     const receipt = formData.get("receipt");
 
@@ -26,7 +35,7 @@ export async function POST(
     return Response.json(
       {
         error:
-          error instanceof Error
+          error instanceof PublicRequestError
             ? error.message
             : "Unable to submit the payment receipt.",
       },

@@ -1,3 +1,8 @@
+import {
+  PublicRequestError,
+  readLimitedBody,
+} from "@/lib/public-request-error";
+import { requireRecaptcha } from "@/lib/recaptcha";
 import { ZodError } from "zod";
 
 import { chatbotRequestSchema } from "@/lib/chatbot-contracts";
@@ -35,8 +40,12 @@ const FOUL_LANGUAGE_REPLY =
   "I can help with the menu, ingredients, promos, reservations, delivery, and loyalty questions. Please rephrase your question without offensive language.";
 
 export async function POST(request: Request) {
+  const captchaError = await requireRecaptcha(request);
+  if (captchaError) return captchaError;
   try {
-    const input = chatbotRequestSchema.parse(await request.json());
+    const input = chatbotRequestSchema.parse(
+      await (await readLimitedBody(request)).json(),
+    );
     const rateLimit = await consumeChatbotRateLimit(
       input.sessionId,
       getRequestIp(request),
@@ -102,7 +111,10 @@ export async function POST(request: Request) {
       input.history,
       rankedEntries,
     );
-    const selectedEntries = resolveSelectedEntries(selection.ids, rankedEntries);
+    const selectedEntries = resolveSelectedEntries(
+      selection.ids,
+      rankedEntries,
+    );
     let answer =
       selectedEntries.length > 0
         ? formatKnowledgeAnswer(selectedEntries)
@@ -123,7 +135,9 @@ export async function POST(request: Request) {
 
     if (healthDecision) {
       const selectedIds = new Set(healthDecision.ids);
-      const selectedItems = menuItems.filter((item) => selectedIds.has(item.id));
+      const selectedItems = menuItems.filter((item) =>
+        selectedIds.has(item.id),
+      );
 
       if (selectedItems.length > 0) {
         menuItems = selectedItems;

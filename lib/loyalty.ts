@@ -1,7 +1,11 @@
 import { and, asc, eq } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
-import { loyaltyMembers, loyaltyRedemptions, loyaltyStamps } from "@/lib/db/schema";
+import {
+  loyaltyMembers,
+  loyaltyRedemptions,
+  loyaltyStamps,
+} from "@/lib/db/schema";
 import { getLoyaltyProgress } from "@/lib/loyalty-progress";
 
 export { LOYALTY_REWARD_THRESHOLD } from "@/lib/loyalty-progress";
@@ -91,18 +95,6 @@ export async function findExistingMember(input: {
   const normalizedName = normalizeName(input.fullName);
   const normalizedPhone = normalizePhone(input.phone);
 
-  const phoneMatches = normalizedPhone
-    ? await db
-        .select()
-        .from(loyaltyMembers)
-        .where(eq(loyaltyMembers.normalizedPhone, normalizedPhone))
-        .limit(1)
-    : [];
-
-  if (phoneMatches[0]) {
-    return phoneMatches[0];
-  }
-
   const [nameBirthdayMatch] = await db
     .select()
     .from(loyaltyMembers)
@@ -114,5 +106,11 @@ export async function findExistingMember(input: {
     )
     .limit(1);
 
+  if (
+    nameBirthdayMatch &&
+    normalizedPhone &&
+    nameBirthdayMatch.normalizedPhone !== normalizedPhone
+  )
+    return null;
   return nameBirthdayMatch ?? null;
 }

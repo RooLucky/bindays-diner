@@ -2,7 +2,7 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 
-import { eq } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 
 import { CHATBOT_SESSION_LIMIT } from "@/lib/chatbot-contracts";
 import { getDb } from "@/lib/db";
@@ -19,7 +19,7 @@ type LimitResult = {
   retryAfter: number;
 };
 
-function hashKey(kind: "session" | "ip", value: string) {
+function hashKey(kind: string, value: string) {
   const env = getServerEnv();
   const salt =
     env.CHATBOT_RATE_LIMIT_SALT ??
@@ -27,9 +27,7 @@ function hashKey(kind: "session" | "ip", value: string) {
     env.OLLAMA_API_KEY ??
     "bindays-diner-chatbot-rate-limit";
 
-  return createHash("sha256")
-    .update(`${salt}:${kind}:${value}`)
-    .digest("hex");
+  return createHash("sha256").update(`${salt}:${kind}:${value}`).digest("hex");
 }
 
 async function consumeWindow(
@@ -37,62 +35,59 @@ async function consumeWindow(
   limit: number,
   windowMs: number,
 ): Promise<LimitResult> {
-  const db = getDb();
   const now = new Date();
-  const [existing] = await db
-    .select()
-    .from(chatbotRateLimits)
-    .where(eq(chatbotRateLimits.keyHash, keyHash))
-    .limit(1);
-
-  if (!existing || now.getTime() - existing.windowStartedAt.getTime() >= windowMs) {
-    await db
-      .insert(chatbotRateLimits)
-      .values({
-        keyHash,
-        requestCount: 1,
-        windowStartedAt: now,
+  const cutoff = new Date(now.getTime() - windowMs);
+  // One atomic upsert prevents concurrent requests from overwriting the counter.
+  const [row] = await getDb()
+    .insert(chatbotRateLimits)
+    .values({
+      keyHash,
+      requestCount: 1,
+      windowStartedAt: now,
+      updatedAt: now,
+    })
+    .onConflictDoUpdate({
+      target: chatbotRateLimits.keyHash,
+      set: {
+        requestCount: sql`case when ${chatbotRateLimits.windowStartedAt} <= ${cutoff.toISOString()}::timestamptz then 1 else least(${chatbotRateLimits.requestCount} + 1, ${limit + 1}) end`,
+        windowStartedAt: sql`case when ${chatbotRateLimits.windowStartedAt} <= ${cutoff.toISOString()}::timestamptz then ${now.toISOString()}::timestamptz else ${chatbotRateLimits.windowStartedAt} end`,
         updatedAt: now,
-      })
-      .onConflictDoUpdate({
-        target: chatbotRateLimits.keyHash,
-        set: {
-          requestCount: 1,
-          windowStartedAt: now,
-          updatedAt: now,
-        },
-      });
-
-    return { allowed: true, remaining: limit - 1, retryAfter: 0 };
-  }
-
-  const retryAfter = Math.max(
-    1,
-    Math.ceil(
-      (windowMs - (now.getTime() - existing.windowStartedAt.getTime())) / 1_000,
-    ),
-  );
-
-  if (existing.requestCount >= limit) {
-    return { allowed: false, remaining: 0, retryAfter };
-  }
-
-  const nextCount = existing.requestCount + 1;
-
-  await db
-    .update(chatbotRateLimits)
-    .set({ requestCount: nextCount, updatedAt: now })
-    .where(eq(chatbotRateLimits.keyHash, keyHash));
-
+      },
+    })
+    .returning();
+  const allowed = row.requestCount <= limit;
   return {
-    allowed: true,
-    remaining: Math.max(0, limit - nextCount),
-    retryAfter: 0,
+    allowed,
+    remaining: Math.max(0, limit - row.requestCount),
+    retryAfter: allowed
+      ? 0
+      : Math.max(
+          1,
+          Math.ceil(
+            (windowMs - (now.getTime() - row.windowStartedAt.getTime())) / 1000,
+          ),
+        ),
   };
 }
 
+// Namespaced counters share the existing durable table; no schema migration is needed.
+export async function consumePublicFormLimit(
+  scope: string,
+  identity: string,
+  limit = 10,
+) {
+  return consumeWindow(
+    hashKey(`form:${scope}`, identity),
+    limit,
+    10 * 60 * 1000,
+  );
+}
+
 export function getRequestIp(request: Request) {
-  const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  const forwarded = request.headers
+    .get("x-forwarded-for")
+    ?.split(",")[0]
+    ?.trim();
 
   return (
     request.headers.get("cf-connecting-ip")?.trim() ||
