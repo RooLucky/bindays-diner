@@ -2,7 +2,7 @@ import {
   PublicRequestError,
   readLimitedBody,
 } from "@/lib/public-request-error";
-import { requireRecaptcha } from "@/lib/recaptcha";
+import { requirePublicFormLimit } from "@/lib/public-form-limit";
 import { ZodError } from "zod";
 
 import { chatbotRequestSchema } from "@/lib/chatbot-contracts";
@@ -40,8 +40,8 @@ const FOUL_LANGUAGE_REPLY =
   "I can help with the menu, ingredients, promos, reservations, delivery, and loyalty questions. Please rephrase your question without offensive language.";
 
 export async function POST(request: Request) {
-  const captchaError = await requireRecaptcha(request);
-  if (captchaError) return captchaError;
+  const limitError = await requirePublicFormLimit(request, 20);
+  if (limitError) return limitError;
   try {
     const input = chatbotRequestSchema.parse(
       await (await readLimitedBody(request)).json(),

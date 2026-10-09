@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function LoyaltyQrCode({
   data,
@@ -10,12 +10,17 @@ export function LoyaltyQrCode({
   memberCode: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const qrRef = useRef<{ download: (options: { name: string; extension: "svg" }) => Promise<void> } | null>(
-    null,
-  );
+  const [download, setDownload] = useState<{
+    data: string;
+    url: string;
+  } | null>(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     let mounted = true;
+    let objectUrl: string | undefined;
+    setDownload(null);
+    setError("");
 
     async function renderQr() {
       if (!containerRef.current) {
@@ -35,11 +40,11 @@ export function LoyaltyQrCode({
       containerRef.current.innerHTML = "";
 
       const qrCode = new QRCodeStyling({
-        width: 220,
-        height: 220,
-        type: "svg",
+        width: 660,
+        height: 660,
+        type: "canvas",
         data,
-        margin: 8,
+        margin: 24,
         dotsOptions: {
           color: primary,
           type: "rounded",
@@ -58,13 +63,25 @@ export function LoyaltyQrCode({
       });
 
       qrCode.append(containerRef.current);
-      qrRef.current = qrCode;
+      const blob = await qrCode.getRawData("jpeg");
+      if (!mounted) return;
+      if (!(blob instanceof Blob) || blob.type !== "image/jpeg" || !blob.size) {
+        throw new Error("Unable to create the JPG image.");
+      }
+      objectUrl = URL.createObjectURL(blob);
+      setDownload({ data, url: objectUrl });
     }
 
-    void renderQr();
+    void renderQr().catch(() => {
+      if (mounted)
+        setError(
+          "Unable to prepare the QR download. Refresh the page and try again.",
+        );
+    });
 
     return () => {
       mounted = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
   }, [data]);
 
@@ -72,20 +89,24 @@ export function LoyaltyQrCode({
     <div className="grid gap-4">
       <div
         ref={containerRef}
-        className="mx-auto grid min-h-[220px] w-[220px] place-items-center rounded-sm border border-border bg-background p-3"
+        className="mx-auto grid min-h-[246px] w-fit place-items-center rounded-sm border border-border bg-background p-3 [&>canvas]:h-[220px] [&>canvas]:w-[220px]"
       />
-      <button
-        type="button"
-        className="text-sm font-semibold uppercase tracking-[0.08em] text-primary underline underline-offset-4"
-        onClick={() => {
-          void qrRef.current?.download({
-            name: `bindays-${memberCode}`,
-            extension: "svg",
-          });
-        }}
-      >
-        Save QR Code
-      </button>
+      {download?.data === data ? (
+        <a
+          href={download.url}
+          download={`bindays-${memberCode}.jpg`}
+          className="text-center text-sm font-semibold uppercase tracking-[0.08em] text-primary underline underline-offset-4"
+        >
+          Save QR Code (JPG)
+        </a>
+      ) : (
+        <p
+          role={error ? "alert" : "status"}
+          className="text-center text-sm text-muted-foreground"
+        >
+          {error || "Preparing QR download…"}
+        </p>
+      )}
     </div>
   );
 }

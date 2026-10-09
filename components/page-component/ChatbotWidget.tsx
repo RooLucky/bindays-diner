@@ -1,6 +1,6 @@
 "use client";
 
-import { useRecaptcha } from "@/components/Recaptcha";
+import { submitPublicForm } from "@/lib/public-form-request";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -91,7 +91,6 @@ function isStoredMessage(value: unknown): value is ChatMessage {
 }
 
 export function ChatbotWidget() {
-  const { protectedFetch, captcha: recaptcha } = useRecaptcha();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     createWelcomeMessage(),
@@ -223,7 +222,7 @@ export function ChatbotWidget() {
     setPending(true);
 
     try {
-      const response = await protectedFetch("/api/chatbot", {
+      const response = await submitPublicForm("/api/chatbot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -502,7 +501,6 @@ export function ChatbotWidget() {
                 </span>
                 <span>{remaining} questions remaining</span>
               </div>
-              {recaptcha}
             </form>
           </motion.section>
         ) : null}

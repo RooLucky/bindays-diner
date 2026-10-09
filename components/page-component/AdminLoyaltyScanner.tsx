@@ -9,6 +9,7 @@ import { Camera, RefreshCw, ScanLine } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import { withCameraTimeout } from "@/lib/camera-startup";
 
 function getMemberCode(value: string) {
   const trimmed = value.trim();
@@ -32,6 +33,7 @@ export function AdminLoyaltyScanner() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const intervalRef = useRef<number | null>(null);
+  const frameTimeoutRef = useRef<number | null>(null);
   const cameraAttemptRef = useRef(0);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
@@ -40,6 +42,10 @@ export function AdminLoyaltyScanner() {
   function stopCamera() {
     cameraAttemptRef.current += 1;
     setIsStarting(false);
+    if (frameTimeoutRef.current !== null) {
+      window.clearTimeout(frameTimeoutRef.current);
+      frameTimeoutRef.current = null;
+    }
     if (intervalRef.current !== null) {
       window.clearInterval(intervalRef.current);
       intervalRef.current = null;
@@ -49,6 +55,7 @@ export function AdminLoyaltyScanner() {
     streamRef.current = null;
 
     if (videoRef.current) {
+      videoRef.current.pause();
       videoRef.current.srcObject = null;
     }
 
@@ -82,29 +89,67 @@ export function AdminLoyaltyScanner() {
     setIsStarting(true);
     setMessage("");
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: false,
-        video: { facingMode: { ideal: "environment" } },
-      });
+      const stream = await withCameraTimeout(
+        navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: { facingMode: { ideal: "environment" } },
+        }),
+        20000,
+        "The camera did not respond. Allow access in the browser's camera prompt or site settings, then click Open camera again.",
+        (lateStream) => lateStream.getTracks().forEach((track) => track.stop()),
+      );
       if (attempt !== cameraAttemptRef.current || !videoRef.current) {
         stream.getTracks().forEach((track) => track.stop());
         return;
       }
       streamRef.current = stream;
       const video = videoRef.current;
+      video.muted = true;
+      video.defaultMuted = true;
+      video.playsInline = true;
       video.srcObject = stream;
-      await video.play();
-      const { default: jsQR } = await import("jsqr");
+      await withCameraTimeout(
+        video.play(),
+        12000,
+        "The camera connected but the preview did not start. Close other apps using the camera, then try again.",
+      );
+      if (attempt !== cameraAttemptRef.current) return;
+      const { default: jsQR } = await withCameraTimeout(
+        import("jsqr"),
+        12000,
+        "The scanner could not load. Refresh this page and try again.",
+      );
       if (attempt !== cameraAttemptRef.current) return;
       const canvas = document.createElement("canvas");
       const context = canvas.getContext("2d", { willReadFrequently: true });
       if (!context) throw new Error("Unable to prepare the QR scanner.");
-      setIsCameraActive(true);
+      frameTimeoutRef.current = window.setTimeout(() => {
+        if (attempt !== cameraAttemptRef.current) return;
+        setMessage(
+          "The camera is not sending video. Check the camera's privacy shutter and device settings, or try another camera.",
+        );
+        stopCamera();
+      }, 12000);
+      let receivedFrame = false;
+      stream.getVideoTracks().forEach((track) => {
+        track.addEventListener(
+          "ended",
+          () => {
+            if (attempt !== cameraAttemptRef.current) return;
+            setMessage(
+              "The camera disconnected. Reconnect it and click Open camera.",
+            );
+            stopCamera();
+          },
+          { once: true },
+        );
+      });
       intervalRef.current = window.setInterval(() => {
         if (
           attempt !== cameraAttemptRef.current ||
           video.readyState < 2 ||
-          !video.videoWidth
+          !video.videoWidth ||
+          !video.videoHeight
         )
           return;
         const scale = Math.min(1, 960 / video.videoWidth);
@@ -112,6 +157,14 @@ export function AdminLoyaltyScanner() {
         canvas.height = Math.round(video.videoHeight * scale);
         try {
           context.drawImage(video, 0, 0, canvas.width, canvas.height);
+          if (!receivedFrame) {
+            receivedFrame = true;
+            if (frameTimeoutRef.current !== null)
+              window.clearTimeout(frameTimeoutRef.current);
+            frameTimeoutRef.current = null;
+            setIsCameraActive(true);
+            setIsStarting(false);
+          }
           const frame = context.getImageData(0, 0, canvas.width, canvas.height);
           const result = jsQR(frame.data, frame.width, frame.height);
           if (!result) return;
@@ -122,6 +175,7 @@ export function AdminLoyaltyScanner() {
           setMessage(
             "Unable to read the camera image. Stop and reopen the camera to try again.",
           );
+          stopCamera();
         }
       }, 350);
     } catch (error) {
@@ -140,12 +194,12 @@ export function AdminLoyaltyScanner() {
           "Camera access is disabled by the browser or device settings.",
       };
       setMessage(
-        messages[name] ??
+        (name === "CameraTimeoutError" && error instanceof Error
+          ? error.message
+          : messages[name]) ??
           "Unable to start the camera. Check camera access and try again, or enter the member code below.",
       );
       stopCamera();
-    } finally {
-      if (attempt === cameraAttemptRef.current) setIsStarting(false);
     }
   }
 
@@ -205,6 +259,8 @@ export function AdminLoyaltyScanner() {
             autoPlay
             muted
             playsInline
+            controls={false}
+            disablePictureInPicture
           />
           {!isCameraActive ? (
             <div className="absolute inset-0 grid place-items-center p-6 text-center text-background">

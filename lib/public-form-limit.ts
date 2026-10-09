@@ -3,13 +3,14 @@ import { consumePublicFormLimit, getRequestIp } from "@/lib/chatbot/rate-limit";
 
 export async function requirePublicFormLimit(
   request: Request,
+  maximum = 10,
 ): Promise<Response | null> {
   try {
     const pathname = new URL(request.url).pathname;
     const limit = await consumePublicFormLimit(
       pathname.includes("/payment") ? "payment" : pathname,
       getRequestIp(request) ?? "unknown",
-      10,
+      maximum,
     );
     return limit.allowed
       ? null
