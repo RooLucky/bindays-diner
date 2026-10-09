@@ -10,24 +10,6 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 
-type BarcodeDetectorResult = {
-  rawValue: string;
-};
-
-type BarcodeDetectorInstance = {
-  detect(video: HTMLVideoElement): Promise<BarcodeDetectorResult[]>;
-};
-
-type BarcodeDetectorConstructor = new (options?: {
-  formats?: string[];
-}) => BarcodeDetectorInstance;
-
-declare global {
-  interface Window {
-    BarcodeDetector?: BarcodeDetectorConstructor;
-  }
-}
-
 function getMemberCode(value: string) {
   const trimmed = value.trim();
 
@@ -50,16 +32,14 @@ export function AdminLoyaltyScanner() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const intervalRef = useRef<number | null>(null);
-  const isDetectingRef = useRef(false);
+  const cameraAttemptRef = useRef(0);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
   const [message, setMessage] = useState("");
   const [manualValue, setManualValue] = useState("");
-  const [isScannerSupported, setIsScannerSupported] = useState<boolean | null>(
-    null,
-  );
-
   function stopCamera() {
+    cameraAttemptRef.current += 1;
+    setIsStarting(false);
     if (intervalRef.current !== null) {
       window.clearInterval(intervalRef.current);
       intervalRef.current = null;
@@ -81,81 +61,91 @@ export function AdminLoyaltyScanner() {
   }
 
   useEffect(() => {
-    setIsScannerSupported(typeof window.BarcodeDetector === "function");
-
     return () => stopCamera();
   }, []);
 
-  async function detectQrCode(detector: BarcodeDetectorInstance) {
-    if (isDetectingRef.current || !videoRef.current) {
-      return;
-    }
-
-    isDetectingRef.current = true;
-
-    try {
-      const [result] = await detector.detect(videoRef.current);
-      const memberCode = result ? getMemberCode(result.rawValue) : null;
-
-      if (memberCode) {
-        continueToMember(memberCode);
-      } else if (result) {
-        setMessage("This QR code is not a Binday's Diner loyalty card.");
-      }
-    } catch {
-      setMessage(
-        "The camera could not read that QR code. Hold the card steady and try again.",
-      );
-    } finally {
-      isDetectingRef.current = false;
-    }
-  }
-
   async function startCamera() {
-    if (!navigator.mediaDevices?.getUserMedia) {
-      setMessage("Camera access is not available in this browser.");
-      return;
-    }
-
-    if (!window.BarcodeDetector) {
+    if (!window.isSecureContext) {
       setMessage(
-        "QR scanning is not supported in this browser. Enter the member code or QR link below instead.",
+        "Camera access requires HTTPS. Open the secure website, or use localhost on this device for development.",
       );
       return;
     }
-
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setMessage(
+        "Camera access is unavailable. Open this page in a browser with camera support, or enter the member code below.",
+      );
+      return;
+    }
+    stopCamera();
+    const attempt = cameraAttemptRef.current;
     setIsStarting(true);
     setMessage("");
-    stopCamera();
-
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: false,
         video: { facingMode: { ideal: "environment" } },
       });
-      const detector = new window.BarcodeDetector({ formats: ["qr_code"] });
-
-      if (!videoRef.current) {
+      if (attempt !== cameraAttemptRef.current || !videoRef.current) {
         stream.getTracks().forEach((track) => track.stop());
         return;
       }
-
       streamRef.current = stream;
-      videoRef.current.srcObject = stream;
-      await videoRef.current.play();
+      const video = videoRef.current;
+      video.srcObject = stream;
+      await video.play();
+      const { default: jsQR } = await import("jsqr");
+      if (attempt !== cameraAttemptRef.current) return;
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d", { willReadFrequently: true });
+      if (!context) throw new Error("Unable to prepare the QR scanner.");
       setIsCameraActive(true);
       intervalRef.current = window.setInterval(() => {
-        void detectQrCode(detector);
+        if (
+          attempt !== cameraAttemptRef.current ||
+          video.readyState < 2 ||
+          !video.videoWidth
+        )
+          return;
+        const scale = Math.min(1, 960 / video.videoWidth);
+        canvas.width = Math.round(video.videoWidth * scale);
+        canvas.height = Math.round(video.videoHeight * scale);
+        try {
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const frame = context.getImageData(0, 0, canvas.width, canvas.height);
+          const result = jsQR(frame.data, frame.width, frame.height);
+          if (!result) return;
+          const memberCode = getMemberCode(result.data);
+          if (memberCode) continueToMember(memberCode);
+          else setMessage("This QR code is not a Binday's Diner loyalty card.");
+        } catch {
+          setMessage(
+            "Unable to read the camera image. Stop and reopen the camera to try again.",
+          );
+        }
       }, 350);
     } catch (error) {
-      const detail =
-        error instanceof Error
-          ? error.message
-          : "Please allow camera access and try again.";
-      setMessage(`Unable to start the camera. ${detail}`);
+      if (attempt !== cameraAttemptRef.current) return;
+      const name = error instanceof Error ? error.name : "";
+      const messages: Record<string, string> = {
+        NotAllowedError:
+          "Camera permission was blocked. Allow camera access in your browser's site settings, then try again.",
+        NotFoundError:
+          "No camera was found. Connect a camera or enter the member code below.",
+        NotReadableError:
+          "The camera is busy or unavailable. Close other apps using it, then try again.",
+        OverconstrainedError:
+          "This camera cannot use the requested settings. Try another camera or enter the member code below.",
+        SecurityError:
+          "Camera access is disabled by the browser or device settings.",
+      };
+      setMessage(
+        messages[name] ??
+          "Unable to start the camera. Check camera access and try again, or enter the member code below.",
+      );
       stopCamera();
     } finally {
-      setIsStarting(false);
+      if (attempt === cameraAttemptRef.current) setIsStarting(false);
     }
   }
 
@@ -190,15 +180,20 @@ export function AdminLoyaltyScanner() {
           type="button"
           variant={isCameraActive ? "outline" : "default"}
           className="rounded-lg"
-          disabled={isStarting}
-          onClick={() => (isCameraActive ? stopCamera() : void startCamera())}
+          onClick={() =>
+            isCameraActive || isStarting ? stopCamera() : void startCamera()
+          }
         >
           {isCameraActive ? (
             <RefreshCw className="size-4" />
           ) : (
             <Camera className="size-4" />
           )}
-          {isCameraActive ? "Stop camera" : "Open camera"}
+          {isStarting
+            ? "Cancel camera"
+            : isCameraActive
+              ? "Stop camera"
+              : "Open camera"}
         </Button>
       </div>
 
@@ -216,12 +211,12 @@ export function AdminLoyaltyScanner() {
               <div>
                 <ScanLine className="mx-auto size-10 opacity-80" />
                 <p className="mt-3 text-sm font-semibold">
-                  Point the camera at a customer&apos;s QR card.
+                  {isStarting
+                    ? "Opening camera… Allow access when prompted."
+                    : "Point the camera at a customer’s QR card."}
                 </p>
                 <p className="mt-1 text-xs text-background/70">
-                  {isScannerSupported === false
-                    ? "Use the manual entry below when QR scanning is unavailable."
-                    : "Use the rear camera for the best scan result."}
+                  Use the rear camera for the best scan result.
                 </p>
               </div>
             </div>
@@ -234,7 +229,10 @@ export function AdminLoyaltyScanner() {
       </div>
 
       {message ? (
-        <p className="mt-4 rounded-lg border border-primary/25 bg-primary/5 px-3 py-2 text-sm leading-6 text-foreground">
+        <p
+          role="alert"
+          className="mt-4 rounded-lg border border-primary/25 bg-primary/5 px-3 py-2 text-sm leading-6 text-foreground"
+        >
           {message}
         </p>
       ) : null}
