@@ -1,4 +1,5 @@
 import { notifyAdminOrdersUpdated } from "@/lib/realtime";
+import { logReservationError } from "@/lib/reservation-error-log";
 import {
   PublicRequestError,
   readLimitedBody,
@@ -32,6 +33,7 @@ export async function POST(request: Request) {
       );
     }
 
+    logReservationError("create-order", error);
     return Response.json(
       {
         error:

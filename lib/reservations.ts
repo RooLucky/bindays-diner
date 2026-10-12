@@ -1,4 +1,5 @@
 import { isValidDeliverySchedule } from "@/lib/delivery-schedule";
+import { logReservationError } from "@/lib/reservation-error-log";
 import {
   meetsMinimumOrder,
   DELIVERY_FEE_PESOS,
@@ -364,6 +365,7 @@ export async function createReservation(input: unknown, origin: string) {
       attachments: qrAttachments,
     });
   } catch (error) {
+    logReservationError("customer-email", error);
     await getDb()
       .delete(reservations)
       .where(eq(reservations.id, reservation.id));

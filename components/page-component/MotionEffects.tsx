@@ -119,15 +119,17 @@ export function ParallaxLayer({
   className,
   distance = 56,
   reverse = false,
+  alwaysAnimate = false,
 }: {
   children: ReactNode;
   className?: string;
   distance?: number;
   reverse?: boolean;
+  alwaysAnimate?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const { enabled } = useSiteMotion();
-  const reduceMotion = !enabled;
+  const reduceMotion = !alwaysAnimate && !enabled;
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"],
