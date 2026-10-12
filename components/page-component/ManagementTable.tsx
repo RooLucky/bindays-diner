@@ -905,8 +905,14 @@ export function ManagementTable({
                   <TableRow key={item.id} className="border-t border-border">
                     <TableCell className="px-4 py-3">
                       <img
-                        src={item.imageUrl}
+                        src={item.imageKey
+                          ? `/api/admin/management/images/${item.id}?v=${encodeURIComponent(item.imageKey)}`
+                          : item.imageUrl}
                         alt={item.imageAlt}
+                        width={160}
+                        height={100}
+                        loading="lazy"
+                        decoding="async"
                         className="aspect-[1.6/1] w-24 rounded-lg object-cover"
                       />
                     </TableCell>
