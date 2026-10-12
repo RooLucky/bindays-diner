@@ -2,7 +2,8 @@
 import { OrderReceiptViewer } from "@/components/admin/OrderReceiptViewer";
 import { ORDER_REFRESH_EVENT } from "@/lib/order-realtime-contracts";
 import { useEffect, useState } from "react";
-import { Download, RefreshCw } from "lucide-react";
+import { Download, RefreshCw, Star } from "lucide-react";
+import { useViewedOrders } from "@/hooks/use-viewed-orders";
 import { toast } from "sonner";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminPanel } from "@/components/admin/AdminPanel";
@@ -40,7 +41,8 @@ const peso = (value: number) =>
 const placed = (date: string) =>
   new Date(date).toLocaleString("en-PH", { timeZone: "Asia/Manila" });
 
-export function AdminOrdersClient() {
+export function AdminOrdersClient({ userId }: { userId: string }) {
+  const { isNew, markViewed } = useViewedOrders(userId);
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [query, setQuery] = useState("");
   const [search, setSearch] = useState("");
@@ -278,8 +280,14 @@ export function AdminOrdersClient() {
                 orders.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell>
-                      <p className="font-medium">
+                      <p className="flex items-center gap-2 font-medium">
                         {order.id.slice(0, 8).toUpperCase()}
+                        {isNew(order.id) && (
+                          <Badge className="gap-1 border-emerald-200 bg-emerald-50 text-emerald-700" variant="outline" title="Not viewed yet">
+                            <Star className="size-3 fill-current" aria-hidden="true" />
+                            New
+                          </Badge>
+                        )}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {placed(order.createdAt)}
@@ -316,6 +324,7 @@ export function AdminOrdersClient() {
                         onClick={() => {
                           setSelected(order);
                           setDetailsOpen(true);
+                          markViewed(order.id);
                         }}
                       >
                         View

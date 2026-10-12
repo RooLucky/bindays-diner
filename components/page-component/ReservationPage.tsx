@@ -186,7 +186,8 @@ export function ReservationPage() {
       setNotes("");
       setNotesEdited(false);
       toast.success(
-        "Reservation request sent. Check your email for the payment link.",
+        "Order request sent. Check your email inbox or spam folder for the payment link.",
+        { duration: 8000 },
       );
     });
   }
@@ -195,9 +196,27 @@ export function ReservationPage() {
     return (
       <section className="mx-auto max-w-2xl px-6 py-20 text-center">
         <h1 className="font-serif text-3xl">Your delivery request was sent</h1>
+        <div className="mt-6 rounded-xl border-2 border-primary/30 bg-brand-gold-soft p-5 text-left sm:p-6" role="status">
+          <div className="flex items-start gap-3">
+            <Mail className="mt-0.5 size-6 shrink-0 text-primary" aria-hidden="true" />
+            <div>
+              <h2 className="text-lg font-bold text-foreground">
+                Open Gmail and check your Inbox or Spam folder
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-foreground">
+                Look for the payment email from <strong className="break-all">bindaysdiner2025@gmail.com</strong>.
+                {" "}If it is not in your <strong>Inbox</strong>, open <strong>Spam</strong>.
+                {" "}Open the email and follow the payment link to upload your receipt.
+              </p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                Using another email provider? Check its inbox and spam or junk folder.
+              </p>
+            </div>
+          </div>
+        </div>
         <p className="mt-4 text-muted-foreground">
-          Check your email for the payment link. Complete payment and submit
-          your receipt within 30 minutes. Staff will verify the transfer before
+          Complete payment and submit your receipt within <strong className="text-foreground">30 minutes</strong>.
+          {" "}Staff will verify the transfer before
           confirming your order.
         </p>
         <Link className={cn(buttonVariants(), "mt-6")} href="/menu">
