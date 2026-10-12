@@ -1,4 +1,5 @@
 "use client";
+import { OrderReceiptViewer } from "@/components/admin/OrderReceiptViewer";
 import { ORDER_REFRESH_EVENT } from "@/lib/order-realtime-contracts";
 import { useEffect, useState } from "react";
 import { Download, RefreshCw } from "lucide-react";
@@ -422,6 +423,12 @@ export function AdminOrdersClient() {
                       <strong>Total: {peso(selected.total)}</strong>
                     </div>
                   </div>
+                  {selected.hasReceipt && (
+                    <OrderReceiptViewer
+                      key={selected.id}
+                      orderId={selected.id}
+                    />
+                  )}
                   {selected.notes && (
                     <div>
                       <h3 className="font-semibold">Notes</h3>

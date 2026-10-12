@@ -57,6 +57,7 @@ export async function readAdminOrders(
       subtotal: reservations.subtotal,
       deliveryFee: reservations.deliveryFee,
       status: effectiveStatus,
+      hasReceipt: sql<boolean>`${reservations.receiptKey} is not null`,
       createdAt: reservations.createdAt,
     })
     .from(reservations)

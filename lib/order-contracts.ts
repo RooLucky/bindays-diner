@@ -20,6 +20,7 @@ export type AdminOrder = {
   deliveryFee: number;
   total: number;
   status: OrderStatus;
+  hasReceipt?: boolean;
   createdAt: string;
 };
 export const orderStatusLabels: Record<OrderStatus, string> = {

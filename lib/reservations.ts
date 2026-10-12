@@ -98,7 +98,7 @@ function getCustomerMailer() {
   }
 
   return {
-    from: env.SMTP_FROM,
+    from: { name: "Binday's Diner", address: env.SMTP_FROM },
 
     transporter: nodemailer.createTransport({
       host: env.SMTP_HOST,
@@ -106,6 +106,7 @@ function getCustomerMailer() {
       port: env.SMTP_PORT,
 
       secure: env.SMTP_PORT === 465,
+      requireTLS: env.SMTP_PORT !== 465,
 
       auth: { user: env.SMTP_USER, pass: env.SMTP_PASS },
     }),
@@ -126,7 +127,7 @@ function getDinerMailer() {
   }
 
   return {
-    from: env.SMTP2_FROM,
+    from: { name: "Binday's Diner", address: env.SMTP2_FROM },
 
     transporter: nodemailer.createTransport({
       host: env.SMTP2_HOST,
@@ -134,6 +135,7 @@ function getDinerMailer() {
       port: env.SMTP2_PORT,
 
       secure: env.SMTP2_PORT === 465,
+      requireTLS: env.SMTP2_PORT !== 465,
 
       auth: { user: env.SMTP2_USER, pass: env.SMTP2_PASS },
     }),
@@ -369,6 +371,45 @@ export async function createReservation(input: unknown, origin: string) {
     throw error;
   }
 
+  // Notify staff as part of checkout, without rolling back a valid order if
+  // the separate staff mailbox is temporarily unavailable.
+  try {
+    const { from, transporter } = getDinerMailer();
+    const items = parseItems(reservation.itemsJson)
+      .map((item) => `${item.quantity} x ${item.name} - ${item.price} each`)
+      .join("\n");
+    await transporter.sendMail({
+      from,
+      to: DINER_RECEIPT_EMAIL,
+      subject: `Binday's Diner - new order ${reservation.id.slice(0, 8).toUpperCase()}`,
+      text: [
+        "A customer has placed a new delivery order.",
+        "Payment status: Awaiting payment. No receipt has been uploaded yet.",
+        "",
+        `Order ID: ${reservation.id}`,
+        `Customer: ${reservation.fullName}`,
+        `Email: ${reservation.email}`,
+        `Phone: ${reservation.phone}`,
+        `Delivery: ${reservation.deliveryDate} at ${reservation.deliveryTime} (Asia/Manila)`,
+        `Address: ${reservation.deliveryAddress}`,
+        ...(reservation.landmark ? [`Landmark: ${reservation.landmark}`] : []),
+        "",
+        "Items:",
+        items,
+        "",
+        `Food subtotal: PHP ${reservation.subtotal}`,
+        `Delivery fee: PHP ${reservation.deliveryFee}`,
+        `Total: PHP ${reservation.subtotal + reservation.deliveryFee}`,
+        ...(reservation.notes ? ["", `Notes: ${reservation.notes}`] : []),
+        "",
+        "View the order: https://www.bindaysdiner.com/management/orders",
+        "You will receive another notification when the customer uploads a receipt.",
+      ].join("\n"),
+    });
+  } catch {
+    console.error("New-order staff email failed; the saved order remains available in management.");
+  }
+
   return {
     id: reservation.id,
 
@@ -435,9 +476,9 @@ export async function submitReservationReceipt(input: {
 
       to: DINER_RECEIPT_EMAIL,
 
-      subject: `Payment receipt: ${reservation.fullName} (${reservation.id})`,
+      subject: `Binday's Diner - receipt for order ${reservation.id.slice(0, 8).toUpperCase()}`,
 
-      text: `A payment receipt was uploaded for reservation ${reservation.id}.\nCustomer: ${reservation.fullName}\nEmail: ${reservation.email}\nPhone: ${reservation.phone}\nDelivery: ${reservation.deliveryDate} ${reservation.deliveryTime}\nAddress: ${reservation.deliveryAddress}\nFood subtotal: PHP ${reservation.subtotal}\nDelivery fee: PHP ${reservation.deliveryFee}\nTotal: PHP ${reservation.subtotal + reservation.deliveryFee}\nReceipt URL: ${receiptUrl}`,
+      text: `A payment receipt was uploaded for reservation ${reservation.id}.\nCustomer: ${reservation.fullName}\nEmail: ${reservation.email}\nPhone: ${reservation.phone}\nDelivery: ${reservation.deliveryDate} ${reservation.deliveryTime}\nAddress: ${reservation.deliveryAddress}\nFood subtotal: PHP ${reservation.subtotal}\nDelivery fee: PHP ${reservation.deliveryFee}\nTotal: PHP ${reservation.subtotal + reservation.deliveryFee}\nReview this order and its receipt in your staff dashboard: https://www.bindaysdiner.com/management/orders`,
 
       attachments: [
         {
