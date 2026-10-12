@@ -1,3 +1,4 @@
+import { notifyAdminOrdersUpdated } from "@/lib/realtime";
 import {
   PublicRequestError,
   readLimitedBody,
@@ -30,6 +31,7 @@ export async function POST(
     }
 
     const reservation = await submitReservationReceipt({ id, token, receipt });
+    await notifyAdminOrdersUpdated();
     return Response.json({ reservation });
   } catch (error) {
     return Response.json(

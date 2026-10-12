@@ -3,6 +3,10 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 
 import Ably from "ably";
+import {
+  ADMIN_ORDERS_CHANNEL,
+  ORDER_UPDATED_EVENT,
+} from "@/lib/order-realtime-contracts";
 import { revalidatePath } from "next/cache";
 
 import { getServerEnv } from "@/lib/env";
@@ -41,6 +45,26 @@ function getAblyRest() {
 
 export function isAblyRealtimeEnabled() {
   return Boolean(getServerEnv().ABLY_API_KEY);
+}
+
+export function createAdminOrdersTokenRequest(userId: string) {
+  return getAblyRest().auth.createTokenRequest({
+    clientId: `admin-${userId}`,
+    capability: { [ADMIN_ORDERS_CHANNEL]: ["subscribe"] },
+    ttl: 5 * 60 * 1000,
+  });
+}
+
+export async function notifyAdminOrdersUpdated() {
+  try {
+    if (!isAblyRealtimeEnabled()) return;
+    // Only an invalidation signal; customer details stay behind authenticated APIs.
+    await getAblyRest()
+      .channels.get(ADMIN_ORDERS_CHANNEL)
+      .publish(ORDER_UPDATED_EVENT, {});
+  } catch {
+    console.warn("Order saved, but realtime notification could not be sent.");
+  }
 }
 
 export async function createPublicMenuTokenRequest() {

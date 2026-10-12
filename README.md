@@ -77,3 +77,12 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+### Admin order notifications
+
+Successful order creation and receipt submission publish an invalidation event to the private `admin:orders` Ably channel. Customer details are never included in these events. The admin-only `/api/admin/orders/realtime` endpoint issues five-minute subscribe-only tokens. Public menu tokens cannot subscribe to orders.
+
+Set `ABLY_API_KEY` locally and in Vercel with publish/subscribe capability for `admin:orders` (retain the existing menu channel capability). Redeploy after configuration. The sidebar displays “Order notifications live” when connected; 10-second polling provides fallback and reconnect reconciliation.
+
+Unread orders are counted from the database using a read marker saved per staff account in that browser. Opening Orders acknowledges the latest returned marker and clears the badge, even with table filters applied. Other tabs in the same browser receive the marker change. A different browser/device has its own read state, and existing orders are initially unread. Receipt changes refresh the table but do not count as new orders. No database migration is required.

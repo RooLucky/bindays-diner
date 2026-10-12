@@ -1,3 +1,4 @@
+import { notifyAdminOrdersUpdated } from "@/lib/realtime";
 import {
   PublicRequestError,
   readLimitedBody,
@@ -19,6 +20,7 @@ export async function POST(request: Request) {
       new URL(request.url).origin,
     );
 
+    await notifyAdminOrdersUpdated();
     return Response.json({ reservation }, { status: 201 });
   } catch (error) {
     if (error instanceof PublicRequestError)

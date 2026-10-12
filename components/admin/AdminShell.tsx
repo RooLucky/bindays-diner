@@ -1,5 +1,6 @@
 "use client";
 
+import { useOrderNotifications } from "@/hooks/use-order-notifications";
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -113,6 +114,7 @@ function NavigationGroup({
 }
 
 function AdminSidebar({ user }: { user: AdminSessionUser }) {
+  const { unread, live } = useOrderNotifications(user.id);
   const pathname = usePathname();
   const router = useRouter();
   const { isMobile, setOpenMobile } = useSidebar();
@@ -194,6 +196,14 @@ function AdminSidebar({ user }: { user: AdminSessionUser }) {
                 >
                   <item.icon />
                   <span>{item.label}</span>
+                  {item.href === "/management/orders" && unread > 0 && (
+                    <span
+                      aria-label={`${unread} unread orders`}
+                      className="ml-auto rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-primary-foreground"
+                    >
+                      {unread > 99 ? "99+" : unread}
+                    </span>
+                  )}
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
@@ -203,6 +213,9 @@ function AdminSidebar({ user }: { user: AdminSessionUser }) {
           <NavigationGroup key={group.label} group={group} />
         ))}
       </SidebarContent>
+      <p className="px-4 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
+        {live ? "Order notifications live" : "Checking orders every 10 seconds"}
+      </p>
       <SidebarFooter className="mt-2 border-t border-sidebar-border pt-3">
         <SidebarMenu>
           <SidebarMenuItem>

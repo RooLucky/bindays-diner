@@ -1,4 +1,5 @@
 "use client";
+import { ORDER_REFRESH_EVENT } from "@/lib/order-realtime-contracts";
 import { useEffect, useState } from "react";
 import { Download, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
@@ -47,6 +48,7 @@ export function AdminOrdersClient() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [refresh, setRefresh] = useState(0);
   const [exporting, setExporting] = useState(false);
   const [selected, setSelected] = useState<AdminOrder | null>(null);
@@ -60,18 +62,48 @@ export function AdminOrdersClient() {
       status,
       page: String(page),
     });
-    (async () => {
+    let busy = false;
+    let queued = false;
+    let stopped = false;
+    async function loadOrders(background = false) {
+      if (stopped || (background && document.visibilityState !== "visible"))
+        return;
+      if (busy) {
+        queued = true;
+        return;
+      }
+      busy = true;
       try {
         const response = await fetch(`/api/admin/orders?${params}`, {
           cache: "no-store",
-          signal: controller.signal,
+          signal: AbortSignal.any([
+            controller.signal,
+            AbortSignal.timeout(15000),
+          ]),
         });
+        if (response.status === 401) {
+          stopped = true;
+          throw new Error(
+            "Your session expired. Sign in again to view orders.",
+          );
+        }
         const data = await response.json();
         if (!response.ok)
           throw new Error(data.error ?? "Unable to load orders.");
         if (!controller.signal.aborted) {
-          setOrders(data.orders);
+          const updatedOrders = data.orders as AdminOrder[];
+          setOrders(updatedOrders);
           setTotal(data.total);
+          setSelected((current) =>
+            current
+              ? (updatedOrders.find((order) => order.id === current.id) ??
+                current)
+              : null,
+          );
+          setLastUpdated(new Date());
+          setError("");
+          const lastPage = Math.max(1, Math.ceil(data.total / 25));
+          if (page > lastPage) setPage(lastPage);
         }
       } catch (error) {
         if (!controller.signal.aborted)
@@ -79,10 +111,30 @@ export function AdminOrdersClient() {
             error instanceof Error ? error.message : "Unable to load orders.",
           );
       } finally {
+        busy = false;
         if (!controller.signal.aborted) setLoading(false);
+        if (queued && !stopped) {
+          queued = false;
+          void loadOrders(true);
+        }
       }
-    })();
-    return () => controller.abort();
+    }
+    void loadOrders();
+    const refreshVisible = () => {
+      void loadOrders(true);
+    };
+    const timer = window.setInterval(refreshVisible, 10000);
+    window.addEventListener("focus", refreshVisible);
+    window.addEventListener(ORDER_REFRESH_EVENT, refreshVisible);
+    document.addEventListener("visibilitychange", refreshVisible);
+    return () => {
+      stopped = true;
+      controller.abort();
+      window.clearInterval(timer);
+      window.removeEventListener("focus", refreshVisible);
+      window.removeEventListener(ORDER_REFRESH_EVENT, refreshVisible);
+      document.removeEventListener("visibilitychange", refreshVisible);
+    };
   }, [search, status, page, refresh]);
 
   async function exportOrders() {
@@ -135,6 +187,16 @@ export function AdminOrdersClient() {
           {exporting ? "Exporting…" : "Export to Excel"}
         </Button>
       </AdminPageHeader>
+      <p role="status" className="text-xs text-muted-foreground">
+        {error.includes("session expired")
+          ? "Sign in again to resume automatic updates."
+          : error
+            ? "Automatic update failed. Retrying every 10 seconds while this tab is visible."
+            : "Automatically checks for orders every 10 seconds while this tab is visible."}
+        {lastUpdated
+          ? ` Last updated: ${lastUpdated.toLocaleTimeString("en-PH", { timeZone: "Asia/Manila" })} (Asia/Manila).`
+          : ""}
+      </p>
       <AdminPanel>
         <div className="flex flex-wrap items-center justify-between gap-4 border-b p-4">
           <form
