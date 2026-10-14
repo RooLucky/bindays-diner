@@ -25,7 +25,7 @@ type CartContextValue = {
   items: CartItem[];
   totalQuantity: number;
   subtotal: number;
-  addItem: (dish: Dish, source: string, quantity?: number) => void;
+  addItem: (dish: Dish, source: string, quantity?: number, flavor?: string) => void;
   incrementItem: (id: string) => void;
   decrementItem: (id: string) => void;
   removeItem: (id: string) => void;
@@ -98,8 +98,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
-  const addItem = useCallback((dish: Dish, source: string, quantity = 1) => {
-    const id = createCartItemId(dish, source);
+  const addItem = useCallback((dish: Dish, source: string, quantity = 1, flavor?: string) => {
+    const id = JSON.stringify([dish.menuItemId ?? createCartItemId(dish, source), flavor ?? ""]);
     const safeQuantity = normalizeCartQuantity(quantity);
 
     setItems((currentItems) => {
@@ -120,6 +120,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         ...currentItems,
         {
           id,
+          menuItemId: dish.menuItemId,
+          flavor,
           name: dish.name,
           description: dish.description,
           price: dish.price,
@@ -182,7 +184,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
 
     const lines = items.map(
-      (item) => `${item.quantity}x ${item.name} (${item.price})`,
+      (item) => `${item.quantity}x ${item.name}${item.flavor ? ` - ${item.flavor}` : ""} (${item.price})`,
     );
 
     return `Selected meals:\n${lines.join("\n")}\nOrder subtotal: P${subtotal.toLocaleString("en-PH")}`;

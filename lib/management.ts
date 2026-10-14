@@ -84,6 +84,7 @@ export type ManagementCategoryResponse = {
 };
 
 export type ManagementItemResponse = {
+  flavors?: string[];
   id: string;
   categorySlug: ManagementCategorySlug;
   name: string;
@@ -305,6 +306,7 @@ export function toManagementItemResponse(
     price: item.price,
     tag: item.tag,
     imageKey: item.imageKey,
+    flavors: item.categorySlug === "student-meal" ? item.flavors : [],
     imageUrl: resolveImageUrl(item.imageKey, item.imageUrl),
     imageAlt: item.imageAlt,
     sortOrder: item.sortOrder,
@@ -366,6 +368,7 @@ export async function getManagementPayload(slug: ManagementCategorySlug) {
         updatedAt: now,
       },
       items: getStaticManagementItems(slug).map((item, index) => ({
+        flavors: [] as string[],
         id: `static-${slug}-${index}`,
         ...item,
         createdAt: now,
@@ -398,6 +401,8 @@ export async function getPublicCampaign(slug: ManagementCategorySlug) {
       .filter((item) => item.isActive)
       .map(
         (item): Dish => ({
+          menuItemId: item.id.startsWith("static-") ? undefined : item.id,
+          flavors: item.flavors,
           name: item.name,
           description: item.description,
           price: item.price,

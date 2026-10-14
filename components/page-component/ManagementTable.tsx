@@ -1,4 +1,5 @@
 "use client";
+import { MealFlavorPicker } from "@/components/admin/MealFlavorPicker";
 
 import { Textarea } from "@/components/ui/textarea";
 
@@ -66,6 +67,7 @@ import type {
 } from "@/lib/management";
 
 const emptyItemForm = {
+  flavors: "",
   name: "",
   description: "",
   price: "",
@@ -220,6 +222,7 @@ export function ManagementTable({
   function startEdit(item: ManagementItemResponse) {
     setEditingItem(item);
     setItemForm({
+      flavors: (item.flavors ?? []).join("\n"),
       name: item.name,
       description: item.description,
       price: item.price,
@@ -676,6 +679,9 @@ export function ManagementTable({
                     className="h-10 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-primary"
                   />
                 </label>
+                {category === "student-meal" && (
+                  <MealFlavorPicker value={itemForm.flavors} onChange={value => updateItemField("flavors", value)} />
+                )}
                 <div className="grid gap-2 text-sm font-medium text-foreground md:col-span-2">
                   <span>
                     Category{" "}

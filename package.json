@@ -20,7 +20,9 @@
     "db:fresh": "tsx scripts/reset-db.ts && drizzle-kit push --force && pnpm db:generate && pnpm db:seed",
     "db:studio": "drizzle-kit studio",
     "test:security": "tsx --test tests/security.test.ts",
-    "db:migrate:delivery": "tsx scripts/migrate-delivery-fee.ts"
+    "db:migrate:delivery": "tsx scripts/migrate-delivery-fee.ts",
+    "db:migrate:flavors": "tsx scripts/migrate-meal-flavors.ts",
+    "db:migrate:flavor-catalog": "tsx scripts/migrate-flavor-catalog.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1079.0",

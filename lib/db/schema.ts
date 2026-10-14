@@ -109,6 +109,12 @@ export const managementCategories = pgTable("management_categories", {
     .notNull(),
 });
 
+export const mealFlavors = pgTable("meal_flavors", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: varchar("name", { length: 80 }).notNull(),
+  normalizedName: varchar("normalized_name", { length: 80 }).notNull().unique(),
+});
+
 export const managementItems = pgTable(
   "management_items",
   {
@@ -120,6 +126,7 @@ export const managementItems = pgTable(
     description: text("description").notNull(),
     price: varchar("price", { length: 40 }).notNull(),
     tag: varchar("tag", { length: 80 }),
+    flavors: text("flavors").array().default([]).notNull(),
     imageKey: text("image_key"),
     imageUrl: text("image_url").notNull(),
     imageAlt: varchar("image_alt", { length: 220 }).notNull(),

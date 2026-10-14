@@ -21,7 +21,7 @@ test("damaged persisted cart entries are discarded without losing valid meals", 
     item,
     { ...item, id: "bad", quantity: -2 },
   ]);
-  assert.deepEqual(result, [{ ...item, tag: undefined }]);
+  assert.deepEqual(result, [{ ...item, tag: undefined, flavor: undefined, menuItemId: undefined }]);
   assert.deepEqual(parseStoredCart({}), []);
 });
 test("cart quantities match the API's 1–50 integer limit", () => {

@@ -1,3 +1,4 @@
+import { resolveMealFlavors } from "@/lib/meal-flavor-catalog";
 import { deleteR2Object } from "@/lib/r2";
 import { eq } from "drizzle-orm";
 
@@ -73,6 +74,7 @@ export async function POST(
       .insert(managementItems)
       .values({
         categorySlug,
+        flavors: categorySlug === "student-meal" ? await resolveMealFlavors(formData.get("flavors")) : [],
         name,
         description: getRequiredString(formData, "description"),
         price: getRequiredString(formData, "price"),

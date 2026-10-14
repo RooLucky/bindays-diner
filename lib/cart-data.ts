@@ -1,4 +1,6 @@
 export type CartItem = {
+  menuItemId?: string;
+  flavor?: string;
   id: string;
   name: string;
   description: string;
@@ -40,6 +42,8 @@ export function parseStoredCart(value: unknown): CartItem[] {
     .slice(0, 50)
     .map((item) => ({
       ...item,
+      flavor: typeof item.flavor === "string" ? item.flavor : undefined,
+      menuItemId: typeof item.menuItemId === "string" ? item.menuItemId : undefined,
       tag: typeof item.tag === "string" ? item.tag : undefined,
       quantity: normalizeCartQuantity(item.quantity),
     }));

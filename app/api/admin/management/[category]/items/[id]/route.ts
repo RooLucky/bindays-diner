@@ -9,6 +9,7 @@ import {
   toManagementItemResponse,
 } from "@/lib/management";
 import { notifyPublicMenuContentUpdated } from "@/lib/realtime";
+import { resolveMealFlavors } from "@/lib/meal-flavor-catalog";
 import { deleteR2Object } from "@/lib/r2";
 import {
   getOptionalBoolean,
@@ -80,6 +81,7 @@ export async function PATCH(
     const [item] = await getDb()
       .update(managementItems)
       .set({
+        flavors: categorySlug === "student-meal" ? await resolveMealFlavors(formData.get("flavors")) : [],
         name,
         description: getRequiredString(formData, "description"),
         price: getRequiredString(formData, "price"),

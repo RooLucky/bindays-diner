@@ -415,7 +415,7 @@ export function AdminOrdersClient({ userId }: { userId: string }) {
                     <TableBody>
                       {selected.items.map((item, index) => (
                         <TableRow key={index}>
-                          <TableCell>{item.name}</TableCell>
+                          <TableCell>{item.name}{item.flavor ? ` — ${item.flavor}` : ""}</TableCell>
                           <TableCell>{item.quantity}</TableCell>
                           <TableCell>{item.price}</TableCell>
                         </TableRow>

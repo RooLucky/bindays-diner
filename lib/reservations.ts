@@ -1,4 +1,5 @@
 import { isValidDeliverySchedule } from "@/lib/delivery-schedule";
+import { isValidMealFlavor } from "@/lib/meal-flavors";
 import { logReservationError } from "@/lib/reservation-error-log";
 import {
   meetsMinimumOrder,
@@ -43,6 +44,8 @@ const DINER_RECEIPT_EMAIL = "bindaysdiner2025@gmail.com";
 export const RESERVATION_PAYMENT_NUMBER = "09565021661";
 
 const reservationItemSchema = z.object({
+  menuItemId: z.string().uuid().optional(),
+  flavor: z.string().trim().min(1).max(80).optional(),
   name: z.string().trim().min(1).max(160),
 
   price: z.string().trim().min(1).max(40),
@@ -259,7 +262,7 @@ export async function createReservation(input: unknown, origin: string) {
     );
 
   const catalog = await getDb()
-    .select({ name: managementItems.name, price: managementItems.price })
+    .select({ id: managementItems.id, category: managementItems.categorySlug, flavors: managementItems.flavors, name: managementItems.name, price: managementItems.price })
     .from(managementItems)
     .where(eq(managementItems.isActive, true));
 
@@ -267,7 +270,7 @@ export async function createReservation(input: unknown, origin: string) {
 
   for (const item of parsed.items) {
     const current = catalog.find(
-      (row) => row.name === item.name && row.price === item.price,
+      (row) => (!item.menuItemId || row.id === item.menuItemId) && row.name === item.name && row.price === item.price,
     );
 
     const amount = current
@@ -279,6 +282,8 @@ export async function createReservation(input: unknown, origin: string) {
         "A menu item has changed. Refresh your cart and try again.",
       );
 
+    if (!current || !isValidMealFlavor(current.category, current.flavors, item.flavor))
+      throw new PublicRequestError("A selected flavor is no longer available. Refresh your cart and choose an available flavor.");
     verifiedSubtotal += amount * item.quantity;
   }
 
@@ -325,7 +330,7 @@ export async function createReservation(input: unknown, origin: string) {
   const orderRows = parseItems(reservation.itemsJson)
     .map(
       (item) =>
-        `<tr><td style="padding:8px 0;color:#3f3f46;">${escapeHtml(item.name)} × ${item.quantity}</td><td style="padding:8px 0;text-align:right;color:#18181b;font-weight:700;">${escapeHtml(item.price)}</td></tr>`,
+        `<tr><td style="padding:8px 0;color:#3f3f46;">${escapeHtml(item.name)}${item.flavor ? ` — ${escapeHtml(item.flavor)}` : ""} × ${item.quantity}</td><td style="padding:8px 0;text-align:right;color:#18181b;font-weight:700;">${escapeHtml(item.price)}</td></tr>`,
     )
 
     .join("");
@@ -378,7 +383,7 @@ export async function createReservation(input: unknown, origin: string) {
   try {
     const { from, transporter } = getDinerMailer();
     const items = parseItems(reservation.itemsJson)
-      .map((item) => `${item.quantity} x ${item.name} - ${item.price} each`)
+      .map((item) => `${item.quantity} x ${item.name}${item.flavor ? ` — ${item.flavor}` : ""} - ${item.price} each`)
       .join("\n");
     await transporter.sendMail({
       from,

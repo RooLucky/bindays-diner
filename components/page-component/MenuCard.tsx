@@ -33,6 +33,8 @@ export function MenuCard({
   variant?: "default" | "student";
 }) {
   const { addItem } = useCart();
+  const [flavor, setFlavor] = useState("");
+  const flavors = source === "student-meal" || source === "student-meals" ? dish.flavors ?? [] : [];
   const [quantity, setQuantity] = useState(1);
   const [open, setOpen] = useState(false);
   const resetQuantityAfterClose = useRef(false);
@@ -63,7 +65,8 @@ export function MenuCard({
   }
 
   function handleAddToCart() {
-    addItem(dish, source, quantity);
+    if (flavors.length && !flavors.includes(flavor)) return;
+    addItem(dish, source, quantity, flavors.length ? flavor : undefined);
     toast.success(
       `${quantity} ${quantity === 1 ? "order" : "orders"} of ${dish.name} added to cart.`,
     );
@@ -195,15 +198,15 @@ export function MenuCard({
         <DialogPortal>
           <DialogBackdrop className="bg-foreground/40 backdrop-blur-md" />
           <DialogViewport>
-            <DialogPopup className="max-w-lg overflow-hidden p-0 sm:p-0">
-              <div className="border-b border-border px-5 py-5 sm:px-6">
+            <DialogPopup className="flex max-h-[calc(100dvh-2rem)] max-w-lg flex-col gap-0 overflow-hidden p-0 sm:p-0">
+              <div className="shrink-0 border-b border-border px-5 py-4 sm:px-6">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <DialogTitle className="font-serif text-3xl text-foreground">
+                    <DialogTitle className="font-serif text-2xl leading-tight text-foreground">
                       {dish.name}
                     </DialogTitle>
                     <DialogDescription className="mt-2 text-sm leading-6 text-muted-foreground">
-                      Choose how many orders to add to your cart.
+                      {flavors.length ? "Choose your quantity and flavor." : "Choose how many orders to add to your cart."}
                     </DialogDescription>
                   </div>
                   <DialogClose
@@ -215,7 +218,8 @@ export function MenuCard({
                 </div>
               </div>
 
-              <div className="relative aspect-[4/3] max-h-[45dvh] bg-muted/35">
+              <div className="min-h-0 overflow-y-auto overscroll-contain">
+              <div className="relative h-[clamp(7rem,22dvh,11rem)] bg-muted/35">
                 <Image
                   src={dish.image}
                   alt={dish.name}
@@ -225,7 +229,7 @@ export function MenuCard({
                 />
               </div>
 
-              <div className="p-5 sm:p-6">
+              <div className="px-5 py-4 sm:px-6">
                 <div>
                   <p className="text-sm leading-6 text-muted-foreground">
                     {dish.description}
@@ -235,7 +239,7 @@ export function MenuCard({
                   </p>
                 </div>
 
-                <div className="mt-6 flex items-center justify-between rounded-sm border border-border bg-background p-3">
+                <div className="mt-4 flex items-center justify-between rounded-sm border border-border bg-background p-2">
                   <span className="text-sm font-semibold uppercase tracking-[0.08em] text-foreground">
                     Quantity
                   </span>
@@ -267,10 +271,27 @@ export function MenuCard({
                   </div>
                 </div>
 
+                {flavors.length > 0 && (
+                  <fieldset className="mt-4 space-y-2">
+                    <legend className="text-sm font-semibold">Choose a flavor</legend>
+                    <div className="flex flex-wrap gap-2">
+                      {flavors.map((option) => (
+                        <label key={option} className="flex cursor-pointer items-center gap-2 rounded-md border border-border px-3 py-2 text-sm">
+                          <input type="radio" name={`flavor-${dish.menuItemId ?? dish.name}`} value={option} checked={flavor === option} onChange={() => setFlavor(option)} />
+                          {option}
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
+                )}
+              </div>
+              </div>
+              <div className="shrink-0 border-t border-border bg-card px-5 py-3 sm:px-6">
                 <Button
                   type="button"
+                  disabled={flavors.length > 0 && !flavors.includes(flavor)}
                   onClick={handleAddToCart}
-                  className="mt-6 h-12 w-full rounded-sm text-xs font-semibold uppercase tracking-[0.08em] shadow-[var(--shadow-header-button)]"
+                  className="h-11 w-full rounded-sm text-xs font-semibold uppercase tracking-[0.08em] shadow-[var(--shadow-header-button)]"
                 >
                   Add {quantity} to Cart
                 </Button>

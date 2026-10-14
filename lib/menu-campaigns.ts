@@ -22,6 +22,8 @@ import {
 } from "lucide-react";
 
 export type Dish = {
+  menuItemId?: string;
+  flavors?: string[];
   name: string;
   description: string;
   price: string;

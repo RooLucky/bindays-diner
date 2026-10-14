@@ -43,7 +43,7 @@ export function createOrdersWorkbook(orders: AdminOrder[]) {
       order.deliveryAddress,
       order.landmark ?? "",
       order.items
-        .map((item) => `${item.quantity} × ${item.name} (${item.price})`)
+        .map((item) => `${item.quantity} × ${item.name}${item.flavor ? ` — ${item.flavor}` : ""} (${item.price})`)
         .join("\n"),
       order.subtotal,
       order.deliveryFee,

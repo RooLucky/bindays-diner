@@ -15,7 +15,7 @@ export type AdminOrder = {
   deliveryDate: string;
   deliveryTime: string;
   notes: string | null;
-  items: { name: string; price: string; quantity: number }[];
+  items: { name: string; price: string; quantity: number; flavor?: string }[];
   subtotal: number;
   deliveryFee: number;
   total: number;

@@ -152,11 +152,11 @@ export function ReservationPaymentClient({
         <div className="mt-6 border-y border-border py-4">
           {reservation.items.map((item) => (
             <div
-              key={`${item.name}-${item.price}`}
+              key={`${item.name}-${item.price}-${item.flavor ?? ""}`}
               className="flex justify-between gap-4 py-1 text-sm"
             >
               <span className="min-w-0 text-muted-foreground">
-                {item.quantity}× {item.name}
+                {item.quantity}× {item.name}{item.flavor ? ` — ${item.flavor}` : ""}
               </span>
               <span className="shrink-0 font-semibold text-foreground">
                 {item.price}

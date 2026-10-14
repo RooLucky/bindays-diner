@@ -1,6 +1,8 @@
 export type ReservationPaymentStatus = "pending" | "unpaid" | "paid";
 
 export type ReservationItem = {
+  menuItemId?: string;
+  flavor?: string;
   name: string;
   price: string;
   quantity: number;

@@ -163,7 +163,8 @@ export function ReservationPage() {
           deliveryDate,
           deliveryTime: formData.get("deliveryTime"),
           notes,
-          items: items.map(({ name, price, quantity }) => ({
+          items: items.map(({ name, price, quantity, menuItemId, flavor }) => ({
+            menuItemId, flavor,
             name,
             price,
             quantity,
@@ -454,7 +455,7 @@ export function ReservationPage() {
                           className="grid grid-cols-[1fr_auto] items-start gap-3 text-sm"
                         >
                           <span className="min-w-0 text-muted-foreground">
-                            {item.quantity}x {item.name}
+                            {item.quantity}x {item.name}{item.flavor ? ` — ${item.flavor}` : ""}
                           </span>
                           <span className="shrink-0 font-semibold text-foreground">
                             {item.price}

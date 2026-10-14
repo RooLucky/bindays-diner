@@ -337,6 +337,7 @@ export function Header({
                                   <div>
                                     <h3 className="font-serif text-xl leading-tight text-foreground">
                                       {item.name}
+                                      {item.flavor && <span className="block text-xs font-normal text-muted-foreground">Flavor: {item.flavor}</span>}
                                     </h3>
                                     <p className="mt-1 text-xs font-semibold uppercase tracking-[0.08em] text-primary">
                                       {item.price}
