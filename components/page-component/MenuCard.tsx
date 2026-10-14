@@ -198,7 +198,7 @@ export function MenuCard({
         <DialogPortal>
           <DialogBackdrop className="bg-foreground/40 backdrop-blur-md" />
           <DialogViewport>
-            <DialogPopup className="flex max-h-[calc(100dvh-2rem)] max-w-lg flex-col gap-0 overflow-hidden p-0 sm:p-0">
+            <DialogPopup className="flex max-h-[80dvh] max-w-lg flex-col gap-0 overflow-hidden p-0 sm:p-0">
               <div className="shrink-0 border-b border-border px-5 py-4 sm:px-6">
                 <div className="flex items-start justify-between gap-4">
                   <div>
@@ -219,7 +219,7 @@ export function MenuCard({
               </div>
 
               <div className="min-h-0 overflow-y-auto overscroll-contain">
-              <div className="relative h-[clamp(7rem,22dvh,11rem)] bg-muted/35">
+              <div className="relative h-[clamp(12rem,32dvh,20rem)] bg-muted/35">
                 <Image
                   src={dish.image}
                   alt={dish.name}
